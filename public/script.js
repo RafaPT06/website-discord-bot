@@ -25,6 +25,12 @@ const commandEls = {
   summary: document.querySelector('[data-command-summary]'),
 };
 
+const siteEls = {
+  supportLink: document.querySelector('[data-support-link]'),
+  bugLink: document.querySelector('[data-bug-link]'),
+  featureLink: document.querySelector('[data-feature-link]'),
+};
+
 let allCommands = [];
 let activeCategory = 'all';
 
@@ -35,6 +41,13 @@ function formatNumber(value) {
 
 function setText(el, value) {
   if (el) el.textContent = value;
+}
+
+function setSafeLink(el, url) {
+  if (!el || !url || url === '#') return;
+  el.href = url;
+  el.target = '_blank';
+  el.rel = 'noopener noreferrer';
 }
 
 function setBotName(name) {
@@ -146,11 +159,7 @@ async function loadBotStats() {
     setText(statEls.statusPill, data.online ? 'Bot online' : 'Bot offline');
     setText(statEls.updated, `Updated ${new Date(data.updatedAt).toLocaleTimeString()}`);
 
-    if (statEls.inviteLink && data.inviteUrl) {
-      statEls.inviteLink.href = data.inviteUrl;
-      statEls.inviteLink.target = '_blank';
-      statEls.inviteLink.rel = 'noopener noreferrer';
-    }
+    document.querySelectorAll('[data-invite-link]').forEach((link) => setSafeLink(link, data.inviteUrl));
   } catch (err) {
     setText(statEls.status, 'Offline');
     setText(statEls.statusPill, 'Bot API offline');
@@ -175,6 +184,18 @@ async function loadCommands() {
   }
 }
 
+async function loadSiteConfig() {
+  try {
+    const res = await fetch('/api/site-config', { cache: 'no-store' });
+    const data = await res.json();
+    setSafeLink(siteEls.supportLink, data.supportServerUrl);
+    setSafeLink(siteEls.bugLink, data.bugReportUrl);
+    setSafeLink(siteEls.featureLink, data.featureRequestUrl);
+  } catch (err) {
+    // Optional links can stay as placeholders until configured in Railway variables.
+  }
+}
+
 commandEls.search?.addEventListener('input', renderCommands);
 commandEls.tabs?.addEventListener('click', (event) => {
   const button = event.target.closest('[data-category]');
@@ -186,5 +207,6 @@ commandEls.tabs?.addEventListener('click', (event) => {
 
 loadBotStats();
 loadCommands();
+loadSiteConfig();
 setInterval(loadBotStats, 30000);
 setInterval(loadCommands, 60000);

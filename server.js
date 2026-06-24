@@ -4,6 +4,15 @@ const app = express();
 
 app.use(express.static('public'));
 
+
+app.get('/api/site-config', (req, res) => {
+  res.json({
+    supportServerUrl: process.env.SUPPORT_SERVER_URL || '#',
+    bugReportUrl: process.env.BUG_REPORT_URL || process.env.SUPPORT_SERVER_URL || '#',
+    featureRequestUrl: process.env.FEATURE_REQUEST_URL || process.env.SUPPORT_SERVER_URL || '#',
+  });
+});
+
 app.get('/api/status', (req, res) => {
   res.json({
     status: 'online',
