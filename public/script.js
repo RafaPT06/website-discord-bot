@@ -25,6 +25,10 @@ const commandEls = {
   summary: document.querySelector('[data-command-summary]'),
 };
 
+const changelogEls = {
+  list: document.querySelector('[data-changelog-list]'),
+};
+
 const siteEls = {
   supportLink: document.querySelector('[data-support-link]'),
   bugLink: document.querySelector('[data-bug-link]'),
@@ -138,6 +142,67 @@ function renderCommands() {
   }).join('');
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function changeTagClass(type) {
+  const clean = String(type || 'changed').toLowerCase();
+  if (clean.includes('new')) return 'new';
+  if (clean.includes('improved')) return 'improved';
+  if (clean.includes('fix')) return 'fixed';
+  return 'changed';
+}
+
+function renderChangelog(entries) {
+  if (!changelogEls.list) return;
+
+  if (!Array.isArray(entries) || !entries.length) {
+    changelogEls.list.innerHTML = '<div class="empty-card">No changelog entries yet.</div>';
+    return;
+  }
+
+  changelogEls.list.innerHTML = entries.map((entry) => {
+    const changes = Array.isArray(entry.changes) ? entry.changes : [];
+    return `
+      <article class="changelog-card">
+        <div class="changelog-version">
+          <div>
+            <span class="version-badge">${escapeHtml(entry.version)}</span>
+            <h3>${escapeHtml(entry.title || 'Update')}</h3>
+          </div>
+          <time>${escapeHtml(entry.date || '')}</time>
+        </div>
+        <ul>
+          ${changes.map((change) => `
+            <li>
+              <span class="change-tag ${changeTagClass(change.type)}">${escapeHtml(change.type || 'Changed')}</span>
+              <p>${escapeHtml(change.text || change)}</p>
+            </li>
+          `).join('')}
+        </ul>
+      </article>
+    `;
+  }).join('');
+}
+
+async function loadChangelog() {
+  try {
+    const res = await fetch('/changelog.json', { cache: 'no-store' });
+    const entries = await res.json();
+    renderChangelog(entries);
+  } catch (err) {
+    if (changelogEls.list) {
+      changelogEls.list.innerHTML = '<div class="empty-card">Could not load changelog.</div>';
+    }
+  }
+}
+
 async function loadBotStats() {
   try {
     const res = await fetch('/api/bot-stats', { cache: 'no-store' });
@@ -207,6 +272,7 @@ commandEls.tabs?.addEventListener('click', (event) => {
 
 loadBotStats();
 loadCommands();
+loadChangelog();
 loadSiteConfig();
 setInterval(loadBotStats, 30000);
 setInterval(loadCommands, 60000);

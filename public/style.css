@@ -790,3 +790,142 @@ code {
     grid-template-columns: 1fr;
   }
 }
+
+.changelog-section {
+  padding: 34px;
+  margin: 78px 0;
+  border: 1px solid var(--border);
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.045));
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px);
+}
+
+.changelog-header {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 28px;
+  align-items: end;
+  margin-bottom: 24px;
+}
+
+.changelog-list {
+  position: relative;
+  display: grid;
+  gap: 16px;
+}
+
+.changelog-card {
+  position: relative;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.changelog-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--primary), var(--primary-2));
+}
+
+.changelog-version {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.changelog-version h3 {
+  margin: 10px 0 0;
+  font-size: 1.35rem;
+}
+
+.changelog-version time {
+  color: var(--muted);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.version-badge {
+  display: inline-flex;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #ddd6fe;
+  background: rgba(139, 92, 246, 0.14);
+  border: 1px solid rgba(139, 92, 246, 0.45);
+  font-weight: 900;
+  font-size: 0.78rem;
+}
+
+.changelog-card ul {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.changelog-card li {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.changelog-card li p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.change-tag {
+  width: fit-content;
+  padding: 6px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.07);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.change-tag.new {
+  color: #c9ffd9;
+  border-color: rgba(57, 229, 140, 0.35);
+}
+
+.change-tag.improved {
+  color: #bae6fd;
+  border-color: rgba(34, 211, 238, 0.35);
+}
+
+.change-tag.fixed {
+  color: #fde68a;
+  border-color: rgba(253, 230, 138, 0.35);
+}
+
+@media (max-width: 860px) {
+  .changelog-header {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .changelog-section {
+    padding: 20px;
+    border-radius: 24px;
+  }
+
+  .changelog-version,
+  .changelog-card li {
+    grid-template-columns: 1fr;
+  }
+
+  .changelog-version {
+    flex-direction: column;
+  }
+}
