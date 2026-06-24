@@ -487,3 +487,14 @@ code {
   color: var(--muted);
   font-size: 0.85rem;
 }
+
+.brand-icon.has-image,
+.bot-avatar.has-image {
+  background-size: cover;
+  background-position: center;
+}
+
+.brand-icon {
+  background-size: cover;
+  background-position: center;
+}

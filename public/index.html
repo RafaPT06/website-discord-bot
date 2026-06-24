@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ruffles Bot</title>
-  <meta name="description" content="Ruffles Bot - a Discord bot with leveling, fun commands, image editing and server utilities." />
+  <title data-page-title>Discord Bot</title>
+  <meta name="description" content="A Discord bot website with live stats, commands, features and dashboard plans." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -12,9 +12,9 @@
   <div class="bg-glow bg-glow-two"></div>
 
   <header class="nav">
-    <a class="brand" href="#top" aria-label="Ruffles Bot home">
-      <span class="brand-icon">🤖</span>
-      <span>Ruffles</span>
+    <a class="brand" href="#top" aria-label="Bot home">
+      <span class="brand-icon" data-bot-avatar-small>🤖</span>
+      <span data-bot-name-short>Loading...</span>
     </a>
 
     <nav class="nav-links" aria-label="Main navigation">
@@ -29,31 +29,39 @@
       <div class="hero-content">
         <div class="status-pill">
           <span class="pulse"></span>
-          Website online
+          <span data-status-pill>Checking bot status...</span>
         </div>
 
-        <h1>Your Discord server, upgraded.</h1>
+        <h1><span data-bot-name-heading>Your bot</span>, upgraded.</h1>
         <p class="hero-text">
-          Ruffles Bot brings fun commands, leveling, achievements, moderation tools,
-          image editing and useful server utilities into one clean Discord bot.
+          A live Discord bot website with real-time stats, commands, leveling,
+          achievements, image editing and useful server tools.
         </p>
 
         <div class="actions">
-          <a class="btn btn-primary" href="#" aria-label="Invite Ruffles Bot">Invite Bot</a>
+          <a class="btn btn-primary" href="#" data-invite-link aria-label="Invite bot">Invite Bot</a>
           <a class="btn btn-secondary" href="#commands">View Commands</a>
         </div>
       </div>
 
-      <aside class="bot-card" aria-label="Bot preview card">
+      <aside class="bot-card" aria-label="Bot live stats card">
         <div class="bot-top">
-          <div class="bot-avatar" data-bot-avatar>R</div>
+          <div class="bot-avatar" data-bot-avatar>?</div>
           <div>
-            <h2 data-bot-name>Ruffles Bot</h2>
-            <p data-bot-tag>Online and ready</p>
+            <h2 data-bot-name>Loading bot...</h2>
+            <p data-bot-tag>Connecting to API</p>
           </div>
         </div>
 
         <div class="stats-grid">
+          <div class="stat-card">
+            <span>Status</span>
+            <strong class="online" data-stat="status">Loading</strong>
+          </div>
+          <div class="stat-card">
+            <span>Ping</span>
+            <strong data-stat="ping">—</strong>
+          </div>
           <div class="stat-card">
             <span>Servers</span>
             <strong data-stat="servers">—</strong>
@@ -67,14 +75,6 @@
             <strong data-stat="commands">—</strong>
           </div>
           <div class="stat-card">
-            <span>Status</span>
-            <strong class="online" data-stat="status">Loading</strong>
-          </div>
-          <div class="stat-card">
-            <span>Ping</span>
-            <strong data-stat="ping">—</strong>
-          </div>
-          <div class="stat-card">
             <span>Uptime</span>
             <strong data-stat="uptime">—</strong>
           </div>
@@ -83,9 +83,9 @@
         <p class="updated" data-updated>Loading live stats...</p>
 
         <div class="mini-log">
-          <p><span>✓</span> Leveling system enabled</p>
-          <p><span>✓</span> Image edit command ready</p>
-          <p><span>✓</span> Dashboard coming soon</p>
+          <p><span>✓</span> Live Railway API connected</p>
+          <p><span>✓</span> Leveling and achievements ready</p>
+          <p><span>✓</span> Image edit command available</p>
         </div>
       </aside>
     </section>
@@ -127,11 +127,11 @@
       <div>
         <div class="section-heading left">
           <span>Commands</span>
-          <h2>Clean command categories</h2>
+          <h2>Useful commands, cleanly organized</h2>
         </div>
         <p class="muted">
-          This page can later connect to the bot and show commands automatically.
-          For now, it is a clean preview of what the dashboard can become.
+          The website is already reading live bot stats. Later, this section can
+          read the real slash command list automatically too.
         </p>
       </div>
 
@@ -152,13 +152,13 @@
       <div class="timeline">
         <div>
           <strong>1</strong>
-          <h3>Homepage</h3>
-          <p>Modern public page for the bot.</p>
+          <h3>Live Homepage</h3>
+          <p>Show real servers, users, ping and uptime.</p>
         </div>
         <div>
           <strong>2</strong>
-          <h3>Live Stats</h3>
-          <p>Show servers, users, ping and uptime.</p>
+          <h3>Commands Page</h3>
+          <p>Display every command by category.</p>
         </div>
         <div>
           <strong>3</strong>
@@ -170,7 +170,7 @@
   </main>
 
   <footer class="footer">
-    <p>Ruffles Bot © 2026</p>
+    <p><span data-footer-bot-name>Discord Bot</span> © 2026</p>
     <p>Made by Rafa (@atuaprima)</p>
     <p>Built with Node.js, Express and Railway.</p>
   </footer>
