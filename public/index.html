@@ -18,9 +18,9 @@
     </a>
 
     <nav class="nav-links" aria-label="Main navigation">
-      <a href="#features">Features</a>
+      <a href="#top">Home</a>
       <a href="#commands">Commands</a>
-      <a href="#roadmap">Roadmap</a>
+      <a href="#features">Features</a>
     </nav>
   </header>
 
@@ -123,24 +123,29 @@
       </div>
     </section>
 
-    <section id="commands" class="section split-section">
-      <div>
+    <section id="commands" class="section commands-section">
+      <div class="commands-header">
         <div class="section-heading left">
           <span>Commands</span>
-          <h2>Useful commands, cleanly organized</h2>
+          <h2>All slash commands</h2>
         </div>
         <p class="muted">
-          The website is already reading live bot stats. Later, this section can
-          read the real slash command list automatically too.
+          Commands are loaded live from the bot API. Owner/admin commands are already tagged, so later Discord login can hide them from normal users.
         </p>
       </div>
 
-      <div class="command-list">
-        <div><code>/level</code><span>View your XP and rank.</span></div>
-        <div><code>/leaderboard</code><span>Check the top server members.</span></div>
-        <div><code>/edit_image</code><span>Edit uploaded images using AI.</span></div>
-        <div><code>/help</code><span>Show available bot commands.</span></div>
+      <div class="command-toolbar">
+        <label class="search-box" aria-label="Search commands">
+          <span>🔎</span>
+          <input type="search" placeholder="Search commands..." data-command-search />
+        </label>
+        <div class="category-tabs" data-category-tabs>
+          <button class="active" type="button" data-category="all">All</button>
+        </div>
       </div>
+
+      <div class="command-summary" data-command-summary>Loading slash commands...</div>
+      <div class="commands-grid" data-commands-grid></div>
     </section>
 
     <section id="roadmap" class="section roadmap">
@@ -158,7 +163,7 @@
         <div>
           <strong>2</strong>
           <h3>Commands Page</h3>
-          <p>Display every command by category.</p>
+          <p>Display every slash command with category and visibility.</p>
         </div>
         <div>
           <strong>3</strong>

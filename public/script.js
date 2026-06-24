@@ -18,6 +18,16 @@ const statEls = {
   inviteLink: document.querySelector('[data-invite-link]'),
 };
 
+const commandEls = {
+  grid: document.querySelector('[data-commands-grid]'),
+  search: document.querySelector('[data-command-search]'),
+  tabs: document.querySelector('[data-category-tabs]'),
+  summary: document.querySelector('[data-command-summary]'),
+};
+
+let allCommands = [];
+let activeCategory = 'all';
+
 function formatNumber(value) {
   if (typeof value !== 'number') return '—';
   return new Intl.NumberFormat('en-US').format(value);
@@ -33,7 +43,7 @@ function setBotName(name) {
   setText(statEls.botNameHeading, safeName);
   setText(statEls.botNameShort, safeName);
   setText(statEls.footerBotName, safeName);
-  if (document.title !== safeName) document.title = safeName;
+  if (document.title !== safeName) document.title = `${safeName} — Commands & Stats`;
 }
 
 function setAvatar(url, fallbackName) {
@@ -51,6 +61,68 @@ function setAvatar(url, fallbackName) {
       el.classList.remove('has-image');
     }
   }
+}
+
+function visibilityLabel(value) {
+  if (value === 'owner') return 'Owner';
+  if (value === 'admin') return 'Admin';
+  return 'Public';
+}
+
+function optionText(command) {
+  const options = Array.isArray(command.options) ? command.options : [];
+  if (!options.length) return '';
+  const names = options.slice(0, 4).map((option) => `${option.required ? '<' : '['}${option.name}${option.required ? '>' : ']'}`);
+  const more = options.length > 4 ? ' ...' : '';
+  return ` ${names.join(' ')}${more}`;
+}
+
+function renderCategoryTabs(commands) {
+  if (!commandEls.tabs) return;
+  const categories = ['all', ...new Set(commands.map((command) => command.category || 'Other'))];
+  commandEls.tabs.innerHTML = categories.map((category) => {
+    const label = category === 'all' ? 'All' : category;
+    const active = category === activeCategory ? 'active' : '';
+    return `<button class="${active}" type="button" data-category="${category}">${label}</button>`;
+  }).join('');
+}
+
+function renderCommands() {
+  if (!commandEls.grid) return;
+  const query = (commandEls.search?.value || '').trim().toLowerCase();
+
+  const filtered = allCommands.filter((command) => {
+    const matchesCategory = activeCategory === 'all' || command.category === activeCategory;
+    const haystack = `${command.name} ${command.description} ${command.category} ${command.visibility}`.toLowerCase();
+    return matchesCategory && (!query || haystack.includes(query));
+  });
+
+  setText(
+    commandEls.summary,
+    `${filtered.length} of ${allCommands.length} slash commands shown${activeCategory !== 'all' ? ` in ${activeCategory}` : ''}.`
+  );
+
+  if (!filtered.length) {
+    commandEls.grid.innerHTML = '<div class="empty-card">No commands found.</div>';
+    return;
+  }
+
+  commandEls.grid.innerHTML = filtered.map((command) => {
+    const visibility = command.visibility || 'public';
+    return `
+      <article class="command-card" data-visibility="${visibility}">
+        <div class="command-card-top">
+          <code>/${command.name}${optionText(command)}</code>
+          <span class="visibility-badge ${visibility}">${visibilityLabel(visibility)}</span>
+        </div>
+        <p>${command.description || 'No description provided.'}</p>
+        <div class="command-meta">
+          <span>${command.category || 'Other'}</span>
+          <span>${command.dm ? 'DMs allowed' : 'Server only'}</span>
+        </div>
+      </article>
+    `;
+  }).join('');
 }
 
 async function loadBotStats() {
@@ -88,5 +160,31 @@ async function loadBotStats() {
   }
 }
 
+async function loadCommands() {
+  try {
+    const res = await fetch('/api/bot-commands', { cache: 'no-store' });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Commands unavailable');
+
+    allCommands = Array.isArray(data.commands) ? data.commands : [];
+    renderCategoryTabs(allCommands);
+    renderCommands();
+  } catch (err) {
+    setText(commandEls.summary, 'Could not load slash commands from the bot API.');
+    if (commandEls.grid) commandEls.grid.innerHTML = '<div class="empty-card">Commands API offline.</div>';
+  }
+}
+
+commandEls.search?.addEventListener('input', renderCommands);
+commandEls.tabs?.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-category]');
+  if (!button) return;
+  activeCategory = button.dataset.category || 'all';
+  renderCategoryTabs(allCommands);
+  renderCommands();
+});
+
 loadBotStats();
+loadCommands();
 setInterval(loadBotStats, 30000);
+setInterval(loadCommands, 60000);
