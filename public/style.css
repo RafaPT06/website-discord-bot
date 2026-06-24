@@ -476,3 +476,14 @@ code {
     border-radius: 24px;
   }
 }
+
+.bot-avatar {
+  background-size: cover;
+  background-position: center;
+}
+
+.updated {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}

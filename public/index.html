@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meowz Bot</title>
+  <title>Ruffles Bot</title>
   <meta name="description" content="Ruffles Bot - a Discord bot with leveling, fun commands, image editing and server utilities." />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -12,9 +12,9 @@
   <div class="bg-glow bg-glow-two"></div>
 
   <header class="nav">
-    <a class="brand" href="#top" aria-label="Meowz Bot home">
+    <a class="brand" href="#top" aria-label="Ruffles Bot home">
       <span class="brand-icon">🤖</span>
-      <span>Meowz</span>
+      <span>Ruffles</span>
     </a>
 
     <nav class="nav-links" aria-label="Main navigation">
@@ -34,43 +34,53 @@
 
         <h1>Your Discord server, upgraded.</h1>
         <p class="hero-text">
-          Meowz Bot brings fun commands, leveling, achievements, moderation tools,
+          Ruffles Bot brings fun commands, leveling, achievements, moderation tools,
           image editing and useful server utilities into one clean Discord bot.
         </p>
 
         <div class="actions">
-          <a class="btn btn-primary" href="#" aria-label="Invite Meowz Bot">Invite Bot</a>
+          <a class="btn btn-primary" href="#" aria-label="Invite Ruffles Bot">Invite Bot</a>
           <a class="btn btn-secondary" href="#commands">View Commands</a>
         </div>
       </div>
 
       <aside class="bot-card" aria-label="Bot preview card">
         <div class="bot-top">
-          <div class="bot-avatar">R</div>
+          <div class="bot-avatar" data-bot-avatar>R</div>
           <div>
-            <h2>Meowz Bot</h2>
-            <p>Online and ready</p>
+            <h2 data-bot-name>Ruffles Bot</h2>
+            <p data-bot-tag>Online and ready</p>
           </div>
         </div>
 
         <div class="stats-grid">
           <div class="stat-card">
             <span>Servers</span>
-            <strong>—</strong>
+            <strong data-stat="servers">—</strong>
           </div>
           <div class="stat-card">
             <span>Users</span>
-            <strong>—</strong>
+            <strong data-stat="users">—</strong>
           </div>
           <div class="stat-card">
             <span>Commands</span>
-            <strong>50+</strong>
+            <strong data-stat="commands">—</strong>
           </div>
           <div class="stat-card">
             <span>Status</span>
-            <strong class="online">Live</strong>
+            <strong class="online" data-stat="status">Loading</strong>
+          </div>
+          <div class="stat-card">
+            <span>Ping</span>
+            <strong data-stat="ping">—</strong>
+          </div>
+          <div class="stat-card">
+            <span>Uptime</span>
+            <strong data-stat="uptime">—</strong>
           </div>
         </div>
+
+        <p class="updated" data-updated>Loading live stats...</p>
 
         <div class="mini-log">
           <p><span>✓</span> Leveling system enabled</p>
@@ -160,9 +170,10 @@
   </main>
 
   <footer class="footer">
-    <p>Meowz Bot © 2026</p>
+    <p>Ruffles Bot © 2026</p>
     <p>Made by Rafa (@atuaprima)</p>
     <p>Built with Node.js, Express and Railway.</p>
   </footer>
+  <script src="script.js"></script>
 </body>
 </html>
