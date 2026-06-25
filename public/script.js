@@ -38,7 +38,7 @@ const siteEls = {
 
 let allCommands = [];
 let activeCategory = 'all';
-let selectedCommandName = null;
+let expandedCommandName = null;
 
 function formatNumber(value) {
   if (typeof value !== 'number') return '—';
@@ -206,6 +206,57 @@ function renderCategoryTabs(commands) {
   }).join('');
 }
 
+function commandDetailContent(command) {
+  const visibility = command.visibility || 'public';
+  const options = Array.isArray(command.options) ? command.options : [];
+  const tips = commandTips(command);
+
+  return `
+    <div class="command-detail-inline">
+      <div class="command-detail-top">
+        <span class="visibility-badge ${visibility}">${visibilityLabel(visibility)}</span>
+        <span class="command-detail-category">${escapeHtml(command.category || 'Other')}</span>
+      </div>
+
+      <div class="command-doc-block">
+        <span>Usage</span>
+        <code>${escapeHtml(usageText(command))}</code>
+      </div>
+
+      <div class="command-doc-grid">
+        <div>
+          <span>Where it works</span>
+          <strong>${command.dm ? 'Server + DMs' : 'Server only'}</strong>
+        </div>
+        <div>
+          <span>Category</span>
+          <strong>${escapeHtml(command.category || 'Other')}</strong>
+        </div>
+      </div>
+
+      <div class="command-options">
+        <h4>Options</h4>
+        ${options.length ? options.map((option) => `
+          <div class="command-option-row">
+            <div>
+              <strong>${escapeHtml(option.name || 'option')}</strong>
+              <p>${escapeHtml(option.description || 'No description provided.')}</p>
+            </div>
+            <span>${escapeHtml(optionTypeLabel(option))}${option.required ? ' • Required' : ''}</span>
+          </div>
+        `).join('') : '<p class="muted small-muted">This command has no options.</p>'}
+      </div>
+
+      <div class="command-options">
+        <h4>Notes</h4>
+        <ul class="command-tips">
+          ${tips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
 function renderCommands() {
   if (!commandEls.grid) return;
   const query = (commandEls.search?.value || '').trim().toLowerCase();
@@ -223,33 +274,37 @@ function renderCommands() {
 
   if (!filtered.length) {
     commandEls.grid.innerHTML = '<div class="empty-card">No commands found.</div>';
-    renderCommandDetail(null);
+    expandedCommandName = null;
     return;
   }
 
-  if (!selectedCommandName || !filtered.some((command) => command.name === selectedCommandName)) {
-    selectedCommandName = filtered[0]?.name || null;
+  if (expandedCommandName && !filtered.some((command) => command.name === expandedCommandName)) {
+    expandedCommandName = null;
   }
 
   commandEls.grid.innerHTML = filtered.map((command) => {
     const visibility = command.visibility || 'public';
-    const selected = command.name === selectedCommandName ? 'selected' : '';
+    const expanded = command.name === expandedCommandName;
     return `
-      <button class="command-card ${selected}" type="button" data-command-name="${escapeHtml(command.name)}" data-visibility="${visibility}">
-        <div class="command-card-top">
-          <code>${escapeHtml(usageText(command))}</code>
-          <span class="visibility-badge ${visibility}">${visibilityLabel(visibility)}</span>
-        </div>
-        <p>${escapeHtml(command.description || 'No description provided.')}</p>
-        <div class="command-meta">
-          <span>${escapeHtml(command.category || 'Other')}</span>
-          <span>${command.dm ? 'DMs allowed' : 'Server only'}</span>
-        </div>
-      </button>
+      <article class="command-card ${expanded ? 'expanded' : ''}" data-visibility="${visibility}">
+        <button class="command-card-trigger" type="button" data-command-name="${escapeHtml(command.name)}" aria-expanded="${expanded ? 'true' : 'false'}">
+          <div class="command-card-main">
+            <div class="command-card-top">
+              <code>${escapeHtml(usageText(command))}</code>
+              <span class="visibility-badge ${visibility}">${visibilityLabel(visibility)}</span>
+            </div>
+            <p>${escapeHtml(command.description || 'No description provided.')}</p>
+            <div class="command-meta">
+              <span>${escapeHtml(command.category || 'Other')}</span>
+              <span>${command.dm ? 'DMs allowed' : 'Server only'}</span>
+            </div>
+          </div>
+          <span class="command-chevron" aria-hidden="true">⌄</span>
+        </button>
+        ${expanded ? commandDetailContent(command) : ''}
+      </article>
     `;
   }).join('');
-
-  renderCommandDetail(allCommands.find((command) => command.name === selectedCommandName));
 }
 
 function escapeHtml(value) {
@@ -372,14 +427,15 @@ async function loadSiteConfig() {
 }
 
 commandEls.search?.addEventListener('input', () => {
-  selectedCommandName = null;
+  expandedCommandName = null;
   renderCommands();
 });
 
 commandEls.grid?.addEventListener('click', (event) => {
-  const card = event.target.closest('[data-command-name]');
-  if (!card) return;
-  selectedCommandName = card.dataset.commandName;
+  const trigger = event.target.closest('[data-command-name]');
+  if (!trigger) return;
+  const name = trigger.dataset.commandName;
+  expandedCommandName = expandedCommandName === name ? null : name;
   renderCommands();
 });
 
@@ -387,7 +443,7 @@ commandEls.tabs?.addEventListener('click', (event) => {
   const button = event.target.closest('[data-category]');
   if (!button) return;
   activeCategory = button.dataset.category || 'all';
-  selectedCommandName = null;
+  expandedCommandName = null;
   renderCategoryTabs(allCommands);
   renderCommands();
 });

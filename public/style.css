@@ -1111,3 +1111,96 @@ code {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Inline expandable command documentation */
+.commands-section .commands-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.command-card {
+  min-height: unset;
+  padding: 0;
+  overflow: hidden;
+}
+
+.command-card-trigger {
+  width: 100%;
+  min-height: 178px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 18px;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+}
+
+.command-card-main {
+  min-width: 0;
+}
+
+.command-chevron {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+  transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.command-card.expanded .command-chevron {
+  transform: rotate(180deg);
+  color: white;
+  border-color: rgba(139, 92, 246, 0.65);
+}
+
+.command-card.expanded {
+  grid-column: 1 / -1;
+}
+
+.command-detail-inline {
+  margin: 0 18px 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.command-card.expanded .command-detail-inline {
+  animation: dropdownIn 0.18s ease both;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 860px) {
+  .commands-section .commands-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .command-card-trigger {
+    min-height: 150px;
+    padding: 16px;
+  }
+
+  .command-detail-inline {
+    margin: 0 16px 16px;
+  }
+}

@@ -1,5 +1,24 @@
 [
   {
+    "version": "v1.4.1",
+    "date": "2026-06-25",
+    "title": "Inline command dropdowns",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Command documentation now expands directly under the selected command instead of appearing at the end of the commands area."
+      },
+      {
+        "type": "Improved",
+        "text": "Added a cleaner accordion-style command interaction with open and close behavior."
+      },
+      {
+        "type": "Fixed",
+        "text": "Removed the awkward separate command details panel that made users scroll away from the selected command."
+      }
+    ]
+  },
+  {
     "version": "v1.4.0",
     "date": "2026-06-25",
     "title": "Interactive command documentation",
