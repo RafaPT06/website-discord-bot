@@ -1,12 +1,40 @@
 [
   {
+    "version": "v1.4.0",
+    "date": "2026-06-25",
+    "title": "Interactive command documentation",
+    "changes": [
+      {
+        "type": "New",
+        "text": "Added clickable command cards with detailed documentation for each slash command."
+      },
+      {
+        "type": "New",
+        "text": "Command details now show usage, options, visibility, DM support and helpful notes."
+      },
+      {
+        "type": "Improved",
+        "text": "Commands page is now prepared for deeper documentation and future Discord login visibility rules."
+      }
+    ]
+  },
+  {
     "version": "v1.3.0",
     "date": "2026-06-24",
     "title": "Commands page and public changelog",
     "changes": [
-      { "type": "New", "text": "Added a public changelog section to track Meowz updates." },
-      { "type": "New", "text": "Added live slash command documentation with search and category filters." },
-      { "type": "Improved", "text": "Kept support and user-only sections hidden until Discord login is added." }
+      {
+        "type": "New",
+        "text": "Added a public changelog section to track Meowz updates."
+      },
+      {
+        "type": "New",
+        "text": "Added live slash command documentation with search and category filters."
+      },
+      {
+        "type": "Improved",
+        "text": "Kept support and user-only sections hidden until Discord login is added."
+      }
     ]
   },
   {
@@ -14,9 +42,18 @@
     "date": "2026-06-24",
     "title": "Live website stats",
     "changes": [
-      { "type": "New", "text": "Connected the website to the bot API for live stats." },
-      { "type": "New", "text": "Added live bot name, avatar, ping, servers, users, commands and uptime." },
-      { "type": "Improved", "text": "Website now updates bot stats automatically every 30 seconds." }
+      {
+        "type": "New",
+        "text": "Connected the website to the bot API for live stats."
+      },
+      {
+        "type": "New",
+        "text": "Added live bot name, avatar, ping, servers, users, commands and uptime."
+      },
+      {
+        "type": "Improved",
+        "text": "Website now updates bot stats automatically every 30 seconds."
+      }
     ]
   },
   {
@@ -24,8 +61,14 @@
     "date": "2026-06-24",
     "title": "Discord link preview",
     "changes": [
-      { "type": "New", "text": "Added Discord embed preview metadata and preview image." },
-      { "type": "Fixed", "text": "Improved how the website appears when shared in Discord." }
+      {
+        "type": "New",
+        "text": "Added Discord embed preview metadata and preview image."
+      },
+      {
+        "type": "Fixed",
+        "text": "Improved how the website appears when shared in Discord."
+      }
     ]
   },
   {
@@ -33,8 +76,14 @@
     "date": "2026-06-24",
     "title": "Website launch",
     "changes": [
-      { "type": "New", "text": "Launched the first Meowz website on Railway." },
-      { "type": "New", "text": "Added homepage, invite button, feature cards and bot branding." }
+      {
+        "type": "New",
+        "text": "Launched the first Meowz website on Railway."
+      },
+      {
+        "type": "New",
+        "text": "Added homepage, invite button, feature cards and bot branding."
+      }
     ]
   }
 ]

@@ -141,10 +141,10 @@
       <div class="commands-header">
         <div class="section-heading left">
           <span>Commands</span>
-          <h2>All slash commands</h2>
+          <h2>Command documentation</h2>
         </div>
         <p class="muted">
-          All available slash commands, organized by categories and permissions.
+          Browse every slash command, search by category, then open a command to see usage, options and notes.
         </p>
       </div>
 
@@ -159,7 +159,16 @@
       </div>
 
       <div class="command-summary" data-command-summary>Loading slash commands...</div>
-      <div class="commands-grid" data-commands-grid></div>
+      <div class="commands-layout">
+        <div class="commands-grid" data-commands-grid></div>
+        <aside class="command-detail" data-command-detail>
+          <div class="command-detail-empty">
+            <span>⚡</span>
+            <h3>Select a command</h3>
+            <p>Click any slash command to view usage, options, visibility and quick tips.</p>
+          </div>
+        </aside>
+      </div>
     </section>
 
     <section id="changelog" class="section changelog-section">

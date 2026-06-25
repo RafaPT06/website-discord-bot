@@ -23,6 +23,7 @@ const commandEls = {
   search: document.querySelector('[data-command-search]'),
   tabs: document.querySelector('[data-category-tabs]'),
   summary: document.querySelector('[data-command-summary]'),
+  detail: document.querySelector('[data-command-detail]'),
 };
 
 const changelogEls = {
@@ -37,6 +38,7 @@ const siteEls = {
 
 let allCommands = [];
 let activeCategory = 'all';
+let selectedCommandName = null;
 
 function formatNumber(value) {
   if (typeof value !== 'number') return '—';
@@ -94,6 +96,106 @@ function optionText(command) {
   return ` ${names.join(' ')}${more}`;
 }
 
+function usageText(command) {
+  return `/${command.name}${optionText(command)}`;
+}
+
+function optionTypeLabel(option) {
+  if (typeof option.type === 'string') return option.type;
+  const typeMap = {
+    1: 'Subcommand',
+    2: 'Group',
+    3: 'Text',
+    4: 'Integer',
+    5: 'True/False',
+    6: 'User',
+    7: 'Channel',
+    8: 'Role',
+    9: 'Mentionable',
+    10: 'Number',
+    11: 'Attachment',
+  };
+  return typeMap[option.type] || 'Option';
+}
+
+function commandTips(command) {
+  const tips = [];
+  const name = String(command.name || '').toLowerCase();
+
+  if (command.visibility === 'owner') tips.push('Only the bot owner should be able to use this command.');
+  if (command.visibility === 'admin') tips.push('This command is intended for server managers or staff.');
+  if (!command.dm) tips.push('This command only works inside servers.');
+  if (name.includes('edit_image')) tips.push('Use clear prompts and mention exactly what should stay unchanged.');
+  if (name.includes('level') || name.includes('rank')) tips.push('Useful for checking profile progress and XP activity.');
+
+  return tips.length ? tips : ['Use this command directly in Discord with slash commands.'];
+}
+
+function renderCommandDetail(command) {
+  if (!commandEls.detail) return;
+
+  if (!command) {
+    commandEls.detail.innerHTML = `
+      <div class="command-detail-empty">
+        <span>⚡</span>
+        <h3>Select a command</h3>
+        <p>Click any slash command to view usage, options, visibility and quick tips.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const visibility = command.visibility || 'public';
+  const options = Array.isArray(command.options) ? command.options : [];
+  const tips = commandTips(command);
+
+  commandEls.detail.innerHTML = `
+    <div class="command-detail-top">
+      <span class="visibility-badge ${visibility}">${visibilityLabel(visibility)}</span>
+      <span class="command-detail-category">${escapeHtml(command.category || 'Other')}</span>
+    </div>
+
+    <h3><code>/${escapeHtml(command.name)}</code></h3>
+    <p class="command-detail-description">${escapeHtml(command.description || 'No description provided.')}</p>
+
+    <div class="command-doc-block">
+      <span>Usage</span>
+      <code>${escapeHtml(usageText(command))}</code>
+    </div>
+
+    <div class="command-doc-grid">
+      <div>
+        <span>Where it works</span>
+        <strong>${command.dm ? 'Server + DMs' : 'Server only'}</strong>
+      </div>
+      <div>
+        <span>Category</span>
+        <strong>${escapeHtml(command.category || 'Other')}</strong>
+      </div>
+    </div>
+
+    <div class="command-options">
+      <h4>Options</h4>
+      ${options.length ? options.map((option) => `
+        <div class="command-option-row">
+          <div>
+            <strong>${escapeHtml(option.name || 'option')}</strong>
+            <p>${escapeHtml(option.description || 'No description provided.')}</p>
+          </div>
+          <span>${escapeHtml(optionTypeLabel(option))}${option.required ? ' • Required' : ''}</span>
+        </div>
+      `).join('') : '<p class="muted small-muted">This command has no options.</p>'}
+    </div>
+
+    <div class="command-options">
+      <h4>Notes</h4>
+      <ul class="command-tips">
+        ${tips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+}
+
 function renderCategoryTabs(commands) {
   if (!commandEls.tabs) return;
   const categories = ['all', ...new Set(commands.map((command) => command.category || 'Other'))];
@@ -121,25 +223,33 @@ function renderCommands() {
 
   if (!filtered.length) {
     commandEls.grid.innerHTML = '<div class="empty-card">No commands found.</div>';
+    renderCommandDetail(null);
     return;
+  }
+
+  if (!selectedCommandName || !filtered.some((command) => command.name === selectedCommandName)) {
+    selectedCommandName = filtered[0]?.name || null;
   }
 
   commandEls.grid.innerHTML = filtered.map((command) => {
     const visibility = command.visibility || 'public';
+    const selected = command.name === selectedCommandName ? 'selected' : '';
     return `
-      <article class="command-card" data-visibility="${visibility}">
+      <button class="command-card ${selected}" type="button" data-command-name="${escapeHtml(command.name)}" data-visibility="${visibility}">
         <div class="command-card-top">
-          <code>/${command.name}${optionText(command)}</code>
+          <code>${escapeHtml(usageText(command))}</code>
           <span class="visibility-badge ${visibility}">${visibilityLabel(visibility)}</span>
         </div>
-        <p>${command.description || 'No description provided.'}</p>
+        <p>${escapeHtml(command.description || 'No description provided.')}</p>
         <div class="command-meta">
-          <span>${command.category || 'Other'}</span>
+          <span>${escapeHtml(command.category || 'Other')}</span>
           <span>${command.dm ? 'DMs allowed' : 'Server only'}</span>
         </div>
-      </article>
+      </button>
     `;
   }).join('');
+
+  renderCommandDetail(allCommands.find((command) => command.name === selectedCommandName));
 }
 
 function escapeHtml(value) {
@@ -261,11 +371,23 @@ async function loadSiteConfig() {
   }
 }
 
-commandEls.search?.addEventListener('input', renderCommands);
+commandEls.search?.addEventListener('input', () => {
+  selectedCommandName = null;
+  renderCommands();
+});
+
+commandEls.grid?.addEventListener('click', (event) => {
+  const card = event.target.closest('[data-command-name]');
+  if (!card) return;
+  selectedCommandName = card.dataset.commandName;
+  renderCommands();
+});
+
 commandEls.tabs?.addEventListener('click', (event) => {
   const button = event.target.closest('[data-category]');
   if (!button) return;
   activeCategory = button.dataset.category || 'all';
+  selectedCommandName = null;
   renderCategoryTabs(allCommands);
   renderCommands();
 });
