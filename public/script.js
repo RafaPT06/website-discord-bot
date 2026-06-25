@@ -9,6 +9,7 @@ const statEls = {
   botNameHeading: document.querySelector('[data-bot-name-heading]'),
   botNameShort: document.querySelector('[data-bot-name-short]'),
   footerBotName: document.querySelector('[data-footer-bot-name]'),
+  footerYear: document.querySelector('[data-footer-year]'),
   pageTitle: document.querySelector('[data-page-title]'),
   botTag: document.querySelector('[data-bot-tag]'),
   avatar: document.querySelector('[data-bot-avatar]'),
@@ -39,6 +40,8 @@ const siteEls = {
 let allCommands = [];
 let activeCategory = 'all';
 let expandedCommandName = null;
+
+setText(statEls.footerYear, new Date().getFullYear());
 
 function formatNumber(value) {
   if (typeof value !== 'number') return '—';

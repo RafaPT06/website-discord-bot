@@ -1519,3 +1519,41 @@ code {
     text-align: left;
   }
 }
+
+
+/* Footer card */
+.footer-card {
+  width: min(1120px, calc(100% - 32px));
+  margin: 72px auto 32px;
+  padding: 24px 28px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  text-align: center;
+}
+
+.footer-card p {
+  margin: 0;
+}
+
+.footer-card p:first-child {
+  color: var(--text);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.footer-card p:last-child {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.94rem;
+  font-weight: 650;
+}
+
+@media (max-width: 520px) {
+  .footer-card {
+    width: min(100% - 22px, 1120px);
+    margin-top: 52px;
+    padding: 20px 18px;
+  }
+}

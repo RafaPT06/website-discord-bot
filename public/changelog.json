@@ -1,5 +1,20 @@
 [
   {
+    "version": "v1.4.3",
+    "date": "2026-06-25",
+    "title": "Footer card cleanup",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Simplified the footer into a matching card-style block that only shows rights reserved and creator credit."
+      },
+      {
+        "type": "Fixed",
+        "text": "Removed extra footer navigation and descriptive text to keep the bottom of the site clean."
+      }
+    ]
+  },
+  {
     "version": "v1.4.2",
     "date": "2026-06-25",
     "title": "Polished command accordions",
