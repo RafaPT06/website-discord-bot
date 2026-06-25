@@ -59,8 +59,6 @@
 
         <div class="actions">
           <a class="btn btn-primary" href="#" data-invite-link aria-label="Invite bot">Invite Bot</a>
-          <a class="btn btn-secondary" href="#commands">View Commands</a>
-          <a class="btn btn-ghost" href="#changelog">View Changelog</a>
         </div>
       </div>
 
@@ -76,27 +74,27 @@
         <div class="stats-grid">
           <div class="stat-card">
             <span>Status</span>
-            <strong class="online" data-stat="status">Loading</strong>
+            <strong class="online is-loading" data-stat="status"><span class="skeleton skeleton-text short"></span></strong>
           </div>
           <div class="stat-card">
             <span>Ping</span>
-            <strong data-stat="ping">—</strong>
+            <strong class="is-loading" data-stat="ping"><span class="skeleton skeleton-text mini"></span></strong>
           </div>
           <div class="stat-card">
             <span>Servers</span>
-            <strong data-stat="servers">—</strong>
+            <strong class="is-loading" data-stat="servers"><span class="skeleton skeleton-text mini"></span></strong>
           </div>
           <div class="stat-card">
             <span>Users</span>
-            <strong data-stat="users">—</strong>
+            <strong class="is-loading" data-stat="users"><span class="skeleton skeleton-text mini"></span></strong>
           </div>
           <div class="stat-card">
             <span>Commands</span>
-            <strong data-stat="commands">—</strong>
+            <strong class="is-loading" data-stat="commands"><span class="skeleton skeleton-text mini"></span></strong>
           </div>
           <div class="stat-card">
             <span>Uptime</span>
-            <strong data-stat="uptime">—</strong>
+            <strong class="is-loading" data-stat="uptime"><span class="skeleton skeleton-text short"></span></strong>
           </div>
         </div>
 
@@ -165,7 +163,16 @@
       </div>
 
       <div class="command-summary" data-command-summary>Loading slash commands...</div>
-      <div class="commands-table-shell" data-commands-grid></div>
+      <div class="commands-table-shell" data-commands-grid aria-busy="true">
+        <div class="commands-skeleton" aria-hidden="true">
+          <div class="skeleton-row header"></div>
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+        </div>
+      </div>
       <div class="command-pagination" data-command-pagination></div>
     </section>
 
@@ -181,7 +188,10 @@
       </div>
 
       <div class="changelog-list" data-changelog-list>
-        <div class="empty-card">Loading changelog...</div>
+        <div class="changelog-skeleton" aria-hidden="true">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card small"></div>
+        </div>
       </div>
     </section>
 

@@ -1,5 +1,24 @@
 [
   {
+    "version": "v1.4.5",
+    "date": "2026-06-25",
+    "title": "Loading skeletons",
+    "changes": [
+      {
+        "type": "New",
+        "text": "Added skeleton loading states for live stats, command pagination and the changelog."
+      },
+      {
+        "type": "Improved",
+        "text": "Commands now show a polished placeholder table while the bot API loads instead of empty content."
+      },
+      {
+        "type": "Improved",
+        "text": "Changelog loading now uses matching card placeholders for a smoother page load."
+      }
+    ]
+  },
+  {
     "version": "v1.4.4",
     "date": "2026-06-25",
     "title": "Mobile navigation and command pagination",

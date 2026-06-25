@@ -1558,6 +1558,100 @@ code {
   }
 }
 
+
+/* Loading skeletons */
+.skeleton {
+  display: inline-block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.15s ease-in-out infinite;
+}
+
+.skeleton-text {
+  height: 1em;
+  width: 86px;
+  vertical-align: middle;
+}
+
+.skeleton-text.short { width: 64px; }
+.skeleton-text.mini { width: 46px; }
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -120% 0; }
+}
+
+.commands-skeleton {
+  padding: 0;
+}
+
+.skeleton-row {
+  height: 62px;
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.08) 0 16%, transparent 16% 100%) 18px 50% / 18% 14px no-repeat,
+    linear-gradient(90deg, rgba(255,255,255,0.07) 0 28%, transparent 28% 100%) 30% 50% / 36% 14px no-repeat,
+    linear-gradient(90deg, rgba(255,255,255,0.06) 0 45%, transparent 45% 100%) 74% 50% / 18% 14px no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-row.header {
+  height: 50px;
+  background-color: rgba(255, 255, 255, 0.045);
+}
+
+.skeleton-row::after,
+.skeleton-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  animation: skeleton-sweep 1.25s infinite;
+}
+
+@keyframes skeleton-sweep {
+  100% { transform: translateX(100%); }
+}
+
+.changelog-skeleton {
+  display: grid;
+  gap: 16px;
+}
+
+.skeleton-card {
+  min-height: 154px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.08) 0 24%, transparent 24% 100%) 24px 26px / 220px 16px no-repeat,
+    linear-gradient(90deg, rgba(255,255,255,0.06) 0 34%, transparent 34% 100%) 24px 68px / 70% 13px no-repeat,
+    linear-gradient(90deg, rgba(255,255,255,0.06) 0 30%, transparent 30% 100%) 24px 102px / 62% 13px no-repeat,
+    rgba(255, 255, 255, 0.035);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-card.small {
+  min-height: 118px;
+}
+
+@media (max-width: 520px) {
+  .skeleton-row {
+    height: 118px;
+    background:
+      linear-gradient(90deg, rgba(255,255,255,0.08) 0 38%, transparent 38% 100%) 16px 18px / 70% 14px no-repeat,
+      linear-gradient(90deg, rgba(255,255,255,0.07) 0 28%, transparent 28% 100%) 16px 50px / 82% 14px no-repeat,
+      linear-gradient(90deg, rgba(255,255,255,0.06) 0 45%, transparent 45% 100%) 16px 82px / 50% 14px no-repeat;
+  }
+
+  .skeleton-row.header {
+    display: none;
+  }
+}
+
 /* Mobile navigation and paginated command table */
 .nav-toggle {
   display: none;

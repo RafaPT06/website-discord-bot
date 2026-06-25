@@ -56,7 +56,41 @@ function formatNumber(value) {
 }
 
 function setText(el, value) {
-  if (el) el.textContent = value;
+  if (!el) return;
+  el.classList?.remove('is-loading');
+  el.textContent = value;
+}
+
+function setHtml(el, value) {
+  if (!el) return;
+  el.classList?.remove('is-loading');
+  el.innerHTML = value;
+}
+
+function renderCommandSkeleton() {
+  if (!commandEls.grid) return;
+  commandEls.grid.setAttribute('aria-busy', 'true');
+  commandEls.grid.innerHTML = `
+    <div class="commands-skeleton" aria-hidden="true">
+      <div class="skeleton-row header"></div>
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+    </div>
+  `;
+  if (commandEls.pagination) commandEls.pagination.innerHTML = '';
+}
+
+function renderChangelogSkeleton() {
+  if (!changelogEls.list) return;
+  changelogEls.list.innerHTML = `
+    <div class="changelog-skeleton" aria-hidden="true">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card small"></div>
+    </div>
+  `;
 }
 
 function setSafeLink(el, url) {
@@ -253,6 +287,7 @@ function renderCommandPagination(totalCommands) {
 
 function renderCommands() {
   if (!commandEls.grid) return;
+  commandEls.grid.removeAttribute('aria-busy');
 
   const filtered = getFilteredCommands();
   const pageCount = Math.max(1, Math.ceil(filtered.length / COMMANDS_PER_PAGE));
@@ -367,6 +402,7 @@ function renderChangelog(entries) {
 }
 
 async function loadChangelog() {
+  renderChangelogSkeleton();
   try {
     const res = await fetch('/changelog.json', { cache: 'no-store' });
     const entries = await res.json();
@@ -410,6 +446,7 @@ async function loadBotStats() {
 }
 
 async function loadCommands() {
+  if (!allCommands.length) renderCommandSkeleton();
   try {
     const res = await fetch('/api/bot-commands', { cache: 'no-store' });
     const data = await res.json();
@@ -424,7 +461,10 @@ async function loadCommands() {
     renderCommands();
   } catch (err) {
     setText(commandEls.summary, 'Could not load slash commands from the bot API.');
-    if (commandEls.grid) commandEls.grid.innerHTML = '<div class="empty-card">Commands API offline.</div>';
+    if (commandEls.grid) {
+      commandEls.grid.removeAttribute('aria-busy');
+      commandEls.grid.innerHTML = '<div class="empty-card">Commands API offline.</div>';
+    }
   }
 }
 
