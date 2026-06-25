@@ -25,7 +25,7 @@
 
   <header class="nav">
     <a class="brand" href="#top" aria-label="Bot home">
-      <span class="brand-icon" data-bot-avatar-small>🤖</span>
+      <span class="brand-icon" data-bot-avatar-small>M</span>
       <span data-bot-name-short>Loading...</span>
     </a>
 
@@ -97,9 +97,9 @@
         <p class="updated" data-updated>Loading live stats...</p>
 
         <div class="mini-log">
-          <p><span>✓</span> Live Railway API connected</p>
-          <p><span>✓</span> Leveling and achievements ready</p>
-          <p><span>✓</span> Image edit command available</p>
+          <p><span></span> Live Railway API connected</p>
+          <p><span></span> Leveling and achievements ready</p>
+          <p><span></span> Image edit command available</p>
         </div>
       </aside>
     </section>
@@ -112,25 +112,25 @@
 
       <div class="feature-grid">
         <article class="feature-card">
-          <div class="icon">🏆</div>
+          <div class="icon">LVL</div>
           <h3>Leveling</h3>
           <p>XP, ranks, level-up messages and leaderboard support.</p>
         </article>
 
         <article class="feature-card">
-          <div class="icon">🖼️</div>
+          <div class="icon">IMG</div>
           <h3>Image Editing</h3>
           <p>Edit uploaded images with controlled access for trusted users.</p>
         </article>
 
         <article class="feature-card">
-          <div class="icon">🎉</div>
+          <div class="icon">FUN</div>
           <h3>Fun Commands</h3>
           <p>Games, jokes, social commands and small interactive tools.</p>
         </article>
 
         <article class="feature-card">
-          <div class="icon">⚙️</div>
+          <div class="icon">SET</div>
           <h3>Server Utilities</h3>
           <p>Setup channels, maintenance mode, deploy logs and useful admin tools.</p>
         </article>
@@ -150,7 +150,7 @@
 
       <div class="command-toolbar">
         <label class="search-box" aria-label="Search commands">
-          <span>🔎</span>
+          <span class="search-mark" aria-hidden="true"></span>
           <input type="search" placeholder="Search commands..." data-command-search />
         </label>
         <div class="category-tabs" data-category-tabs>
@@ -195,8 +195,19 @@
   </main>
 
   <footer class="footer">
-    <p><span data-footer-bot-name>Discord Bot</span> © 2026</p>
-    <p>Made by Rafa (@atuaprima_)</p>
+    <div class="footer-brand">
+      <strong data-footer-bot-name>Discord Bot</strong>
+      <span>Live stats, commands and documentation for Meowz.</span>
+    </div>
+    <div class="footer-links" aria-label="Footer navigation">
+      <a href="#top">Home</a>
+      <a href="#commands">Commands</a>
+      <a href="#changelog">Changelog</a>
+    </div>
+    <div class="footer-credit">
+      <span>Made by Rafa (@atuaprima_)</span>
+      <span>© 2026</span>
+    </div>
   </footer>
   <script src="script.js"></script>
 </body>

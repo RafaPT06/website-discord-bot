@@ -1,5 +1,24 @@
 [
   {
+    "version": "v1.4.2",
+    "date": "2026-06-25",
+    "title": "Polished command accordions",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Redesigned command dropdowns into cleaner accordion cards with clearer usage, availability, visibility, options and notes."
+      },
+      {
+        "type": "Improved",
+        "text": "Improved the website footer with better structure, navigation links and creator credit."
+      },
+      {
+        "type": "Fixed",
+        "text": "Removed decorative emojis from the updated command documentation interface for a cleaner look."
+      }
+    ]
+  },
+  {
     "version": "v1.4.1",
     "date": "2026-06-25",
     "title": "Inline command dropdowns",
