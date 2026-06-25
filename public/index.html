@@ -29,7 +29,13 @@
       <span data-bot-name-short>Loading...</span>
     </a>
 
-    <nav class="nav-links" aria-label="Main navigation">
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="main-navigation" data-nav-toggle>
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="nav-links" id="main-navigation" aria-label="Main navigation" data-nav-menu>
       <a href="#top">Home</a>
       <a href="#commands">Commands</a>
       <a href="#features">Features</a>
@@ -159,7 +165,8 @@
       </div>
 
       <div class="command-summary" data-command-summary>Loading slash commands...</div>
-      <div class="commands-grid" data-commands-grid></div>
+      <div class="commands-table-shell" data-commands-grid></div>
+      <div class="command-pagination" data-command-pagination></div>
     </section>
 
     <section id="changelog" class="section changelog-section">

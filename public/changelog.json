@@ -1,5 +1,24 @@
 [
   {
+    "version": "v1.4.4",
+    "date": "2026-06-25",
+    "title": "Mobile navigation and command pagination",
+    "changes": [
+      {
+        "type": "New",
+        "text": "Added a mobile hamburger menu so the navbar works properly on phones."
+      },
+      {
+        "type": "Improved",
+        "text": "Changed the command list into a paginated table that renders 10 commands per page while keeping the full command cache in memory."
+      },
+      {
+        "type": "Improved",
+        "text": "Kept expandable command details inside the table without rendering the entire command list at once."
+      }
+    ]
+  },
+  {
     "version": "v1.4.3",
     "date": "2026-06-25",
     "title": "Footer card cleanup",

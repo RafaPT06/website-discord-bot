@@ -24,7 +24,7 @@ const commandEls = {
   search: document.querySelector('[data-command-search]'),
   tabs: document.querySelector('[data-category-tabs]'),
   summary: document.querySelector('[data-command-summary]'),
-  detail: document.querySelector('[data-command-detail]'),
+  pagination: document.querySelector('[data-command-pagination]'),
 };
 
 const changelogEls = {
@@ -37,9 +37,16 @@ const siteEls = {
   featureLink: document.querySelector('[data-feature-link]'),
 };
 
+const navEls = {
+  toggle: document.querySelector('[data-nav-toggle]'),
+  menu: document.querySelector('[data-nav-menu]'),
+};
+
 let allCommands = [];
 let activeCategory = 'all';
 let expandedCommandName = null;
+let currentCommandPage = 1;
+const COMMANDS_PER_PAGE = 10;
 
 setText(statEls.footerYear, new Date().getFullYear());
 
@@ -134,71 +141,6 @@ function commandTips(command) {
   return tips.length ? tips : ['Use this command directly in Discord with slash commands.'];
 }
 
-function renderCommandDetail(command) {
-  if (!commandEls.detail) return;
-
-  if (!command) {
-    commandEls.detail.innerHTML = `
-      <div class="command-detail-empty">
-        <span>⚡</span>
-        <h3>Select a command</h3>
-        <p>Click any slash command to view usage, options, visibility and quick tips.</p>
-      </div>
-    `;
-    return;
-  }
-
-  const visibility = command.visibility || 'public';
-  const options = Array.isArray(command.options) ? command.options : [];
-  const tips = commandTips(command);
-
-  commandEls.detail.innerHTML = `
-    <div class="command-detail-top">
-      <span class="visibility-badge ${visibility}">${visibilityLabel(visibility)}</span>
-      <span class="command-detail-category">${escapeHtml(command.category || 'Other')}</span>
-    </div>
-
-    <h3><code>/${escapeHtml(command.name)}</code></h3>
-    <p class="command-detail-description">${escapeHtml(command.description || 'No description provided.')}</p>
-
-    <div class="command-doc-block">
-      <span>Usage</span>
-      <code>${escapeHtml(usageText(command))}</code>
-    </div>
-
-    <div class="command-doc-grid">
-      <div>
-        <span>Where it works</span>
-        <strong>${command.dm ? 'Server + DMs' : 'Server only'}</strong>
-      </div>
-      <div>
-        <span>Category</span>
-        <strong>${escapeHtml(command.category || 'Other')}</strong>
-      </div>
-    </div>
-
-    <div class="command-options">
-      <h4>Options</h4>
-      ${options.length ? options.map((option) => `
-        <div class="command-option-row">
-          <div>
-            <strong>${escapeHtml(option.name || 'option')}</strong>
-            <p>${escapeHtml(option.description || 'No description provided.')}</p>
-          </div>
-          <span>${escapeHtml(optionTypeLabel(option))}${option.required ? ' • Required' : ''}</span>
-        </div>
-      `).join('') : '<p class="muted small-muted">This command has no options.</p>'}
-    </div>
-
-    <div class="command-options">
-      <h4>Notes</h4>
-      <ul class="command-tips">
-        ${tips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join('')}
-      </ul>
-    </div>
-  `;
-}
-
 function renderCategoryTabs(commands) {
   if (!commandEls.tabs) return;
   const categories = ['all', ...new Set(commands.map((command) => command.category || 'Other'))];
@@ -277,62 +219,104 @@ function commandDetailContent(command) {
   `;
 }
 
-function renderCommands() {
-  if (!commandEls.grid) return;
+function getFilteredCommands() {
   const query = (commandEls.search?.value || '').trim().toLowerCase();
 
-  const filtered = allCommands.filter((command) => {
+  return allCommands.filter((command) => {
     const matchesCategory = activeCategory === 'all' || command.category === activeCategory;
     const haystack = `${command.name} ${command.description} ${command.category} ${command.visibility}`.toLowerCase();
     return matchesCategory && (!query || haystack.includes(query));
   });
+}
 
-  setText(
-    commandEls.summary,
-    `${filtered.length} of ${allCommands.length} slash commands shown${activeCategory !== 'all' ? ` in ${activeCategory}` : ''}.`
-  );
+function renderCommandPagination(totalCommands) {
+  if (!commandEls.pagination) return;
+  const pageCount = Math.max(1, Math.ceil(totalCommands / COMMANDS_PER_PAGE));
+  currentCommandPage = Math.min(Math.max(currentCommandPage, 1), pageCount);
 
-  if (!filtered.length) {
-    commandEls.grid.innerHTML = '<div class="empty-card">No commands found.</div>';
-    expandedCommandName = null;
+  if (totalCommands <= COMMANDS_PER_PAGE) {
+    commandEls.pagination.innerHTML = '';
     return;
   }
+
+  const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
+  commandEls.pagination.innerHTML = `
+    <button type="button" data-page-action="prev" ${currentCommandPage === 1 ? 'disabled' : ''}>Previous</button>
+    <div class="command-page-numbers" aria-label="Command pages">
+      ${pages.map((page) => `
+        <button type="button" class="${page === currentCommandPage ? 'active' : ''}" data-page="${page}" aria-label="Go to command page ${page}">${page}</button>
+      `).join('')}
+    </div>
+    <button type="button" data-page-action="next" ${currentCommandPage === pageCount ? 'disabled' : ''}>Next</button>
+  `;
+}
+
+function renderCommands() {
+  if (!commandEls.grid) return;
+
+  const filtered = getFilteredCommands();
+  const pageCount = Math.max(1, Math.ceil(filtered.length / COMMANDS_PER_PAGE));
+  currentCommandPage = Math.min(Math.max(currentCommandPage, 1), pageCount);
 
   if (expandedCommandName && !filtered.some((command) => command.name === expandedCommandName)) {
     expandedCommandName = null;
   }
 
-  commandEls.grid.innerHTML = filtered.map((command) => {
-    const visibility = command.visibility || 'public';
-    const expanded = command.name === expandedCommandName;
-    const optionCount = Array.isArray(command.options) ? command.options.length : 0;
+  setText(
+    commandEls.summary,
+    `${filtered.length} of ${allCommands.length} slash commands found${activeCategory !== 'all' ? ` in ${activeCategory}` : ''}. Showing ${Math.min(COMMANDS_PER_PAGE, filtered.length)} per page.`
+  );
 
-    return `
-      <article class="command-card command-accordion ${expanded ? 'expanded' : ''}" data-visibility="${visibility}" id="command-${escapeHtml(command.name)}">
-        <button class="command-card-trigger" type="button" data-command-name="${escapeHtml(command.name)}" aria-expanded="${expanded ? 'true' : 'false'}" aria-controls="command-${escapeHtml(command.name)}-details">
-          <div class="command-card-main">
-            <div class="command-card-top">
-              <div>
-                <code>/${escapeHtml(command.name)}</code>
-                <p>${escapeHtml(command.description || 'No description provided.')}</p>
-              </div>
-              <span class="visibility-badge ${visibility}">${visibilityLabel(visibility)}</span>
-            </div>
-            <div class="command-meta">
-              <span>${escapeHtml(command.category || 'Other')}</span>
-              <span>${command.dm ? 'Server + DMs' : 'Server only'}</span>
-              <span>${optionCount} option${optionCount === 1 ? '' : 's'}</span>
-            </div>
-          </div>
-          <span class="command-toggle-text">${expanded ? 'Hide details' : 'View details'}</span>
-          <span class="command-chevron" aria-hidden="true"></span>
-        </button>
-        ${expanded ? commandDetailContent(command) : ''}
-      </article>
-    `;
-  }).join('');
+  if (!filtered.length) {
+    commandEls.grid.innerHTML = '<div class="empty-card">No commands found.</div>';
+    if (commandEls.pagination) commandEls.pagination.innerHTML = '';
+    expandedCommandName = null;
+    return;
+  }
+
+  const startIndex = (currentCommandPage - 1) * COMMANDS_PER_PAGE;
+  const visibleCommands = filtered.slice(startIndex, startIndex + COMMANDS_PER_PAGE);
+
+  commandEls.grid.innerHTML = `
+    <table class="commands-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Visibility</th>
+          <th>Options</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${visibleCommands.map((command) => {
+          const visibility = command.visibility || 'public';
+          const expanded = command.name === expandedCommandName;
+          const optionCount = Array.isArray(command.options) ? command.options.length : 0;
+
+          return `
+            <tr class="command-table-row ${expanded ? 'expanded' : ''}" data-visibility="${visibility}" id="command-${escapeHtml(command.name)}">
+              <td data-label="Command"><code>/${escapeHtml(command.name)}</code></td>
+              <td data-label="Description">${escapeHtml(command.description || 'No description provided.')}</td>
+              <td data-label="Category"><span class="command-pill">${escapeHtml(command.category || 'Other')}</span></td>
+              <td data-label="Visibility"><span class="visibility-badge ${visibility}">${visibilityLabel(visibility)}</span></td>
+              <td data-label="Options">${optionCount}</td>
+              <td class="command-action-cell">
+                <button class="command-row-toggle" type="button" data-command-name="${escapeHtml(command.name)}" aria-expanded="${expanded ? 'true' : 'false'}" aria-controls="command-${escapeHtml(command.name)}-details">
+                  ${expanded ? 'Hide' : 'Details'}
+                </button>
+              </td>
+            </tr>
+            ${expanded ? `<tr class="command-detail-row"><td colspan="6">${commandDetailContent(command)}</td></tr>` : ''}
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+
+  renderCommandPagination(filtered.length);
 }
-
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -458,6 +442,7 @@ async function loadSiteConfig() {
 
 commandEls.search?.addEventListener('input', () => {
   expandedCommandName = null;
+  currentCommandPage = 1;
   renderCommands();
 });
 
@@ -482,8 +467,44 @@ commandEls.tabs?.addEventListener('click', (event) => {
   if (!button) return;
   activeCategory = button.dataset.category || 'all';
   expandedCommandName = null;
+  currentCommandPage = 1;
   renderCategoryTabs(allCommands);
   renderCommands();
+});
+
+commandEls.pagination?.addEventListener('click', (event) => {
+  const button = event.target.closest('button');
+  if (!button || button.disabled) return;
+
+  const pageCount = Math.max(1, Math.ceil(getFilteredCommands().length / COMMANDS_PER_PAGE));
+  const action = button.dataset.pageAction;
+
+  if (action === 'prev') currentCommandPage -= 1;
+  else if (action === 'next') currentCommandPage += 1;
+  else if (button.dataset.page) currentCommandPage = Number(button.dataset.page);
+
+  currentCommandPage = Math.min(Math.max(currentCommandPage, 1), pageCount);
+  expandedCommandName = null;
+  renderCommands();
+  document.getElementById('commands')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+function closeMobileNav() {
+  document.body.classList.remove('nav-open');
+  navEls.toggle?.setAttribute('aria-expanded', 'false');
+}
+
+navEls.toggle?.addEventListener('click', () => {
+  const isOpen = document.body.classList.toggle('nav-open');
+  navEls.toggle.setAttribute('aria-expanded', String(isOpen));
+});
+
+navEls.menu?.addEventListener('click', (event) => {
+  if (event.target.closest('a')) closeMobileNav();
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 860) closeMobileNav();
 });
 
 loadBotStats();
