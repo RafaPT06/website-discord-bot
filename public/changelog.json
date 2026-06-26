@@ -1,44 +1,94 @@
 [
   {
+    "version": "v1.6.1",
+    "date": "2026-06-26",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Made command pagination responsive with Previous, Next and smart page jumping."
+      },
+      {
+        "type": "Fixed",
+        "text": "Improved the mobile commands table so long command names no longer overlap descriptions."
+      }
+    ]
+  },
+  {
     "version": "v1.6.0",
     "date": "2026-06-26",
     "changes": [
-      { "type": "Improved", "text": "Rebuilt the mobile navigation with a hamburger menu." },
-      { "type": "Improved", "text": "Changed the commands area into a paginated table that renders 10 commands per page." },
-      { "type": "Improved", "text": "Added skeleton loading states for live stats, commands and changelog content." },
-      { "type": "Improved", "text": "Polished command details, footer styling and Discord preview metadata." }
+      {
+        "type": "Improved",
+        "text": "Rebuilt the mobile navigation with a hamburger menu."
+      },
+      {
+        "type": "Improved",
+        "text": "Changed the commands area into a paginated table that renders 10 commands per page."
+      },
+      {
+        "type": "Improved",
+        "text": "Added skeleton loading states for live stats, commands and changelog content."
+      },
+      {
+        "type": "Improved",
+        "text": "Polished command details, footer styling and Discord preview metadata."
+      }
     ]
   },
   {
     "version": "v1.5.0",
     "date": "2026-06-25",
     "changes": [
-      { "type": "New", "text": "Added interactive command documentation." },
-      { "type": "Improved", "text": "Updated command cards with expandable details." }
+      {
+        "type": "New",
+        "text": "Added interactive command documentation."
+      },
+      {
+        "type": "Improved",
+        "text": "Updated command cards with expandable details."
+      }
     ]
   },
   {
     "version": "v1.4.0",
     "date": "2026-06-24",
     "changes": [
-      { "type": "New", "text": "Added the public changelog section." },
-      { "type": "Improved", "text": "Updated the homepage navigation for the changelog." }
+      {
+        "type": "New",
+        "text": "Added the public changelog section."
+      },
+      {
+        "type": "Improved",
+        "text": "Updated the homepage navigation for the changelog."
+      }
     ]
   },
   {
     "version": "v1.3.0",
     "date": "2026-06-24",
     "changes": [
-      { "type": "New", "text": "Added the live commands page with search and category filtering." },
-      { "type": "New", "text": "Added public, admin and owner visibility badges for commands." }
+      {
+        "type": "New",
+        "text": "Added the live commands page with search and category filtering."
+      },
+      {
+        "type": "New",
+        "text": "Added public, admin and owner visibility badges for commands."
+      }
     ]
   },
   {
     "version": "v1.2.0",
     "date": "2026-06-24",
     "changes": [
-      { "type": "New", "text": "Connected the website to the bot API for live stats." },
-      { "type": "New", "text": "Added bot name, server count, user count, ping and uptime." }
+      {
+        "type": "New",
+        "text": "Connected the website to the bot API for live stats."
+      },
+      {
+        "type": "New",
+        "text": "Added bot name, server count, user count, ping and uptime."
+      }
     ]
   }
 ]

@@ -118,6 +118,27 @@ function renderCategoryTabs(commands) {
   }).join('');
 }
 
+function getPaginationPages(totalPages) {
+  const isSmallScreen = window.matchMedia('(max-width: 520px)').matches;
+  const maxNumericButtons = isSmallScreen ? 4 : 7;
+
+  if (totalPages <= maxNumericButtons + 2) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pages = [1];
+  const siblingCount = isSmallScreen ? 0 : 1;
+  const start = Math.max(2, currentPage - siblingCount);
+  const end = Math.min(totalPages - 1, currentPage + siblingCount);
+
+  if (start > 2) pages.push('jump');
+  for (let page = start; page <= end; page += 1) pages.push(page);
+  if (end < totalPages - 1) pages.push('jump');
+  pages.push(totalPages);
+
+  return pages;
+}
+
 function renderPagination(totalPages) {
   if (!commandEls.pagination) return;
   if (totalPages <= 1) {
@@ -126,11 +147,18 @@ function renderPagination(totalPages) {
   }
 
   const buttons = [];
-  buttons.push(`<button type="button" data-page="prev" ${currentPage === 1 ? 'disabled' : ''}>Prev</button>`);
-  for (let page = 1; page <= totalPages; page += 1) {
+  buttons.push(`<button class="pagination-edge" type="button" data-page="prev" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`);
+
+  getPaginationPages(totalPages).forEach((page, index) => {
+    if (page === 'jump') {
+      buttons.push(`<button class="pagination-jump" type="button" data-page="jump" data-jump-index="${index}" aria-label="Choose page">...</button>`);
+      return;
+    }
+
     buttons.push(`<button class="${page === currentPage ? 'active' : ''}" type="button" data-page="${page}">${page}</button>`);
-  }
-  buttons.push(`<button type="button" data-page="next" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`);
+  });
+
+  buttons.push(`<button class="pagination-edge" type="button" data-page="next" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`);
   commandEls.pagination.innerHTML = buttons.join('');
 }
 
@@ -314,12 +342,23 @@ commandEls.pagination?.addEventListener('click', (event) => {
   const filtered = getFilteredCommands();
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const action = button.dataset.page;
+
   if (action === 'prev') currentPage = Math.max(1, currentPage - 1);
   else if (action === 'next') currentPage = Math.min(totalPages, currentPage + 1);
-  else currentPage = Number(action) || 1;
+  else if (action === 'jump') {
+    const requested = window.prompt(`Choose a page from 1 to ${totalPages}:`, String(currentPage));
+    if (requested === null) return;
+
+    const page = Number.parseInt(requested, 10);
+    if (!Number.isFinite(page)) return;
+    currentPage = Math.min(totalPages, Math.max(1, page));
+  } else currentPage = Number(action) || 1;
+
   expandedCommand = null;
   renderCommands();
 });
+
+window.addEventListener('resize', () => renderCommands());
 
 commandEls.body?.addEventListener('click', (event) => {
   const row = event.target.closest('[data-command-name]');
