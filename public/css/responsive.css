@@ -243,3 +243,41 @@
     height: 34px;
   }
 }
+
+@media (max-width: 720px) {
+  .brand-user .brand-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .profile-menu-wrap,
+  .profile-button,
+  .profile-dropdown,
+  .profile-dropdown a {
+    width: 100%;
+  }
+
+  .profile-button {
+    min-height: 50px;
+    border-radius: 16px;
+    justify-content: space-between;
+    padding: 14px;
+    background: rgba(255,255,255,.06);
+  }
+
+  .profile-dropdown {
+    position: static;
+    margin-top: 10px;
+    box-shadow: none;
+    background: rgba(255,255,255,.045);
+    border-radius: 16px;
+  }
+
+  .profile-dropdown-user {
+    display: none;
+  }
+
+  .profile-dropdown a {
+    min-height: 48px;
+  }
+}

@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.9.0",
+    "date": "2026-06-26",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Reworked the authenticated navbar so the user avatar replaces the brand area after login."
+      },
+      {
+        "type": "Improved",
+        "text": "Changed the logged-in navigation actions into a cleaner Profile dropdown with Logout."
+      }
+    ]
+  },
+  {
     "version": "v1.10.0",
     "date": "2026-06-26",
     "changes": [
