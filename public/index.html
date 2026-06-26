@@ -151,6 +151,26 @@
       </div>
 
       <div class="pagination" data-command-pagination></div>
+
+      <div class="page-modal-backdrop" data-page-modal hidden>
+        <div class="page-modal" role="dialog" aria-modal="true" aria-labelledby="page-modal-title">
+          <div class="page-modal-top">
+            <div>
+              <h3 id="page-modal-title">Go to page</h3>
+              <p data-page-modal-range>Choose a page.</p>
+            </div>
+            <button class="page-modal-close" type="button" data-page-modal-close aria-label="Close page picker">×</button>
+          </div>
+
+          <input class="page-modal-input" type="number" min="1" inputmode="numeric" data-page-modal-input />
+          <div class="page-modal-grid" data-page-modal-grid></div>
+
+          <div class="page-modal-actions">
+            <button type="button" data-page-modal-cancel>Cancel</button>
+            <button class="primary" type="button" data-page-modal-go>Go</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="changelog" class="section changelog-section">

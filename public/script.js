@@ -26,6 +26,16 @@ const commandEls = {
   pagination: document.querySelector('[data-command-pagination]'),
 };
 
+const pageModalEls = {
+  backdrop: document.querySelector('[data-page-modal]'),
+  range: document.querySelector('[data-page-modal-range]'),
+  input: document.querySelector('[data-page-modal-input]'),
+  grid: document.querySelector('[data-page-modal-grid]'),
+  close: document.querySelector('[data-page-modal-close]'),
+  cancel: document.querySelector('[data-page-modal-cancel]'),
+  go: document.querySelector('[data-page-modal-go]'),
+};
+
 const navEls = {
   toggle: document.querySelector('[data-menu-toggle]'),
   links: document.querySelector('[data-nav-links]'),
@@ -149,9 +159,9 @@ function renderPagination(totalPages) {
   const buttons = [];
   buttons.push(`<button class="pagination-edge" type="button" data-page="prev" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`);
 
-  getPaginationPages(totalPages).forEach((page, index) => {
+  getPaginationPages(totalPages).forEach((page) => {
     if (page === 'jump') {
-      buttons.push(`<button class="pagination-jump" type="button" data-page="jump" data-jump-index="${index}" aria-label="Choose page">...</button>`);
+      buttons.push(`<button class="pagination-jump" type="button" data-page="jump" aria-label="Choose page">...</button>`);
       return;
     }
 
@@ -160,6 +170,42 @@ function renderPagination(totalPages) {
 
   buttons.push(`<button class="pagination-edge" type="button" data-page="next" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`);
   commandEls.pagination.innerHTML = buttons.join('');
+}
+
+function closePageModal() {
+  if (!pageModalEls.backdrop) return;
+  pageModalEls.backdrop.hidden = true;
+  document.body.classList.remove('modal-open');
+}
+
+function openPageModal(totalPages) {
+  if (!pageModalEls.backdrop || !pageModalEls.input || !pageModalEls.grid) return;
+
+  pageModalEls.backdrop.hidden = false;
+  document.body.classList.add('modal-open');
+  setText(pageModalEls.range, `Choose a page from 1 to ${totalPages}`);
+  pageModalEls.input.min = '1';
+  pageModalEls.input.max = String(totalPages);
+  pageModalEls.input.value = String(currentPage);
+
+  pageModalEls.grid.innerHTML = Array.from({ length: totalPages }, (_, index) => {
+    const page = index + 1;
+    const active = page === currentPage ? 'active' : '';
+    return `<button class="${active}" type="button" data-modal-page="${page}">${page}</button>`;
+  }).join('');
+
+  setTimeout(() => pageModalEls.input?.focus(), 0);
+}
+
+function goToModalPage() {
+  if (!pageModalEls.input) return;
+  const totalPages = Number.parseInt(pageModalEls.input.max || '1', 10);
+  const page = Number.parseInt(pageModalEls.input.value, 10);
+  if (!Number.isFinite(page)) return;
+  currentPage = Math.min(totalPages, Math.max(1, page));
+  expandedCommand = null;
+  closePageModal();
+  renderCommands();
 }
 
 function renderCommandDetails(command) {
@@ -346,12 +392,8 @@ commandEls.pagination?.addEventListener('click', (event) => {
   if (action === 'prev') currentPage = Math.max(1, currentPage - 1);
   else if (action === 'next') currentPage = Math.min(totalPages, currentPage + 1);
   else if (action === 'jump') {
-    const requested = window.prompt(`Choose a page from 1 to ${totalPages}:`, String(currentPage));
-    if (requested === null) return;
-
-    const page = Number.parseInt(requested, 10);
-    if (!Number.isFinite(page)) return;
-    currentPage = Math.min(totalPages, Math.max(1, page));
+    openPageModal(totalPages);
+    return;
   } else currentPage = Number(action) || 1;
 
   expandedCommand = null;
@@ -366,6 +408,28 @@ commandEls.body?.addEventListener('click', (event) => {
   const name = row.dataset.commandName;
   expandedCommand = expandedCommand === name ? null : name;
   renderCommands();
+});
+
+
+pageModalEls.close?.addEventListener('click', closePageModal);
+pageModalEls.cancel?.addEventListener('click', closePageModal);
+pageModalEls.go?.addEventListener('click', goToModalPage);
+pageModalEls.backdrop?.addEventListener('click', (event) => {
+  if (event.target === pageModalEls.backdrop) closePageModal();
+});
+pageModalEls.input?.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') goToModalPage();
+  if (event.key === 'Escape') closePageModal();
+});
+pageModalEls.grid?.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-modal-page]');
+  if (!button) return;
+  pageModalEls.input.value = button.dataset.modalPage;
+  pageModalEls.grid.querySelectorAll('button').forEach((btn) => btn.classList.toggle('active', btn === button));
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closePageModal();
 });
 
 if (statEls.footerYear) statEls.footerYear.textContent = new Date().getFullYear();

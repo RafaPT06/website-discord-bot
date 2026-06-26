@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.6.2",
+    "date": "2026-06-26",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Replaced the browser page prompt with a custom page picker modal."
+      },
+      {
+        "type": "Fixed",
+        "text": "Polished mobile command rows and details so command names and descriptions stay readable."
+      }
+    ]
+  },
+  {
     "version": "v1.6.1",
     "date": "2026-06-26",
     "changes": [
