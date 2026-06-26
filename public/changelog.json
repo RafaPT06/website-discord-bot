@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.9.0",
+    "date": "2026-06-26",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Reorganized the website project into smaller frontend modules for stats, navigation, documentation and changelog logic."
+      },
+      {
+        "type": "Improved",
+        "text": "Moved frontend styles and scripts into dedicated css and js folders to prepare for Discord OAuth and dashboard work."
+      },
+      {
+        "type": "New",
+        "text": "Added a polished 404 page for unknown routes."
+      }
+    ]
+  },
+  {
     "version": "v1.8.0",
     "date": "2026-06-26",
     "changes": [

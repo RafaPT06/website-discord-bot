@@ -1,6 +1,6 @@
 {
-  "name": "ruffles-website",
-  "version": "1.0.0",
+  "name": "meowz-website",
+  "version": "1.9.0",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
