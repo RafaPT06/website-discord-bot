@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.7.1",
+    "date": "2026-06-26",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Centered the mobile pagination controls."
+      },
+      {
+        "type": "Fixed",
+        "text": "Aligned changelog status badges and update text more cleanly on mobile."
+      }
+    ]
+  },
+  {
     "version": "v1.7.0",
     "date": "2026-06-26",
     "changes": [
