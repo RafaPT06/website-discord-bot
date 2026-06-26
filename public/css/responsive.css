@@ -207,3 +207,39 @@
   line-height: 1.7;
   margin: 0 0 24px;
 }
+
+@media (max-width: 720px) {
+  .auth-area,
+  .user-menu,
+  .login-button,
+  .logout-button,
+  .user-chip {
+    width: 100%;
+  }
+
+  .user-menu {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .login-button,
+  .logout-button,
+  .auth-loading {
+    min-height: 48px;
+    border-radius: 16px;
+    justify-content: flex-start;
+    padding: 14px;
+  }
+
+  .user-chip {
+    border-radius: 16px;
+    min-height: 50px;
+    max-width: none;
+    padding: 8px 12px 8px 8px;
+  }
+
+  .user-avatar {
+    width: 34px;
+    height: 34px;
+  }
+}

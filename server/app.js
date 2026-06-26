@@ -9,6 +9,7 @@ function createApp() {
   const publicPath = path.join(__dirname, '..', 'public');
 
   app.disable('x-powered-by');
+  app.set('trust proxy', 1);
   app.use(express.json());
   app.use(express.static(publicPath));
 

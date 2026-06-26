@@ -1,5 +1,6 @@
 const express = require('express');
 const { requestBotApi } = require('../api/botApi');
+const { readSession } = require('../authSession');
 
 const router = express.Router();
 
@@ -10,6 +11,13 @@ router.get('/status', (req, res) => {
     name: 'Meowz Website',
     updatedAt: new Date().toISOString(),
   });
+});
+
+
+router.get('/me', (req, res) => {
+  const session = readSession(req);
+  if (!session?.user) return res.json({ authenticated: false, user: null });
+  return res.json({ authenticated: true, user: session.user });
 });
 
 router.get('/bot-stats', async (req, res) => {

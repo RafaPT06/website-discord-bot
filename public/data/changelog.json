@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.10.0",
+    "date": "2026-06-26",
+    "changes": [
+      {
+        "type": "New",
+        "text": "Added Discord OAuth login and logout routes."
+      },
+      {
+        "type": "New",
+        "text": "Added /api/me so the website can display the logged-in Discord user."
+      },
+      {
+        "type": "Improved",
+        "text": "Replaced the placeholder login button with a real Discord login state in the navbar."
+      }
+    ]
+  },
+  {
     "version": "v1.9.0",
     "date": "2026-06-26",
     "changes": [

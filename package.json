@@ -1,6 +1,6 @@
 {
   "name": "meowz-website",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Public website and future dashboard for the Meowz Discord bot.",
   "main": "server.js",
   "scripts": {
