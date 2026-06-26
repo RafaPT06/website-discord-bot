@@ -1,180 +1,44 @@
 [
   {
-    "version": "v1.4.5",
-    "date": "2026-06-25",
-    "title": "Loading skeletons",
+    "version": "v1.6.0",
+    "date": "2026-06-26",
     "changes": [
-      {
-        "type": "New",
-        "text": "Added skeleton loading states for live stats, command pagination and the changelog."
-      },
-      {
-        "type": "Improved",
-        "text": "Commands now show a polished placeholder table while the bot API loads instead of empty content."
-      },
-      {
-        "type": "Improved",
-        "text": "Changelog loading now uses matching card placeholders for a smoother page load."
-      }
+      { "type": "Improved", "text": "Rebuilt the mobile navigation with a hamburger menu." },
+      { "type": "Improved", "text": "Changed the commands area into a paginated table that renders 10 commands per page." },
+      { "type": "Improved", "text": "Added skeleton loading states for live stats, commands and changelog content." },
+      { "type": "Improved", "text": "Polished command details, footer styling and Discord preview metadata." }
     ]
   },
   {
-    "version": "v1.4.4",
+    "version": "v1.5.0",
     "date": "2026-06-25",
-    "title": "Mobile navigation and command pagination",
     "changes": [
-      {
-        "type": "New",
-        "text": "Added a mobile hamburger menu so the navbar works properly on phones."
-      },
-      {
-        "type": "Improved",
-        "text": "Changed the command list into a paginated table that renders 10 commands per page while keeping the full command cache in memory."
-      },
-      {
-        "type": "Improved",
-        "text": "Kept expandable command details inside the table without rendering the entire command list at once."
-      }
-    ]
-  },
-  {
-    "version": "v1.4.3",
-    "date": "2026-06-25",
-    "title": "Footer card cleanup",
-    "changes": [
-      {
-        "type": "Improved",
-        "text": "Simplified the footer into a matching card-style block that only shows rights reserved and creator credit."
-      },
-      {
-        "type": "Fixed",
-        "text": "Removed extra footer navigation and descriptive text to keep the bottom of the site clean."
-      }
-    ]
-  },
-  {
-    "version": "v1.4.2",
-    "date": "2026-06-25",
-    "title": "Polished command accordions",
-    "changes": [
-      {
-        "type": "Improved",
-        "text": "Redesigned command dropdowns into cleaner accordion cards with clearer usage, availability, visibility, options and notes."
-      },
-      {
-        "type": "Improved",
-        "text": "Improved the website footer with better structure, navigation links and creator credit."
-      },
-      {
-        "type": "Fixed",
-        "text": "Removed decorative emojis from the updated command documentation interface for a cleaner look."
-      }
-    ]
-  },
-  {
-    "version": "v1.4.1",
-    "date": "2026-06-25",
-    "title": "Inline command dropdowns",
-    "changes": [
-      {
-        "type": "Improved",
-        "text": "Command documentation now expands directly under the selected command instead of appearing at the end of the commands area."
-      },
-      {
-        "type": "Improved",
-        "text": "Added a cleaner accordion-style command interaction with open and close behavior."
-      },
-      {
-        "type": "Fixed",
-        "text": "Removed the awkward separate command details panel that made users scroll away from the selected command."
-      }
+      { "type": "New", "text": "Added interactive command documentation." },
+      { "type": "Improved", "text": "Updated command cards with expandable details." }
     ]
   },
   {
     "version": "v1.4.0",
-    "date": "2026-06-25",
-    "title": "Interactive command documentation",
+    "date": "2026-06-24",
     "changes": [
-      {
-        "type": "New",
-        "text": "Added clickable command cards with detailed documentation for each slash command."
-      },
-      {
-        "type": "New",
-        "text": "Command details now show usage, options, visibility, DM support and helpful notes."
-      },
-      {
-        "type": "Improved",
-        "text": "Commands page is now prepared for deeper documentation and future Discord login visibility rules."
-      }
+      { "type": "New", "text": "Added the public changelog section." },
+      { "type": "Improved", "text": "Updated the homepage navigation for the changelog." }
     ]
   },
   {
     "version": "v1.3.0",
     "date": "2026-06-24",
-    "title": "Commands page and public changelog",
     "changes": [
-      {
-        "type": "New",
-        "text": "Added a public changelog section to track Meowz updates."
-      },
-      {
-        "type": "New",
-        "text": "Added live slash command documentation with search and category filters."
-      },
-      {
-        "type": "Improved",
-        "text": "Kept support and user-only sections hidden until Discord login is added."
-      }
+      { "type": "New", "text": "Added the live commands page with search and category filtering." },
+      { "type": "New", "text": "Added public, admin and owner visibility badges for commands." }
     ]
   },
   {
     "version": "v1.2.0",
     "date": "2026-06-24",
-    "title": "Live website stats",
     "changes": [
-      {
-        "type": "New",
-        "text": "Connected the website to the bot API for live stats."
-      },
-      {
-        "type": "New",
-        "text": "Added live bot name, avatar, ping, servers, users, commands and uptime."
-      },
-      {
-        "type": "Improved",
-        "text": "Website now updates bot stats automatically every 30 seconds."
-      }
-    ]
-  },
-  {
-    "version": "v1.1.0",
-    "date": "2026-06-24",
-    "title": "Discord link preview",
-    "changes": [
-      {
-        "type": "New",
-        "text": "Added Discord embed preview metadata and preview image."
-      },
-      {
-        "type": "Fixed",
-        "text": "Improved how the website appears when shared in Discord."
-      }
-    ]
-  },
-  {
-    "version": "v1.0.0",
-    "date": "2026-06-24",
-    "title": "Website launch",
-    "changes": [
-      {
-        "type": "New",
-        "text": "Launched the first Meowz website on Railway."
-      },
-      {
-        "type": "New",
-        "text": "Added homepage, invite button, feature cards and bot branding."
-      }
+      { "type": "New", "text": "Connected the website to the bot API for live stats." },
+      { "type": "New", "text": "Added bot name, server count, user count, ping and uptime." }
     ]
   }
 ]

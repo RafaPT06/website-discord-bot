@@ -3,21 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title data-page-title>Meowz | Discord Bot</title>
-  <meta name="description" content="A live Discord bot with leveling, achievements, AI image editing, utilities and more." />
+  <title data-page-title>Meowz</title>
+  <meta name="description" content="Meowz is a modern Discord bot with live stats, slash command documentation, AI image editing, leveling and utilities." />
+
   <meta property="og:title" content="Meowz | Discord Bot" />
-  <meta property="og:description" content="A live Discord bot with leveling, achievements, AI image editing, utilities and more." />
+  <meta property="og:description" content="A modern Discord bot with live stats, slash command docs, AI image editing, leveling and utilities." />
   <meta property="og:image" content="https://meowz.up.railway.app/preview.png" />
   <meta property="og:url" content="https://meowz.up.railway.app/" />
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Meowz" />
   <meta name="theme-color" content="#8b5cf6" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Meowz | Discord Bot" />
-  <meta name="twitter:description" content="A live Discord bot with leveling, achievements, AI image editing, utilities and more." />
-  <meta name="twitter:image" content="https://meowz.up.railway.app/preview.png" />
+
   <link rel="icon" type="image/png" href="/favicon.png" />
-<link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="bg-glow bg-glow-one"></div>
@@ -26,20 +24,20 @@
   <header class="nav">
     <a class="brand" href="#top" aria-label="Bot home">
       <span class="brand-icon" data-bot-avatar-small>M</span>
-      <span data-bot-name-short>Loading...</span>
+      <span data-bot-name-short>Meowz</span>
     </a>
 
-    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="main-navigation" data-nav-toggle>
+    <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
       <span></span>
       <span></span>
       <span></span>
     </button>
 
-    <nav class="nav-links" id="main-navigation" aria-label="Main navigation" data-nav-menu>
-      <a href="#top">Home</a>
-      <a href="#commands">Commands</a>
-      <a href="#features">Features</a>
-      <a href="#changelog">Changelog</a>
+    <nav class="nav-links" data-nav-links aria-label="Main navigation">
+      <a href="#top" data-nav-link>Home</a>
+      <a href="#commands" data-nav-link>Commands</a>
+      <a href="#changelog" data-nav-link>Changelog</a>
+      <button class="login-coming-soon" type="button" disabled>Login soon</button>
     </nav>
   </header>
 
@@ -51,60 +49,37 @@
           <span data-status-pill>Checking bot status...</span>
         </div>
 
-        <h1><span data-bot-name-heading>Your bot</span>, upgraded.</h1>
+        <h1><span data-bot-name-heading>Meowz</span>, upgraded.</h1>
         <p class="hero-text">
-          A live Discord bot website with real-time stats, commands, leveling,
-          achievements, image editing and useful server tools.
+          A modern Discord bot website with live stats, slash command documentation,
+          AI image editing, leveling and useful server tools.
         </p>
 
         <div class="actions">
           <a class="btn btn-primary" href="#" data-invite-link aria-label="Invite bot">Invite Bot</a>
+          <a class="btn btn-secondary" href="#commands">View Commands</a>
         </div>
       </div>
 
       <aside class="bot-card" aria-label="Bot live stats card">
         <div class="bot-top">
-          <div class="bot-avatar" data-bot-avatar>?</div>
+          <div class="bot-avatar skeleton-target" data-bot-avatar>M</div>
           <div>
             <h2 data-bot-name>Loading bot...</h2>
             <p data-bot-tag>Connecting to API</p>
           </div>
         </div>
 
-        <div class="stats-grid">
-          <div class="stat-card">
-            <span>Status</span>
-            <strong class="online is-loading" data-stat="status"><span class="skeleton skeleton-text short"></span></strong>
-          </div>
-          <div class="stat-card">
-            <span>Ping</span>
-            <strong class="is-loading" data-stat="ping"><span class="skeleton skeleton-text mini"></span></strong>
-          </div>
-          <div class="stat-card">
-            <span>Servers</span>
-            <strong class="is-loading" data-stat="servers"><span class="skeleton skeleton-text mini"></span></strong>
-          </div>
-          <div class="stat-card">
-            <span>Users</span>
-            <strong class="is-loading" data-stat="users"><span class="skeleton skeleton-text mini"></span></strong>
-          </div>
-          <div class="stat-card">
-            <span>Commands</span>
-            <strong class="is-loading" data-stat="commands"><span class="skeleton skeleton-text mini"></span></strong>
-          </div>
-          <div class="stat-card">
-            <span>Uptime</span>
-            <strong class="is-loading" data-stat="uptime"><span class="skeleton skeleton-text short"></span></strong>
-          </div>
+        <div class="stats-grid" data-stats-grid>
+          <div class="stat-card skeleton-card"><span>Status</span><strong data-stat="status">Loading</strong></div>
+          <div class="stat-card skeleton-card"><span>Ping</span><strong data-stat="ping">—</strong></div>
+          <div class="stat-card skeleton-card"><span>Servers</span><strong data-stat="servers">—</strong></div>
+          <div class="stat-card skeleton-card"><span>Users</span><strong data-stat="users">—</strong></div>
+          <div class="stat-card skeleton-card"><span>Commands</span><strong data-stat="commands">—</strong></div>
+          <div class="stat-card skeleton-card"><span>Uptime</span><strong data-stat="uptime">—</strong></div>
         </div>
 
         <p class="updated" data-updated>Loading live stats...</p>
-
-        <div class="mini-log">
-          <p><span></span> Live Railway API connected</p>
-          <p><span></span> Leveling and achievements ready</p>
-          <p><span></span> Image edit command available</p>
-        </div>
       </aside>
     </section>
 
@@ -116,27 +91,20 @@
 
       <div class="feature-grid">
         <article class="feature-card">
-          <div class="icon">LVL</div>
+          <h3>AI Image Editing</h3>
+          <p>Edit uploaded images with controlled access for trusted users.</p>
+        </article>
+        <article class="feature-card">
           <h3>Leveling</h3>
           <p>XP, ranks, level-up messages and leaderboard support.</p>
         </article>
-
         <article class="feature-card">
-          <div class="icon">IMG</div>
-          <h3>Image Editing</h3>
-          <p>Edit uploaded images with controlled access for trusted users.</p>
+          <h3>Slash Commands</h3>
+          <p>Clean command categories, permissions and documentation.</p>
         </article>
-
         <article class="feature-card">
-          <div class="icon">FUN</div>
-          <h3>Fun Commands</h3>
-          <p>Games, jokes, social commands and small interactive tools.</p>
-        </article>
-
-        <article class="feature-card">
-          <div class="icon">SET</div>
           <h3>Server Utilities</h3>
-          <p>Setup channels, maintenance mode, deploy logs and useful admin tools.</p>
+          <p>Setup tools, maintenance mode, deploy logs and admin features.</p>
         </article>
       </div>
     </section>
@@ -145,16 +113,16 @@
       <div class="commands-header">
         <div class="section-heading left">
           <span>Commands</span>
-          <h2>Command documentation</h2>
+          <h2>Slash command documentation</h2>
         </div>
         <p class="muted">
-          Browse every slash command, search by category, then open a command to see usage, options and notes.
+          Search, filter and expand commands without loading the whole list into the page at once.
         </p>
       </div>
 
       <div class="command-toolbar">
         <label class="search-box" aria-label="Search commands">
-          <span class="search-mark" aria-hidden="true"></span>
+          <span>Search</span>
           <input type="search" placeholder="Search commands..." data-command-search />
         </label>
         <div class="category-tabs" data-category-tabs>
@@ -163,50 +131,36 @@
       </div>
 
       <div class="command-summary" data-command-summary>Loading slash commands...</div>
-      <div class="commands-table-shell" data-commands-grid aria-busy="true">
-        <div class="commands-skeleton" aria-hidden="true">
-          <div class="skeleton-row header"></div>
-          <div class="skeleton-row"></div>
-          <div class="skeleton-row"></div>
-          <div class="skeleton-row"></div>
-          <div class="skeleton-row"></div>
-          <div class="skeleton-row"></div>
-        </div>
+
+      <div class="commands-table-wrap">
+        <table class="commands-table">
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Access</th>
+            </tr>
+          </thead>
+          <tbody data-commands-body>
+            <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line"></div></td></tr>
+            <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line short"></div></td></tr>
+            <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line"></div></td></tr>
+          </tbody>
+        </table>
       </div>
-      <div class="command-pagination" data-command-pagination></div>
+
+      <div class="pagination" data-command-pagination></div>
     </section>
 
     <section id="changelog" class="section changelog-section">
-      <div class="changelog-header">
-        <div class="section-heading left">
-          <span>Changelog</span>
-          <h2>Latest updates</h2>
-        </div>
-        <p class="muted">
-          Follow new features, improvements and fixes as Meowz keeps growing.
-        </p>
-      </div>
-
-      <div class="changelog-list" data-changelog-list>
-        <div class="changelog-skeleton" aria-hidden="true">
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card small"></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="roadmap" class="section roadmap">
       <div class="section-heading">
-        <span>Roadmap</span>
-        <h2>Built step by step</h2>
+        <span>Changelog</span>
+        <h2>Latest website updates</h2>
       </div>
-
-      <div class="timeline">
-        <div>
-          <strong>1</strong>
-          <h3>Discord Login</h3>
-          <p>Unlock dashboard, profiles, achievements and support features later.</p>
-        </div>
+      <div class="changelog-list" data-changelog-list>
+        <article class="changelog-card skeleton-block"></article>
+        <article class="changelog-card skeleton-block"></article>
       </div>
     </section>
   </main>
@@ -215,6 +169,7 @@
     <p>© <span data-footer-year></span> <span data-footer-bot-name>Meowz</span>. All rights reserved.</p>
     <p>Made by Rafa (@atuaprima_)</p>
   </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
