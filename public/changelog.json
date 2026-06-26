@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.8.0",
+    "date": "2026-06-26",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Reduced the desktop hero height so the feature section appears sooner."
+      },
+      {
+        "type": "Improved",
+        "text": "Polished the desktop homepage spacing, buttons, navbar and live stats card alignment."
+      },
+      {
+        "type": "Improved",
+        "text": "Added cleaner hover styling and accent details to the feature cards."
+      }
+    ]
+  },
+  {
     "version": "v1.7.1",
     "date": "2026-06-26",
     "changes": [
