@@ -1,6 +1,18 @@
-import { commandEls, pageModalEls } from './dom.js';
-import { docsState, PAGE_SIZE } from './state.js';
-import { escapeHtml, setText } from './utils.js';
+import { getBotCommands } from './api.js';
+import { appState, PAGE_SIZE } from './state.js';
+import { escapeHtml, isMobileScreen, setText } from './utils.js';
+import { getPaginationPages } from './pagination.js';
+import { openPageModal } from './pageModal.js';
+
+const els = {
+  body: document.querySelector('[data-commands-body]'),
+  search: document.querySelector('[data-command-search]'),
+  tabs: document.querySelector('[data-category-tabs]'),
+  summary: document.querySelector('[data-command-summary]'),
+  pagination: document.querySelector('[data-command-pagination]'),
+  detail: document.querySelector('[data-command-detail]'),
+  sheetBackdrop: document.querySelector('[data-command-sheet-backdrop]'),
+};
 
 function visibilityLabel(value) {
   if (value === 'owner') return 'Owner';
@@ -21,117 +33,59 @@ function commandUsage(command) {
 }
 
 function getFilteredCommands() {
-  const query = (commandEls.search?.value || '').trim().toLowerCase();
-  return docsState.allCommands.filter((command) => {
-    const matchesCategory = docsState.activeCategory === 'all' || command.category === docsState.activeCategory;
+  const query = (els.search?.value || '').trim().toLowerCase();
+  return appState.commands.filter((command) => {
+    const matchesCategory = appState.activeCategory === 'all' || command.category === appState.activeCategory;
     const haystack = `${command.name} ${command.description} ${command.category} ${command.visibility}`.toLowerCase();
     return matchesCategory && (!query || haystack.includes(query));
   });
 }
 
-function renderCategoryTabs(commands) {
-  if (!commandEls.tabs) return;
-  const categories = ['all', ...new Set(commands.map((command) => command.category || 'Other'))];
-  commandEls.tabs.innerHTML = categories.map((category) => {
+function renderCategoryTabs() {
+  if (!els.tabs) return;
+  const categories = ['all', ...new Set(appState.commands.map((command) => command.category || 'Other'))];
+  els.tabs.innerHTML = categories.map((category) => {
     const label = category === 'all' ? 'All' : category;
-    const active = category === docsState.activeCategory ? 'active' : '';
+    const active = category === appState.activeCategory ? 'active' : '';
     return `<button class="${active}" type="button" data-category="${escapeHtml(category)}">${escapeHtml(label)}</button>`;
   }).join('');
 }
 
-function getPaginationPages(totalPages) {
-  const isSmallScreen = window.matchMedia('(max-width: 520px)').matches;
-  const maxNumericButtons = isSmallScreen ? 4 : 7;
-
-  if (totalPages <= maxNumericButtons + 2) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
-  }
-
-  const pages = [1];
-  const siblingCount = isSmallScreen ? 0 : 1;
-  const start = Math.max(2, docsState.currentPage - siblingCount);
-  const end = Math.min(totalPages - 1, docsState.currentPage + siblingCount);
-
-  if (start > 2) pages.push('jump');
-  for (let page = start; page <= end; page += 1) pages.push(page);
-  if (end < totalPages - 1) pages.push('jump');
-  pages.push(totalPages);
-
-  return pages;
-}
-
 function renderPagination(totalPages) {
-  if (!commandEls.pagination) return;
+  if (!els.pagination) return;
   if (totalPages <= 1) {
-    commandEls.pagination.innerHTML = '';
+    els.pagination.innerHTML = '';
     return;
   }
 
   const buttons = [];
-  buttons.push(`<button class="pagination-edge" type="button" data-page="prev" ${docsState.currentPage === 1 ? 'disabled' : ''}>Previous</button>`);
+  buttons.push(`<button class="pagination-edge" type="button" data-page="prev" ${appState.currentPage === 1 ? 'disabled' : ''}>Previous</button>`);
 
-  getPaginationPages(totalPages).forEach((page) => {
+  getPaginationPages(appState.currentPage, totalPages).forEach((page) => {
     if (page === 'jump') {
       buttons.push('<button class="pagination-jump" type="button" data-page="jump" aria-label="Choose page">...</button>');
       return;
     }
-
-    buttons.push(`<button class="${page === docsState.currentPage ? 'active' : ''}" type="button" data-page="${page}">${page}</button>`);
+    buttons.push(`<button class="${page === appState.currentPage ? 'active' : ''}" type="button" data-page="${page}">${page}</button>`);
   });
 
-  buttons.push(`<button class="pagination-edge" type="button" data-page="next" ${docsState.currentPage === totalPages ? 'disabled' : ''}>Next</button>`);
-  commandEls.pagination.innerHTML = buttons.join('');
-}
-
-function closePageModal() {
-  if (!pageModalEls.backdrop) return;
-  pageModalEls.backdrop.hidden = true;
-  document.body.classList.remove('modal-open');
-}
-
-function openPageModal(totalPages) {
-  if (!pageModalEls.backdrop || !pageModalEls.input || !pageModalEls.grid) return;
-
-  pageModalEls.backdrop.hidden = false;
-  document.body.classList.add('modal-open');
-  setText(pageModalEls.range, `Choose a page from 1 to ${totalPages}`);
-  pageModalEls.input.min = '1';
-  pageModalEls.input.max = String(totalPages);
-  pageModalEls.input.value = String(docsState.currentPage);
-
-  pageModalEls.grid.innerHTML = Array.from({ length: totalPages }, (_, index) => {
-    const page = index + 1;
-    const active = page === docsState.currentPage ? 'active' : '';
-    return `<button class="${active}" type="button" data-modal-page="${page}">${page}</button>`;
-  }).join('');
-
-  setTimeout(() => pageModalEls.input?.focus(), 0);
-}
-
-function goToModalPage() {
-  if (!pageModalEls.input) return;
-  const totalPages = Number.parseInt(pageModalEls.input.max || '1', 10);
-  const page = Number.parseInt(pageModalEls.input.value, 10);
-  if (!Number.isFinite(page)) return;
-  docsState.currentPage = Math.min(totalPages, Math.max(1, page));
-  docsState.selectedCommand = null;
-  closePageModal();
-  renderCommands();
+  buttons.push(`<button class="pagination-edge" type="button" data-page="next" ${appState.currentPage === totalPages ? 'disabled' : ''}>Next</button>`);
+  els.pagination.innerHTML = buttons.join('');
 }
 
 function renderCommandDetail(command) {
-  if (!commandEls.detail) return;
+  if (!els.detail) return;
 
   if (!command) {
-    commandEls.detail.className = 'command-detail-panel command-detail-empty';
-    commandEls.detail.innerHTML = `
+    els.detail.className = 'command-detail-panel command-detail-empty';
+    els.detail.innerHTML = `
       <div class="command-detail-placeholder">
         <span>Documentation</span>
         <h3>Select a command</h3>
         <p>Choose any command from the list to view usage, parameters, access and notes without moving the command table.</p>
       </div>
     `;
-    if (commandEls.sheetBackdrop) commandEls.sheetBackdrop.hidden = true;
+    if (els.sheetBackdrop) els.sheetBackdrop.hidden = true;
     document.body.classList.remove('sheet-open');
     return;
   }
@@ -152,8 +106,8 @@ function renderCommandDetail(command) {
   const visibility = command.visibility || 'public';
   const usage = commandUsage(command);
 
-  commandEls.detail.className = 'command-detail-panel is-open';
-  commandEls.detail.innerHTML = `
+  els.detail.className = 'command-detail-panel is-open';
+  els.detail.innerHTML = `
     <div class="command-detail-top">
       <div>
         <span class="detail-eyebrow">${escapeHtml(command.category || 'Other')}</span>
@@ -190,49 +144,34 @@ function renderCommandDetail(command) {
     </div>
   `;
 
-  const isMobile = window.matchMedia('(max-width: 720px)').matches;
-  if (commandEls.sheetBackdrop) commandEls.sheetBackdrop.hidden = !isMobile;
-  document.body.classList.toggle('sheet-open', isMobile);
-}
-
-function selectCommandByName(name, updateHash = true) {
-  const command = docsState.allCommands.find((item) => item.name === name);
-  if (!command) return;
-  docsState.selectedCommand = name;
-  renderCommands();
-  renderCommandDetail(command);
-  if (updateHash) history.replaceState(null, '', `#command-${encodeURIComponent(name)}`);
-}
-
-function closeCommandDetails() {
-  docsState.selectedCommand = null;
-  renderCommandDetail(null);
-  renderCommands();
+  const mobile = isMobileScreen();
+  if (els.sheetBackdrop) els.sheetBackdrop.hidden = !mobile;
+  document.body.classList.toggle('sheet-open', mobile);
 }
 
 function renderCommands() {
-  if (!commandEls.body) return;
+  if (!els.body) return;
   const filtered = getFilteredCommands();
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  if (docsState.currentPage > totalPages) docsState.currentPage = totalPages;
+  if (appState.currentPage > totalPages) appState.currentPage = totalPages;
 
-  const start = (docsState.currentPage - 1) * PAGE_SIZE;
+  const start = (appState.currentPage - 1) * PAGE_SIZE;
   const visible = filtered.slice(start, start + PAGE_SIZE);
 
   setText(
-    commandEls.summary,
-    `${filtered.length} of ${docsState.allCommands.length} slash commands shown${docsState.activeCategory !== 'all' ? ` in ${docsState.activeCategory}` : ''}. Page ${docsState.currentPage} of ${totalPages}.`
+    els.summary,
+    `${filtered.length} of ${appState.commands.length} slash commands shown${appState.activeCategory !== 'all' ? ` in ${appState.activeCategory}` : ''}. Page ${appState.currentPage} of ${totalPages}.`
   );
 
   if (!visible.length) {
-    commandEls.body.innerHTML = '<tr><td colspan="4"><div class="empty-card">No commands found.</div></td></tr>';
+    els.body.innerHTML = '<tr><td colspan="4"><div class="empty-card">No commands found.</div></td></tr>';
     renderPagination(0);
     return;
   }
 
-  commandEls.body.innerHTML = visible.map((command) => {
+  els.body.innerHTML = visible.map((command) => {
     const visibility = command.visibility || 'public';
-    const isSelected = docsState.selectedCommand === command.name;
+    const isSelected = appState.selectedCommand === command.name;
     return `
       <tr class="command-row ${isSelected ? 'is-selected' : ''}" data-command-name="${escapeHtml(command.name)}">
         <td><span class="command-name">/${escapeHtml(command.name)}</span></td>
@@ -244,85 +183,106 @@ function renderCommands() {
   }).join('');
 
   renderPagination(totalPages);
-  if (docsState.selectedCommand && !filtered.some((command) => command.name === docsState.selectedCommand)) {
+
+  if (appState.selectedCommand && !filtered.some((command) => command.name === appState.selectedCommand)) {
     closeCommandDetails();
   }
 }
 
+function selectCommandByName(name, updateHash = true) {
+  const command = appState.commands.find((item) => item.name === name);
+  if (!command) return;
+  appState.selectedCommand = name;
+  renderCommands();
+  renderCommandDetail(command);
+  if (updateHash) history.replaceState(null, '', `#command-${encodeURIComponent(name)}`);
+}
+
+function closeCommandDetails() {
+  appState.selectedCommand = null;
+  renderCommandDetail(null);
+  renderCommands();
+}
+
 export async function loadCommands() {
   try {
-    const res = await fetch('/api/bot-commands', { cache: 'no-store' });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || 'Commands unavailable');
+    const data = await getBotCommands();
+    if (!data.ok) throw new Error(data.error || 'Commands unavailable');
 
-    docsState.allCommands = Array.isArray(data.commands) ? data.commands : [];
-    renderCategoryTabs(docsState.allCommands);
+    appState.commands = Array.isArray(data.commands) ? data.commands : [];
+    renderCategoryTabs();
     renderCommands();
+
     const hashMatch = decodeURIComponent(window.location.hash || '').match(/^#command-(.+)$/);
     if (hashMatch) selectCommandByName(hashMatch[1], false);
-  } catch (err) {
-    setText(commandEls.summary, 'Could not load slash commands from the bot API.');
-    if (commandEls.body) commandEls.body.innerHTML = '<tr><td colspan="4"><div class="empty-card">Commands API offline.</div></td></tr>';
+  } catch {
+    setText(els.summary, 'Could not load slash commands from the bot API.');
+    if (els.body) els.body.innerHTML = '<tr><td colspan="4"><div class="empty-card">Commands API offline.</div></td></tr>';
   }
 }
 
-export function initDocumentation() {
-  commandEls.search?.addEventListener('input', () => {
-    docsState.currentPage = 1;
-    docsState.selectedCommand = null;
+function initSearch() {
+  els.search?.addEventListener('input', () => {
+    appState.currentPage = 1;
+    appState.selectedCommand = null;
     renderCommands();
   });
+}
 
-  commandEls.tabs?.addEventListener('click', (event) => {
+function initCategoryTabs() {
+  els.tabs?.addEventListener('click', (event) => {
     const button = event.target.closest('[data-category]');
     if (!button) return;
-    docsState.activeCategory = button.dataset.category || 'all';
-    docsState.currentPage = 1;
-    docsState.selectedCommand = null;
-    renderCategoryTabs(docsState.allCommands);
+    appState.activeCategory = button.dataset.category || 'all';
+    appState.currentPage = 1;
+    appState.selectedCommand = null;
+    renderCategoryTabs();
     renderCommands();
   });
+}
 
-  commandEls.pagination?.addEventListener('click', (event) => {
+function initPagination() {
+  els.pagination?.addEventListener('click', (event) => {
     const button = event.target.closest('[data-page]');
     if (!button || button.disabled) return;
     const filtered = getFilteredCommands();
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     const action = button.dataset.page;
 
-    if (action === 'prev') docsState.currentPage = Math.max(1, docsState.currentPage - 1);
-    else if (action === 'next') docsState.currentPage = Math.min(totalPages, docsState.currentPage + 1);
+    if (action === 'prev') appState.currentPage = Math.max(1, appState.currentPage - 1);
+    else if (action === 'next') appState.currentPage = Math.min(totalPages, appState.currentPage + 1);
     else if (action === 'jump') {
-      openPageModal(totalPages);
+      openPageModal({
+        currentPage: appState.currentPage,
+        totalPages,
+        onSelect: (page) => {
+          appState.currentPage = page;
+          appState.selectedCommand = null;
+          renderCommands();
+        },
+      });
       return;
-    } else docsState.currentPage = Number(action) || 1;
+    } else appState.currentPage = Number(action) || 1;
 
-    docsState.selectedCommand = null;
+    appState.selectedCommand = null;
     renderCommands();
   });
+}
 
-  window.addEventListener('resize', () => {
-    renderCommands();
-    if (docsState.selectedCommand) {
-      const command = docsState.allCommands.find((item) => item.name === docsState.selectedCommand);
-      renderCommandDetail(command);
-    }
-  });
-
-  commandEls.body?.addEventListener('click', (event) => {
+function initCommandSelection() {
+  els.body?.addEventListener('click', (event) => {
     const row = event.target.closest('[data-command-name]');
     if (!row) return;
     const name = row.dataset.commandName;
-    if (docsState.selectedCommand === name) {
-      const isMobile = window.matchMedia('(max-width: 720px)').matches;
-      if (isMobile) selectCommandByName(name);
+    if (appState.selectedCommand === name) {
+      if (isMobileScreen()) selectCommandByName(name);
       else closeCommandDetails();
       return;
     }
     selectCommandByName(name);
   });
 
-  commandEls.detail?.addEventListener('click', async (event) => {
+  els.detail?.addEventListener('click', async (event) => {
     const closeButton = event.target.closest('[data-command-detail-close]');
     if (closeButton) {
       closeCommandDetails();
@@ -341,26 +301,25 @@ export function initDocumentation() {
     }
   });
 
-  commandEls.sheetBackdrop?.addEventListener('click', closeCommandDetails);
+  els.sheetBackdrop?.addEventListener('click', closeCommandDetails);
+}
 
-  pageModalEls.close?.addEventListener('click', closePageModal);
-  pageModalEls.cancel?.addEventListener('click', closePageModal);
-  pageModalEls.go?.addEventListener('click', goToModalPage);
-  pageModalEls.backdrop?.addEventListener('click', (event) => {
-    if (event.target === pageModalEls.backdrop) closePageModal();
+function initResponsiveDetailRefresh() {
+  window.addEventListener('resize', () => {
+    renderCommands();
+    if (appState.selectedCommand) {
+      const command = appState.commands.find((item) => item.name === appState.selectedCommand);
+      renderCommandDetail(command);
+    }
   });
-  pageModalEls.input?.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') goToModalPage();
-    if (event.key === 'Escape') closePageModal();
-  });
-  pageModalEls.grid?.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-modal-page]');
-    if (!button) return;
-    pageModalEls.input.value = button.dataset.modalPage;
-    pageModalEls.grid.querySelectorAll('button').forEach((btn) => btn.classList.toggle('active', btn === button));
-  });
+}
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closePageModal();
-  });
+export function initDocumentation() {
+  initSearch();
+  initCategoryTabs();
+  initPagination();
+  initCommandSelection();
+  initResponsiveDetailRefresh();
+  loadCommands();
+  setInterval(loadCommands, 60000);
 }

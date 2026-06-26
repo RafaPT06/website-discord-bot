@@ -1,5 +1,29 @@
-import { statEls } from './dom.js';
-import { clearSkeletons, formatNumber, setText } from './utils.js';
+import { getBotStats } from './api.js';
+import { formatNumber, setText } from './utils.js';
+
+const statEls = {
+  servers: document.querySelector('[data-stat="servers"]'),
+  users: document.querySelector('[data-stat="users"]'),
+  commands: document.querySelector('[data-stat="commands"]'),
+  ping: document.querySelector('[data-stat="ping"]'),
+  uptime: document.querySelector('[data-stat="uptime"]'),
+  status: document.querySelector('[data-stat="status"]'),
+  botName: document.querySelector('[data-bot-name]'),
+  botNameHeading: document.querySelector('[data-bot-name-heading]'),
+  botNameShort: document.querySelector('[data-bot-name-short]'),
+  footerBotName: document.querySelector('[data-footer-bot-name]'),
+  botTag: document.querySelector('[data-bot-tag]'),
+  avatar: document.querySelector('[data-bot-avatar]'),
+  avatarSmall: document.querySelector('[data-bot-avatar-small]'),
+  updated: document.querySelector('[data-updated]'),
+  statusPill: document.querySelector('[data-status-pill]'),
+  inviteLink: document.querySelector('[data-invite-link]'),
+  footerYear: document.querySelector('[data-footer-year]'),
+};
+
+function clearSkeletons() {
+  document.querySelectorAll('.skeleton-card').forEach((el) => el.classList.remove('skeleton-card'));
+}
 
 function setBotName(name) {
   const safeName = name || 'Meowz';
@@ -28,9 +52,8 @@ function setAvatar(url, fallbackName) {
 
 export async function loadBotStats() {
   try {
-    const res = await fetch('/api/bot-stats', { cache: 'no-store' });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || 'Stats unavailable');
+    const data = await getBotStats();
+    if (!data.ok) throw new Error(data.error || 'Stats unavailable');
 
     const botName = data.botName || 'Meowz';
     setBotName(botName);
@@ -51,7 +74,7 @@ export async function loadBotStats() {
       statEls.inviteLink.target = '_blank';
       statEls.inviteLink.rel = 'noopener noreferrer';
     }
-  } catch (err) {
+  } catch {
     setText(statEls.status, 'Offline');
     setText(statEls.statusPill, 'Bot API offline');
     setText(statEls.updated, 'Connect BOT_API_URL in Railway to show live stats');
@@ -61,6 +84,8 @@ export async function loadBotStats() {
   }
 }
 
-export function initFooterYear() {
+export function initStats() {
   if (statEls.footerYear) statEls.footerYear.textContent = new Date().getFullYear();
+  loadBotStats();
+  setInterval(loadBotStats, 30000);
 }

@@ -1,11 +1,12 @@
-import { changelogList } from './dom.js';
+import { getChangelog } from './api.js';
 import { escapeHtml } from './utils.js';
+
+const changelogList = document.querySelector('[data-changelog-list]');
 
 export async function loadChangelog() {
   if (!changelogList) return;
   try {
-    const res = await fetch('/changelog.json', { cache: 'no-store' });
-    const entries = await res.json();
+    const entries = await getChangelog();
     changelogList.innerHTML = entries.map((entry) => `
       <article class="changelog-card">
         <div class="changelog-card-top">
@@ -19,7 +20,7 @@ export async function loadChangelog() {
         </ul>
       </article>
     `).join('');
-  } catch (err) {
+  } catch {
     changelogList.innerHTML = '<div class="empty-card">Could not load changelog.</div>';
   }
 }

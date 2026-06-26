@@ -1,6 +1,9 @@
-import { navEls } from './dom.js';
+const navEls = {
+  toggle: document.querySelector('[data-menu-toggle]'),
+  links: document.querySelector('[data-nav-links]'),
+};
 
-export function closeMobileMenu() {
+function closeMobileMenu() {
   navEls.toggle?.classList.remove('is-open');
   navEls.links?.classList.remove('is-open');
   navEls.toggle?.setAttribute('aria-expanded', 'false');

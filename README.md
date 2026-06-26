@@ -1,8 +1,8 @@
 # Meowz Website
 
-Public website and documentation for the Meowz Discord bot.
+Public website and future dashboard for the Meowz Discord bot.
 
-## Run locally
+## Start locally
 
 ```bash
 npm install
@@ -13,17 +13,20 @@ npm start
 
 ```env
 BOT_API_URL=https://discord-bot-production-01ea.up.railway.app
-# Optional, only if the bot API is protected:
-# BOT_API_TOKEN=your-token
+BOT_API_TOKEN=optional-if-you-add-one-later
 ```
 
 ## Structure
 
 ```text
 public/
-  css/        Frontend styles
-  js/         Frontend modules
-  404.html    Friendly not found page
-  index.html  Main site
-server.js     Express server/API proxy
+  css/       Modular styles
+  js/        Modular frontend scripts
+  data/      Static website data, including changelog
+server/
+  api/       Bot API helper
+  routes/    Website API and future auth routes
+  middleware/404 handling
 ```
+
+OAuth will be added in the next milestone.

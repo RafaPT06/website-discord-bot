@@ -1,0 +1,4 @@
+.footer-card { width: min(1120px, calc(100% - 32px)); margin: 36px auto 24px; padding: 24px; border-radius: 24px; text-align: center; }
+.footer-card p { margin: 0; }
+.footer-card p:first-child { color: var(--text); font-weight: 800; }
+.footer-card p:last-child { margin-top: 6px; color: var(--muted); }

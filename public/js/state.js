@@ -1,5 +1,5 @@
-export const docsState = {
-  allCommands: [],
+export const appState = {
+  commands: [],
   activeCategory: 'all',
   currentPage: 1,
   selectedCommand: null,

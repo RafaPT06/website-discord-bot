@@ -1,15 +1,13 @@
-import { initFooterYear, loadBotStats } from './stats.js';
-import { initNavigation } from './navigation.js';
-import { initDocumentation, loadCommands } from './documentation.js';
+import { initAuth } from './auth.js';
 import { loadChangelog } from './changelog.js';
+import { initDocumentation } from './documentation.js';
+import { initNavigation } from './navigation.js';
+import { initPageModal } from './pageModal.js';
+import { initStats } from './stats.js';
 
-initFooterYear();
 initNavigation();
+initPageModal();
+initStats();
 initDocumentation();
-
-loadBotStats();
-loadCommands();
 loadChangelog();
-
-setInterval(loadBotStats, 30000);
-setInterval(loadCommands, 60000);
+initAuth();

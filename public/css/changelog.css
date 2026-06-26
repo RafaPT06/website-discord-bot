@@ -1,0 +1,28 @@
+.changelog-list { display: grid; gap: 16px; }
+.changelog-card { border-radius: 24px; padding: 24px; }
+.changelog-card-top { display: flex; justify-content: space-between; gap: 14px; align-items: center; margin-bottom: 16px; }
+.changelog-card h3 { margin: 0; font-size: 1.5rem; }
+.changelog-date { color: var(--muted); }
+.change-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.change-list li { display: flex; gap: 10px; align-items: flex-start; color: var(--muted); }
+.change-type { flex: 0 0 auto; border: 1px solid var(--border); border-radius: 999px; padding: 4px 8px; color: var(--text); background: rgba(255,255,255,.07); font-size: .76rem; font-weight: 900; }
+.change-type.new { color: #c9ffd9; }
+.change-type.improved { color: #c7ddff; }
+.change-type.fixed { color: #ffe5a7; }
+.change-list li {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.change-type {
+  justify-content: center;
+  min-width: 86px;
+  text-align: center;
+  line-height: 1.2;
+}
+.change-list li > span:last-child {
+  min-width: 0;
+  line-height: 1.55;
+}
+

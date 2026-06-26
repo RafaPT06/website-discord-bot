@@ -16,6 +16,10 @@ export function escapeHtml(value = '') {
   }[char]));
 }
 
-export function clearSkeletons() {
-  document.querySelectorAll('.skeleton-card').forEach((el) => el.classList.remove('skeleton-card'));
+export function isMobileScreen() {
+  return window.matchMedia('(max-width: 720px)').matches;
+}
+
+export function isSmallPaginationScreen() {
+  return window.matchMedia('(max-width: 520px)').matches;
 }
