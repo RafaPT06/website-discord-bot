@@ -35,7 +35,7 @@
 
     <nav class="nav-links" data-nav-links aria-label="Main navigation">
       <a href="#top" data-nav-link>Home</a>
-      <a href="#commands" data-nav-link>Commands</a>
+      <a href="#commands" data-nav-link>Documentation</a>
       <a href="#changelog" data-nav-link>Changelog</a>
       <button class="login-coming-soon" type="button" disabled>Login soon</button>
     </nav>
@@ -57,7 +57,7 @@
 
         <div class="actions">
           <a class="btn btn-primary" href="#" data-invite-link aria-label="Invite bot">Invite Bot</a>
-          <a class="btn btn-secondary" href="#commands">View Commands</a>
+          <a class="btn btn-secondary" href="#commands">View Documentation</a>
         </div>
       </div>
 
@@ -112,11 +112,11 @@
     <section id="commands" class="section commands-section">
       <div class="commands-header">
         <div class="section-heading left">
-          <span>Commands</span>
-          <h2>Slash command documentation</h2>
+          <span>Documentation</span>
+          <h2>Slash command reference</h2>
         </div>
         <p class="muted">
-          Search, filter and expand commands without loading the whole list into the page at once.
+          Search commands, open details in a dedicated panel and browse without rendering the full list at once.
         </p>
       </div>
 
@@ -132,25 +132,39 @@
 
       <div class="command-summary" data-command-summary>Loading slash commands...</div>
 
-      <div class="commands-table-wrap">
-        <table class="commands-table">
-          <thead>
-            <tr>
-              <th>Command</th>
-              <th>Description</th>
-              <th>Category</th>
-              <th>Access</th>
-            </tr>
-          </thead>
-          <tbody data-commands-body>
-            <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line"></div></td></tr>
-            <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line short"></div></td></tr>
-            <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line"></div></td></tr>
-          </tbody>
-        </table>
+      <div class="commands-doc-layout">
+        <div class="commands-table-panel">
+          <div class="commands-table-wrap">
+            <table class="commands-table">
+              <thead>
+                <tr>
+                  <th>Command</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Access</th>
+                </tr>
+              </thead>
+              <tbody data-commands-body>
+                <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line"></div></td></tr>
+                <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line short"></div></td></tr>
+                <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination" data-command-pagination></div>
+        </div>
+
+        <aside class="command-detail-panel command-detail-empty" data-command-detail aria-live="polite">
+          <div class="command-detail-placeholder">
+            <span>Documentation</span>
+            <h3>Select a command</h3>
+            <p>Choose any command from the list to view usage, parameters, access and notes without moving the command table.</p>
+          </div>
+        </aside>
       </div>
 
-      <div class="pagination" data-command-pagination></div>
+      <div class="command-sheet-backdrop" data-command-sheet-backdrop hidden></div>
 
       <div class="page-modal-backdrop" data-page-modal hidden>
         <div class="page-modal" role="dialog" aria-modal="true" aria-labelledby="page-modal-title">

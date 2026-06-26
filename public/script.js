@@ -24,6 +24,8 @@ const commandEls = {
   tabs: document.querySelector('[data-category-tabs]'),
   summary: document.querySelector('[data-command-summary]'),
   pagination: document.querySelector('[data-command-pagination]'),
+  detail: document.querySelector('[data-command-detail]'),
+  sheetBackdrop: document.querySelector('[data-command-sheet-backdrop]'),
 };
 
 const pageModalEls = {
@@ -46,7 +48,7 @@ const changelogList = document.querySelector('[data-changelog-list]');
 let allCommands = [];
 let activeCategory = 'all';
 let currentPage = 1;
-let expandedCommand = null;
+let selectedCommand = null;
 const PAGE_SIZE = 10;
 
 function formatNumber(value) {
@@ -203,41 +205,100 @@ function goToModalPage() {
   const page = Number.parseInt(pageModalEls.input.value, 10);
   if (!Number.isFinite(page)) return;
   currentPage = Math.min(totalPages, Math.max(1, page));
-  expandedCommand = null;
+  selectedCommand = null;
   closePageModal();
   renderCommands();
 }
 
-function renderCommandDetails(command) {
+function renderCommandDetail(command) {
+  if (!commandEls.detail) return;
+
+  if (!command) {
+    commandEls.detail.className = 'command-detail-panel command-detail-empty';
+    commandEls.detail.innerHTML = `
+      <div class="command-detail-placeholder">
+        <span>Documentation</span>
+        <h3>Select a command</h3>
+        <p>Choose any command from the list to view usage, parameters, access and notes without moving the command table.</p>
+      </div>
+    `;
+    commandEls.sheetBackdrop.hidden = true;
+    document.body.classList.remove('sheet-open');
+    return;
+  }
+
   const options = Array.isArray(command.options) ? command.options : [];
   const optionList = options.length
-    ? `<ul>${options.map((option) => `<li><strong>${escapeHtml(option.name)}</strong> — ${option.required ? 'Required' : 'Optional'}${option.description ? ` · ${escapeHtml(option.description)}` : ''}</li>`).join('')}</ul>`
-    : '<p>No parameters.</p>';
-
-  return `
-    <tr class="command-details-row">
-      <td colspan="4">
-        <div class="command-details">
-          <div class="command-details-panel">
-            <h4>Usage</h4>
-            <code>${escapeHtml(commandUsage(command))}</code>
+    ? `<div class="detail-option-list">${options.map((option) => `
+        <div class="detail-option">
+          <div>
+            <strong>${escapeHtml(option.name)}</strong>
+            <span>${option.required ? 'Required' : 'Optional'}</span>
           </div>
-          <div class="command-details-panel">
-            <h4>Access</h4>
-            <p>${escapeHtml(visibilityLabel(command.visibility || 'public'))} · ${command.dm ? 'Can be used in DMs' : 'Server only'}</p>
-          </div>
-          <div class="command-details-panel">
-            <h4>Parameters</h4>
-            ${optionList}
-          </div>
-          <div class="command-details-panel">
-            <h4>Notes</h4>
-            <p>${escapeHtml(command.description || 'No extra notes available yet.')}</p>
-          </div>
+          <p>${escapeHtml(option.description || 'No description provided.')}</p>
         </div>
-      </td>
-    </tr>
+      `).join('')}</div>`
+    : '<p class="detail-muted">No parameters.</p>';
+
+  const visibility = command.visibility || 'public';
+  const usage = commandUsage(command);
+
+  commandEls.detail.className = 'command-detail-panel is-open';
+  commandEls.detail.innerHTML = `
+    <div class="command-detail-top">
+      <div>
+        <span class="detail-eyebrow">${escapeHtml(command.category || 'Other')}</span>
+        <h3>/${escapeHtml(command.name)}</h3>
+        <p>${escapeHtml(command.description || 'No description provided.')}</p>
+      </div>
+      <button class="command-detail-close" type="button" data-command-detail-close aria-label="Close command details">×</button>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-head">
+        <h4>Usage</h4>
+        <button class="copy-command" type="button" data-copy-command="${escapeHtml(usage)}">Copy</button>
+      </div>
+      <code>${escapeHtml(usage)}</code>
+    </div>
+
+    <div class="detail-section">
+      <h4>Access</h4>
+      <div class="detail-badges">
+        <span class="visibility-badge ${escapeHtml(visibility)}">${visibilityLabel(visibility)}</span>
+        <span class="command-chip">${command.dm ? 'DMs allowed' : 'Server only'}</span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Parameters</h4>
+      ${optionList}
+    </div>
+
+    <div class="detail-section">
+      <h4>Notes</h4>
+      <p class="detail-muted">${escapeHtml(command.description || 'No extra notes available yet.')}</p>
+    </div>
   `;
+
+  const isMobile = window.matchMedia('(max-width: 720px)').matches;
+  commandEls.sheetBackdrop.hidden = !isMobile;
+  document.body.classList.toggle('sheet-open', isMobile);
+}
+
+function selectCommandByName(name, updateHash = true) {
+  const command = allCommands.find((item) => item.name === name);
+  if (!command) return;
+  selectedCommand = name;
+  renderCommands();
+  renderCommandDetail(command);
+  if (updateHash) history.replaceState(null, '', `#command-${encodeURIComponent(name)}`);
+}
+
+function closeCommandDetails() {
+  selectedCommand = null;
+  renderCommandDetail(null);
+  renderCommands();
 }
 
 function renderCommands() {
@@ -262,19 +323,21 @@ function renderCommands() {
 
   commandEls.body.innerHTML = visible.map((command) => {
     const visibility = command.visibility || 'public';
-    const isOpen = expandedCommand === command.name;
+    const isSelected = selectedCommand === command.name;
     return `
-      <tr class="command-row" data-command-name="${escapeHtml(command.name)}">
+      <tr class="command-row ${isSelected ? 'is-selected' : ''}" data-command-name="${escapeHtml(command.name)}">
         <td><span class="command-name">/${escapeHtml(command.name)}</span></td>
         <td class="command-description">${escapeHtml(command.description || 'No description provided.')}</td>
         <td><span class="command-chip">${escapeHtml(command.category || 'Other')}</span></td>
         <td><span class="visibility-badge ${escapeHtml(visibility)}">${visibilityLabel(visibility)}</span></td>
       </tr>
-      ${isOpen ? renderCommandDetails(command) : ''}
     `;
   }).join('');
 
   renderPagination(totalPages);
+  if (selectedCommand && !filtered.some((command) => command.name === selectedCommand)) {
+    closeCommandDetails();
+  }
 }
 
 async function loadBotStats() {
@@ -321,6 +384,8 @@ async function loadCommands() {
     allCommands = Array.isArray(data.commands) ? data.commands : [];
     renderCategoryTabs(allCommands);
     renderCommands();
+    const hashMatch = decodeURIComponent(window.location.hash || '').match(/^#command-(.+)$/);
+    if (hashMatch) selectCommandByName(hashMatch[1], false);
   } catch (err) {
     setText(commandEls.summary, 'Could not load slash commands from the bot API.');
     if (commandEls.body) commandEls.body.innerHTML = '<tr><td colspan="4"><div class="empty-card">Commands API offline.</div></td></tr>';
@@ -368,7 +433,7 @@ document.querySelectorAll('[data-nav-link]').forEach((link) => link.addEventList
 
 commandEls.search?.addEventListener('input', () => {
   currentPage = 1;
-  expandedCommand = null;
+  selectedCommand = null;
   renderCommands();
 });
 
@@ -377,7 +442,7 @@ commandEls.tabs?.addEventListener('click', (event) => {
   if (!button) return;
   activeCategory = button.dataset.category || 'all';
   currentPage = 1;
-  expandedCommand = null;
+  selectedCommand = null;
   renderCategoryTabs(allCommands);
   renderCommands();
 });
@@ -396,19 +461,51 @@ commandEls.pagination?.addEventListener('click', (event) => {
     return;
   } else currentPage = Number(action) || 1;
 
-  expandedCommand = null;
+  selectedCommand = null;
   renderCommands();
 });
 
-window.addEventListener('resize', () => renderCommands());
+window.addEventListener('resize', () => {
+  renderCommands();
+  if (selectedCommand) {
+    const command = allCommands.find((item) => item.name === selectedCommand);
+    renderCommandDetail(command);
+  }
+});
 
 commandEls.body?.addEventListener('click', (event) => {
   const row = event.target.closest('[data-command-name]');
   if (!row) return;
   const name = row.dataset.commandName;
-  expandedCommand = expandedCommand === name ? null : name;
-  renderCommands();
+  if (selectedCommand === name) {
+    const isMobile = window.matchMedia('(max-width: 720px)').matches;
+    if (isMobile) selectCommandByName(name);
+    else closeCommandDetails();
+    return;
+  }
+  selectCommandByName(name);
 });
+
+commandEls.detail?.addEventListener('click', async (event) => {
+  const closeButton = event.target.closest('[data-command-detail-close]');
+  if (closeButton) {
+    closeCommandDetails();
+    return;
+  }
+
+  const copyButton = event.target.closest('[data-copy-command]');
+  if (!copyButton) return;
+  try {
+    await navigator.clipboard.writeText(copyButton.dataset.copyCommand || '');
+    copyButton.textContent = 'Copied';
+    setTimeout(() => { copyButton.textContent = 'Copy'; }, 1200);
+  } catch {
+    copyButton.textContent = 'Failed';
+    setTimeout(() => { copyButton.textContent = 'Copy'; }, 1200);
+  }
+});
+
+commandEls.sheetBackdrop?.addEventListener('click', closeCommandDetails);
 
 
 pageModalEls.close?.addEventListener('click', closePageModal);

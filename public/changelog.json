@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.7.0",
+    "date": "2026-06-26",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Redesigned command documentation with a split-view layout on desktop and a bottom sheet on mobile."
+      },
+      {
+        "type": "New",
+        "text": "Added shareable command hashes and copy buttons for command usage examples."
+      },
+      {
+        "type": "Improved",
+        "text": "Renamed the commands navigation to Documentation to better match the new reference layout."
+      }
+    ]
+  },
+  {
     "version": "v1.6.2",
     "date": "2026-06-26",
     "changes": [

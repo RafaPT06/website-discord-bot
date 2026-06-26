@@ -323,3 +323,154 @@ body.modal-open { overflow: hidden; }
   .pagination-edge { min-width: 102px; }
   .page-modal { padding: 18px; border-radius: 22px; }
 }
+
+
+/* Documentation split-view update */
+.commands-doc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+  gap: 18px;
+  align-items: start;
+}
+.commands-table-panel { min-width: 0; }
+.commands-table-wrap { border: 1px solid var(--border); background: rgba(255,255,255,.035); }
+.command-row.is-selected { background: rgba(139,92,246,.16); }
+.command-row.is-selected .command-name { color: white; }
+.command-row td:first-child::after { display: none; }
+.command-detail-panel {
+  position: sticky;
+  top: 104px;
+  min-height: 440px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255,255,255,.055);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.command-detail-empty {
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  box-shadow: none;
+}
+.command-detail-placeholder { text-align: center; max-width: 360px; }
+.command-detail-placeholder span,
+.detail-eyebrow {
+  color: var(--primary-2);
+  font-size: .78rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+.command-detail-placeholder h3,
+.command-detail-top h3 { margin: 10px 0 8px; font-size: clamp(1.55rem, 4vw, 2.1rem); }
+.command-detail-placeholder p,
+.command-detail-top p,
+.detail-muted { color: var(--muted); line-height: 1.65; }
+.command-detail-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(139,92,246,.15), rgba(34,211,238,.07));
+}
+.command-detail-top p { margin: 0; }
+.command-detail-close {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255,255,255,.07);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.25rem;
+}
+.detail-section { padding: 18px 22px; border-bottom: 1px solid var(--border); }
+.detail-section:last-child { border-bottom: 0; }
+.detail-section h4 { margin: 0 0 10px; }
+.detail-section code {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(0,0,0,.24);
+  color: var(--text);
+}
+.detail-section-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 10px; }
+.copy-command {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: rgba(255,255,255,.07);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 800;
+}
+.detail-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.detail-option-list { display: grid; gap: 10px; }
+.detail-option {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255,255,255,.04);
+}
+.detail-option div { display: flex; justify-content: space-between; gap: 10px; }
+.detail-option strong { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.detail-option span { color: var(--muted); font-size: .85rem; }
+.detail-option p { margin: 0; color: var(--muted); line-height: 1.55; }
+.command-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 88;
+  background: rgba(0,0,0,.56);
+  backdrop-filter: blur(8px);
+}
+.command-sheet-backdrop[hidden] { display: none; }
+body.sheet-open { overflow: hidden; }
+
+@media (max-width: 980px) {
+  .commands-doc-layout { grid-template-columns: 1fr; }
+  .command-detail-panel { position: static; min-height: auto; }
+}
+
+@media (max-width: 720px) {
+  .command-detail-panel {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    top: auto;
+    z-index: 90;
+    max-height: min(78vh, 680px);
+    min-height: 0;
+    overflow-y: auto;
+    border-radius: 26px;
+    transform: translateY(110%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform .24s ease, opacity .24s ease;
+  }
+  .command-detail-panel.is-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .command-detail-empty { display: none; }
+  .command-detail-top, .detail-section { padding: 18px; }
+  .command-row.is-selected { background: rgba(139,92,246,.12); }
+  .command-row td:first-child::after {
+    display: inline-block;
+    content: ">";
+    float: right;
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1.35;
+  }
+}
