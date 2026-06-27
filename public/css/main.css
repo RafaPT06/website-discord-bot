@@ -2048,3 +2048,39 @@ body.sheet-open { overflow: hidden; }
     padding: 16px !important;
   }
 }
+
+/* Dashboard plain hero cleanup */
+.dashboard-welcome-card.dashboard-welcome-plain {
+  display: block;
+  margin-bottom: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.dashboard-welcome-plain .dashboard-hero-copy {
+  max-width: 760px;
+}
+
+.dashboard-welcome-plain h2 {
+  margin-bottom: 12px;
+}
+
+.dashboard-welcome-plain .muted {
+  max-width: 640px;
+}
+
+.dashboard-welcome-plain .dashboard-welcome-actions,
+.dashboard-welcome-plain .dashboard-hero-stats {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .dashboard-welcome-card.dashboard-welcome-plain {
+    padding: 0;
+    margin-bottom: 22px;
+  }
+}

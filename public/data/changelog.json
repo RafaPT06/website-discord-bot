@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.19.1",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Simplified the dashboard welcome area into a blockless hero with only the greeting and supporting text."
+      },
+      {
+        "type": "Improved",
+        "text": "Removed extra dashboard hero buttons and summary stats so the server management sections appear sooner."
+      }
+    ]
+  },
+  {
     "version": "v1.19.0",
     "date": "2026-06-27",
     "changes": [
