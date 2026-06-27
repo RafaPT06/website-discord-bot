@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.17.0",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Reworked the dashboard welcome card to match the homepage hero style with summary stats and primary actions."
+      },
+      {
+        "type": "Improved",
+        "text": "Removed the separate quick actions card and moved the most important links into the dashboard hero."
+      },
+      {
+        "type": "Improved",
+        "text": "Polished server overview pages with breadcrumb navigation, server status pills and clearer coming soon module cards."
+      }
+    ]
+  },
+  {
     "version": "v1.16.2",
     "date": "2026-06-27",
     "changes": [

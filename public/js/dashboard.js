@@ -10,6 +10,8 @@ const els = {
   available: document.querySelector('[data-available-servers]'),
   installedCount: document.querySelector('[data-installed-count]'),
   availableCount: document.querySelector('[data-available-count]'),
+  heroManagedCount: document.querySelector('[data-dashboard-managed-count]'),
+  heroAvailableCount: document.querySelector('[data-dashboard-available-count]'),
   detailContent: document.querySelector('[data-server-detail-content]'),
 };
 
@@ -69,6 +71,8 @@ function renderDashboard(data) {
   const available = Array.isArray(data.available) ? data.available : [];
   setText(els.installedCount, `${installed.length} server${installed.length === 1 ? '' : 's'}`);
   setText(els.availableCount, `${available.length} server${available.length === 1 ? '' : 's'}`);
+  setText(els.heroManagedCount, formatNumber(installed.length));
+  setText(els.heroAvailableCount, formatNumber(available.length));
   renderServerList(els.installed, installed, 'installed');
   renderServerList(els.available, available, 'available');
 }
@@ -86,14 +90,28 @@ function renderServerDetail(data) {
   els.detail.hidden = false;
   document.title = `${server.name} — Meowz Dashboard`;
 
+  const memberText = typeof server.memberCount === 'number' ? `${formatNumber(server.memberCount)} member${server.memberCount === 1 ? '' : 's'}` : 'Members unavailable';
+  const tools = [
+    ['Leveling settings', 'XP system, level roles and leaderboards.'],
+    ['Welcome messages', 'Member join and leave messages.'],
+    ['Logs', 'Server activity and audit events.'],
+    ['AI image access', 'Control who can use image editing.'],
+    ['Moderation tools', 'Warnings, automod and actions.'],
+  ];
+
   els.detailContent.innerHTML = `
     <div class="server-detail-hero">
-      <a class="mini-action" href="/dashboard">Back to dashboard</a>
+      <a class="server-breadcrumb" href="/dashboard">Dashboard / ${escapeHtml(server.name)}</a>
       <div class="server-detail-heading">
         ${serverIcon(server, 'server-detail-icon')}
         <div>
           <span class="dashboard-eyebrow">Server overview</span>
           <h2>${escapeHtml(server.name)}</h2>
+          <div class="server-detail-pills">
+            <span>${escapeHtml(memberText)}</span>
+            <span>Manage Server</span>
+            <span>Bot Installed</span>
+          </div>
           <p class="muted">Basic server information is ready. Customization tools are coming soon.</p>
         </div>
       </div>
@@ -124,7 +142,7 @@ function renderServerDetail(data) {
         <h3>Server tools</h3>
         <p class="muted">These sections will become configurable from the website later.</p>
         <div class="coming-grid">
-          ${(server.comingSoon || []).map((item) => `<span><strong>${escapeHtml(item)}</strong><small>Customization coming soon</small></span>`).join('')}
+          ${tools.map(([title, description]) => `<span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(description)}</small><em>Coming soon</em></span>`).join('')}
         </div>
       </article>
     </div>

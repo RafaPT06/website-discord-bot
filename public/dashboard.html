@@ -45,20 +45,35 @@
   <main id="top" class="page-main dashboard-page">
     <section class="section dashboard-section" data-dashboard hidden>
       <div data-dashboard-home>
-        <div class="dashboard-welcome-card">
-          <div>
+        <div class="dashboard-welcome-card dashboard-hero-card">
+          <div class="dashboard-hero-copy">
             <span class="dashboard-eyebrow">Dashboard</span>
             <h2 data-dashboard-title>Welcome back.</h2>
-            <p class="muted" data-dashboard-intro>Choose a server below to manage Meowz.</p>
+            <p class="muted" data-dashboard-intro>Manage your servers, configure Meowz and access dashboard features.</p>
+            <div class="dashboard-welcome-actions">
+              <a class="btn btn-primary" href="#servers-with-meowz">Manage servers</a>
+              <a class="btn btn-secondary" href="/docs">Documentation</a>
+            </div>
           </div>
-          <div class="dashboard-welcome-actions">
-            <a class="btn btn-primary" href="/docs">View documentation</a>
-            <a class="btn btn-secondary" href="/changelog">View changelog</a>
+
+          <div class="dashboard-hero-stats" aria-label="Dashboard summary">
+            <div>
+              <span>Managed servers</span>
+              <strong data-dashboard-managed-count>—</strong>
+            </div>
+            <div>
+              <span>Available servers</span>
+              <strong data-dashboard-available-count>—</strong>
+            </div>
+            <div>
+              <span>Status</span>
+              <strong>Ready</strong>
+            </div>
           </div>
         </div>
 
         <div class="server-dashboard-grid">
-          <article class="dashboard-card server-list-card">
+          <article id="servers-with-meowz" class="dashboard-card server-list-card">
             <div class="server-card-heading">
               <div>
                 <span class="dashboard-card-label">Servers with Meowz</span>
@@ -89,16 +104,6 @@
           </article>
         </div>
 
-        <article class="dashboard-card dashboard-actions-card">
-          <span class="dashboard-card-label">Quick actions</span>
-          <h3>Useful links</h3>
-          <p class="muted">Jump to the most useful public sections while server customization is being built.</p>
-          <div class="dashboard-actions">
-            <a class="mini-action" href="/docs">Documentation</a>
-            <a class="mini-action" href="/changelog">Changelog</a>
-            <a class="mini-action" href="#settings">Settings coming soon</a>
-          </div>
-        </article>
       </div>
 
       <div data-server-detail hidden>
