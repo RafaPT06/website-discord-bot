@@ -39,8 +39,8 @@ function renderServerList(container, servers, type) {
 
   if (!servers.length) {
     container.innerHTML = type === 'installed'
-      ? `<div class="server-empty-state"><strong>No manageable servers with Meowz yet.</strong><span>Servers only appear here when Meowz is installed and you have Manage Server permissions.</span></div>`
-      : `<div class="server-empty-state"><strong>No available servers found.</strong><span>Servers where you can invite Meowz will appear here.</span></div>`;
+      ? `<div class="server-empty-state"><strong>No manageable servers with Meowz yet.</strong><span>Invite Meowz to a server where you have Manage Server permissions to start managing it here.</span></div>`
+      : `<div class="server-empty-state"><strong>Meowz is already installed in all your manageable servers.</strong><span>If you get access to another server later, it will appear here.</span></div>`;
     return;
   }
 
@@ -124,7 +124,7 @@ function renderServerDetail(data) {
         <h3>Server tools</h3>
         <p class="muted">These sections will become configurable from the website later.</p>
         <div class="coming-grid">
-          ${(server.comingSoon || []).map((item) => `<span>${escapeHtml(item)}</span>`).join('')}
+          ${(server.comingSoon || []).map((item) => `<span><strong>${escapeHtml(item)}</strong><small>Customization coming soon</small></span>`).join('')}
         </div>
       </article>
     </div>

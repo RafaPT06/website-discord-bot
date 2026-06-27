@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.16.1",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Aligned dashboard server row action buttons and made server rows feel cleaner on mobile."
+      },
+      {
+        "type": "Improved",
+        "text": "Removed duplicate Dashboard links from the account menu after moving Dashboard into the main navigation."
+      },
+      {
+        "type": "Improved",
+        "text": "Improved server dashboard empty states and server overview coming soon cards."
+      }
+    ]
+  },
+  {
     "version": "v1.16.0",
     "date": "2026-06-27",
     "changes": [
