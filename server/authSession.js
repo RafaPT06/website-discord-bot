@@ -91,11 +91,11 @@ function clearOAuthState(res) {
   clearCookie(res, STATE_COOKIE);
 }
 
-function setSession(res, user) {
+function setSession(res, user, extra = {}) {
   setCookie(
     res,
     SESSION_COOKIE,
-    createSignedValue({ user, exp: Date.now() + SESSION_MAX_AGE_SECONDS * 1000 }),
+    createSignedValue({ user, ...extra, exp: Date.now() + SESSION_MAX_AGE_SECONDS * 1000 }),
     SESSION_MAX_AGE_SECONDS
   );
 }

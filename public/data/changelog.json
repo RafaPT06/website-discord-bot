@@ -5,15 +5,15 @@
     "changes": [
       {
         "type": "Improved",
-        "text": "Reworked the dashboard overview so the main card focuses on useful actions instead of a large logout button."
+        "text": "Reworked the dashboard into a server-focused control panel."
       },
       {
         "type": "New",
-        "text": "Added live dashboard stats for servers, commands, status and ping."
+        "text": "Added Servers with Meowz and Available Servers sections for future server management."
       },
       {
         "type": "Improved",
-        "text": "Replaced the Discord ID block with cleaner account connection details and a servers preview card."
+        "text": "Replaced profile-heavy dashboard cards with connected account, live stats and quick actions."
       }
     ]
   },

@@ -1,4 +1,3 @@
-import { getBotStats } from './api.js';
 import { escapeHtml } from './utils.js';
 
 const authArea = document.querySelector('[data-auth-area]');
@@ -33,17 +32,39 @@ function renderAvatar(user, className = 'nav-user-avatar', size = 96) {
   return `<span class="${className}" aria-hidden="true"><img src="${image}" alt="" loading="lazy" /></span>`;
 }
 
+function guildIconUrl(guild, size = 80) {
+  if (!guild?.id || !guild?.icon) return null;
+  return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=${size}`;
+}
+
+function canInviteGuild(guild) {
+  if (typeof guild?.canManage === 'boolean') return guild.canManage;
+  const permissions = BigInt(guild?.permissions || '0');
+  const manageGuild = 1n << 5n;
+  const administrator = 1n << 3n;
+  return Boolean((permissions & manageGuild) || (permissions & administrator) || guild?.owner);
+}
+
+function inviteUrl(guildId = '') {
+  const clientId = window.MEOWZ_CLIENT_ID || '1408079699548307627';
+  const url = new URL('https://discord.com/oauth2/authorize');
+  url.searchParams.set('client_id', clientId);
+  url.searchParams.set('permissions', '8');
+  url.searchParams.set('scope', 'bot applications.commands');
+  if (guildId) {
+    url.searchParams.set('guild_id', guildId);
+    url.searchParams.set('disable_guild_select', 'true');
+  }
+  return url.toString();
+}
+
 function setAuthOnlyVisible(isVisible) {
   authOnlyEls.forEach((el) => {
     el.hidden = !isVisible;
   });
 
-  if (dashboardSection) {
-    dashboardSection.hidden = !isVisible;
-  }
-  if (dashboardGuest) {
-    dashboardGuest.hidden = isVisible;
-  }
+  if (dashboardSection) dashboardSection.hidden = !isVisible;
+  if (dashboardGuest) dashboardGuest.hidden = isVisible;
 }
 
 function closeProfileMenu() {
@@ -63,27 +84,78 @@ function toggleProfileMenu() {
   button.setAttribute('aria-expanded', String(willOpen));
 }
 
-function setDashboardText(selector, value) {
-  const el = dashboardSection?.querySelector(selector);
-  if (el) el.textContent = value;
+function renderGuildIcon(guild) {
+  const icon = guildIconUrl(guild);
+  const name = guild?.name || 'Server';
+  if (icon) return `<span class="server-icon"><img src="${icon}" alt="" loading="lazy" /></span>`;
+  return `<span class="server-icon server-icon-fallback">${escapeHtml(name.slice(0, 1).toUpperCase())}</span>`;
 }
 
-async function loadDashboardStats() {
-  if (!dashboardSection) return;
+function serverRow(guild, mode = 'manage') {
+  const name = escapeHtml(guild?.name || 'Unknown server');
+  const subtitle = mode === 'manage' ? 'Meowz is already in this server.' : 'You have permission to add Meowz here.';
+  const action = mode === 'manage'
+    ? `<a class="server-row-action" href="/dashboard/server/${guild.id}" aria-label="Manage ${name}">›</a>`
+    : `<a class="server-row-action add" href="${inviteUrl(guild.id)}" target="_blank" rel="noopener" aria-label="Add Meowz to ${name}">+</a>`;
+
+  return `
+    <article class="server-row">
+      ${renderGuildIcon(guild)}
+      <div class="server-row-main">
+        <strong>${name}</strong>
+        <span>${subtitle}</span>
+      </div>
+      ${action}
+    </article>
+  `;
+}
+
+function emptyServerState(title, text, action = '') {
+  return `
+    <div class="server-empty-state">
+      <strong>${escapeHtml(title)}</strong>
+      <span>${escapeHtml(text)}</span>
+      ${action}
+    </div>
+  `;
+}
+
+async function loadDashboardServers() {
+  const managedWrap = document.querySelector('[data-managed-servers]');
+  const availableWrap = document.querySelector('[data-available-servers]');
+  if (!managedWrap || !availableWrap) return;
+
+  managedWrap.innerHTML = `
+    <div class="server-row skeleton-server"><span></span><div><b></b><i></i></div></div>
+    <div class="server-row skeleton-server"><span></span><div><b></b><i></i></div></div>
+  `;
+  availableWrap.innerHTML = `
+    <div class="server-row skeleton-server"><span></span><div><b></b><i></i></div></div>
+    <div class="server-row skeleton-server"><span></span><div><b></b><i></i></div></div>
+  `;
 
   try {
-    const data = await getBotStats();
-    if (!data?.ok) throw new Error(data?.error || 'Stats unavailable');
+    const response = await fetch('/api/user-guilds', { credentials: 'include' });
+    const data = await response.json();
+    if (!response.ok || !data?.authenticated) throw new Error(data?.error || 'Could not load servers.');
 
-    setDashboardText('[data-dashboard-stat="servers"]', typeof data.servers === 'number' ? data.servers.toLocaleString() : '—');
-    setDashboardText('[data-dashboard-stat="commands"]', typeof data.commands === 'number' ? data.commands.toLocaleString() : '—');
-    setDashboardText('[data-dashboard-stat="status"]', data.online ? 'Online' : 'Offline');
-    setDashboardText('[data-dashboard-stat="ping"]', typeof data.ping === 'number' ? `${data.ping}ms` : '—');
-  } catch {
-    setDashboardText('[data-dashboard-stat="servers"]', '—');
-    setDashboardText('[data-dashboard-stat="commands"]', '—');
-    setDashboardText('[data-dashboard-stat="status"]', 'API offline');
-    setDashboardText('[data-dashboard-stat="ping"]', '—');
+    const withBot = Array.isArray(data.withBot) ? data.withBot : [];
+    const available = Array.isArray(data.available) ? data.available : [];
+
+    managedWrap.innerHTML = withBot.length
+      ? withBot.map((guild) => serverRow(guild, 'manage')).join('')
+      : emptyServerState(
+          'No manageable servers detected yet.',
+          'Once Meowz can confirm your shared servers, they will appear here.',
+          `<a class="mini-action" href="${inviteUrl()}" target="_blank" rel="noopener">Invite Meowz</a>`
+        );
+
+    availableWrap.innerHTML = available.length
+      ? available.map((guild) => serverRow(guild, 'invite')).join('')
+      : emptyServerState('No available servers found.', 'Servers where you can add Meowz will appear here.');
+  } catch (err) {
+    managedWrap.innerHTML = emptyServerState('Could not load servers.', err.message || 'Try refreshing the page.');
+    availableWrap.innerHTML = emptyServerState('Could not load available servers.', 'Try refreshing the page.');
   }
 }
 
@@ -95,11 +167,13 @@ function renderDashboard(user) {
   const avatar = avatarUrl(user, 128);
 
   const title = dashboardSection.querySelector('[data-dashboard-title]');
+  const subtitle = dashboardSection.querySelector('[data-dashboard-subtitle]');
   const avatarEl = dashboardSection.querySelector('[data-dashboard-avatar]');
   const nameEl = dashboardSection.querySelector('[data-dashboard-name]');
   const usernameEl = dashboardSection.querySelector('[data-dashboard-username]');
 
   if (title) title.textContent = `Welcome back, ${name}`;
+  if (subtitle) subtitle.textContent = 'Choose a server to manage or add Meowz to a new one.';
   if (nameEl) nameEl.textContent = name;
   if (usernameEl) usernameEl.textContent = username;
 
@@ -109,7 +183,7 @@ function renderDashboard(user) {
     avatarEl.style.backgroundImage = avatar ? `url(${avatar})` : '';
   }
 
-  loadDashboardStats();
+  loadDashboardServers();
 }
 
 function renderLoggedOut() {
@@ -144,6 +218,7 @@ function renderLoggedIn(user) {
       </button>
 
       <div class="profile-dropdown" data-profile-menu role="menu" hidden>
+        <a href="/dashboard" role="menuitem">Dashboard</a>
         <a href="#settings" role="menuitem">Settings</a>
         <a class="logout-link" href="/auth/logout" role="menuitem">Logout</a>
       </div>
@@ -157,6 +232,7 @@ function renderLoggedIn(user) {
           <span>${username}</span>
         </div>
       </div>
+      <a href="/dashboard">Dashboard</a>
       <a href="#settings">Settings</a>
       <a class="logout-link" href="/auth/logout">Logout</a>
     </div>

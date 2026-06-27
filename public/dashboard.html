@@ -44,78 +44,82 @@
 
   <main id="top" class="page-main">
     <section class="section dashboard-section" data-dashboard hidden>
-      <div class="dashboard-hero dashboard-welcome-card">
+      <div class="dashboard-welcome-card">
         <div>
           <span class="dashboard-eyebrow">Dashboard</span>
           <h2 data-dashboard-title>Welcome back.</h2>
-          <p class="muted">Manage your Meowz experience, view live bot status and prepare your connected Discord account for future server tools.</p>
+          <p class="muted" data-dashboard-subtitle>Choose a server to manage or add Meowz to a new one.</p>
         </div>
+        <a class="btn btn-primary" href="/docs">Open documentation</a>
       </div>
 
-      <div class="dashboard-stats-grid" aria-label="Meowz dashboard stats">
-        <article class="dashboard-stat-card">
-          <span>Servers</span>
-          <strong data-dashboard-stat="servers">—</strong>
-        </article>
-        <article class="dashboard-stat-card">
-          <span>Commands</span>
-          <strong data-dashboard-stat="commands">—</strong>
-        </article>
-        <article class="dashboard-stat-card">
-          <span>Status</span>
-          <strong data-dashboard-stat="status">—</strong>
-        </article>
-        <article class="dashboard-stat-card">
-          <span>Ping</span>
-          <strong data-dashboard-stat="ping">—</strong>
-        </article>
-      </div>
-
-      <div class="dashboard-grid">
-        <article class="dashboard-card dashboard-profile-card">
-          <div class="dashboard-profile-top">
+      <div class="dashboard-overview-grid">
+        <article class="dashboard-card compact dashboard-account-card">
+          <div class="dashboard-profile-top compact-profile">
             <div class="dashboard-avatar" data-dashboard-avatar>U</div>
             <div>
+              <span class="dashboard-card-label">Connected account</span>
               <h3 data-dashboard-name>Discord user</h3>
               <p data-dashboard-username>@discord</p>
             </div>
           </div>
-
-          <div class="dashboard-info-list">
-            <div>
-              <span>Account</span>
-              <strong>Connected with Discord</strong>
-            </div>
-            <div>
-              <span>Access</span>
-              <strong>Dashboard enabled</strong>
-            </div>
-          </div>
+          <div class="connected-pill">Connected with Discord</div>
         </article>
 
-        <article class="dashboard-card dashboard-servers-card">
-          <span class="dashboard-card-label">Servers</span>
-          <h3>Servers with Meowz</h3>
-          <p class="muted">Server management will appear here once guild permissions are connected.</p>
-          <div class="dashboard-server-list" data-dashboard-servers>
-            <div class="dashboard-empty-state">
-              <strong>Coming next</strong>
-              <span>We will show the servers where you can manage Meowz after guild access is added.</span>
-            </div>
-          </div>
+        <article class="dashboard-card compact dashboard-stat-card">
+          <span>Status</span>
+          <strong data-dashboard-bot-status>Live</strong>
         </article>
-
-        <article class="dashboard-card">
-          <span class="dashboard-card-label">Quick actions</span>
-          <h3>Continue exploring</h3>
-          <p class="muted">Jump back into the most useful parts of the website.</p>
-          <div class="dashboard-actions">
-            <a class="mini-action" href="/docs">Open Documentation</a>
-            <a class="mini-action" href="/changelog">View Changelog</a>
-            <a class="mini-action" href="#settings">Manage Settings</a>
-          </div>
+        <article class="dashboard-card compact dashboard-stat-card">
+          <span>Commands</span>
+          <strong data-stat="commands">—</strong>
+        </article>
+        <article class="dashboard-card compact dashboard-stat-card">
+          <span>Bot servers</span>
+          <strong data-stat="servers">—</strong>
         </article>
       </div>
+
+      <div class="server-dashboard-grid">
+        <section class="dashboard-card server-list-card">
+          <div class="server-card-heading">
+            <div>
+              <span class="dashboard-card-label">Manage</span>
+              <h3>Servers with Meowz</h3>
+            </div>
+            <span class="server-card-note">Shared servers</span>
+          </div>
+          <div class="server-list" data-managed-servers>
+            <div class="server-row skeleton-server"><span></span><div><b></b><i></i></div></div>
+          </div>
+        </section>
+
+        <section class="dashboard-card server-list-card">
+          <div class="server-card-heading">
+            <div>
+              <span class="dashboard-card-label">Invite</span>
+              <h3>Available servers</h3>
+            </div>
+            <span class="server-card-note">Manage Server permission</span>
+          </div>
+          <div class="server-list" data-available-servers>
+            <div class="server-row skeleton-server"><span></span><div><b></b><i></i></div></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="dashboard-card dashboard-actions-card">
+        <div>
+          <span class="dashboard-card-label">Quick actions</span>
+          <h3>Common dashboard pages</h3>
+          <p class="muted">Jump to the parts of Meowz you will use most often.</p>
+        </div>
+        <div class="dashboard-actions">
+          <a class="mini-action" href="/docs">Documentation</a>
+          <a class="mini-action" href="/changelog">Changelog</a>
+          <a class="mini-action" href="#settings">Settings</a>
+        </div>
+      </section>
     </section>
 
 

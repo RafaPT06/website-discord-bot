@@ -42,6 +42,28 @@ function formatDiscordUser(user) {
   };
 }
 
+function hasManageGuildPermission(guild) {
+  try {
+    const permissions = BigInt(guild.permissions || '0');
+    const manageGuild = 1n << 5n;
+    const administrator = 1n << 3n;
+    return Boolean(guild.owner || (permissions & manageGuild) || (permissions & administrator));
+  } catch {
+    return Boolean(guild.owner);
+  }
+}
+
+function formatDiscordGuild(guild) {
+  return {
+    id: guild.id,
+    name: guild.name,
+    icon: guild.icon || null,
+    owner: Boolean(guild.owner),
+    permissions: String(guild.permissions || '0'),
+    canManage: hasManageGuildPermission(guild),
+  };
+}
+
 router.get('/discord', (req, res) => {
   try {
     const clientId = requiredEnv('DISCORD_CLIENT_ID');
@@ -108,7 +130,20 @@ router.get('/discord/callback', async (req, res) => {
       return redirectWithError(res, 'Could not fetch Discord user.');
     }
 
-    setSession(res, formatDiscordUser(userData));
+    let guilds = [];
+    try {
+      const guildsResponse = await fetch(`${DISCORD_API}/users/@me/guilds`, {
+        headers: { authorization: `Bearer ${tokenData.access_token}` },
+      });
+      const guildsData = await guildsResponse.json().catch(() => []);
+      if (guildsResponse.ok && Array.isArray(guildsData)) {
+        guilds = guildsData.map(formatDiscordGuild).filter((guild) => guild.canManage).slice(0, 80);
+      }
+    } catch {
+      guilds = [];
+    }
+
+    setSession(res, formatDiscordUser(userData), { guilds });
     return res.redirect('/dashboard?auth=success');
   } catch (err) {
     return redirectWithError(res, err.message);
