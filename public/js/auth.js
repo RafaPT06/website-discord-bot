@@ -1,28 +1,44 @@
 import { escapeHtml } from './utils.js';
 
 const authArea = document.querySelector('[data-auth-area]');
+const authOnlyEls = document.querySelectorAll('[data-auth-only]');
+const dashboardSection = document.querySelector('[data-dashboard]');
 let activeUser = null;
 
-function avatarUrl(user) {
+function avatarUrl(user, size = 96) {
   if (!user?.id || !user?.avatar) return null;
   const ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
-  return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}?size=96`;
+  return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}?size=${size}`;
 }
 
 function displayName(user) {
   return user?.globalName || user?.username || 'Discord User';
 }
 
-function renderAvatar(user) {
-  const image = avatarUrl(user);
+function usernameText(user) {
+  return user?.username ? `@${user.username}` : '@discord';
+}
+
+function renderAvatar(user, className = 'nav-user-avatar', size = 96) {
+  const image = avatarUrl(user, size);
   const name = displayName(user);
   const fallback = escapeHtml(name.slice(0, 1).toUpperCase() || 'U');
 
   if (!image) {
-    return `<span class="nav-user-avatar nav-user-avatar-fallback" aria-hidden="true">${fallback}</span>`;
+    return `<span class="${className} ${className}-fallback" aria-hidden="true">${fallback}</span>`;
   }
 
-  return `<span class="nav-user-avatar" aria-hidden="true"><img src="${image}" alt="" loading="lazy" /></span>`;
+  return `<span class="${className}" aria-hidden="true"><img src="${image}" alt="" loading="lazy" /></span>`;
+}
+
+function setAuthOnlyVisible(isVisible) {
+  authOnlyEls.forEach((el) => {
+    el.hidden = !isVisible;
+  });
+
+  if (dashboardSection) {
+    dashboardSection.hidden = !isVisible;
+  }
 }
 
 function closeProfileMenu() {
@@ -42,8 +58,34 @@ function toggleProfileMenu() {
   button.setAttribute('aria-expanded', String(willOpen));
 }
 
+function renderDashboard(user) {
+  if (!dashboardSection) return;
+
+  const name = displayName(user);
+  const username = usernameText(user);
+  const avatar = avatarUrl(user, 128);
+
+  const title = dashboardSection.querySelector('[data-dashboard-title]');
+  const avatarEl = dashboardSection.querySelector('[data-dashboard-avatar]');
+  const nameEl = dashboardSection.querySelector('[data-dashboard-name]');
+  const usernameEl = dashboardSection.querySelector('[data-dashboard-username]');
+  const idEl = dashboardSection.querySelector('[data-dashboard-id]');
+
+  if (title) title.textContent = `Welcome back, ${name}`;
+  if (nameEl) nameEl.textContent = name;
+  if (usernameEl) usernameEl.textContent = username;
+  if (idEl) idEl.textContent = user?.id || '—';
+
+  if (avatarEl) {
+    avatarEl.textContent = avatar ? '' : (name.slice(0, 1).toUpperCase() || 'U');
+    avatarEl.classList.toggle('has-image', Boolean(avatar));
+    avatarEl.style.backgroundImage = avatar ? `url(${avatar})` : '';
+  }
+}
+
 function renderLoggedOut() {
   activeUser = null;
+  setAuthOnlyVisible(false);
 
   if (!authArea) return;
   authArea.className = 'auth-area';
@@ -52,11 +94,13 @@ function renderLoggedOut() {
 
 function renderLoggedIn(user) {
   activeUser = user;
+  setAuthOnlyVisible(true);
+  renderDashboard(user);
 
   if (!authArea) return;
 
   const name = escapeHtml(displayName(user));
-  const username = escapeHtml(user?.username ? `@${user.username}` : '@discord');
+  const username = escapeHtml(usernameText(user));
 
   authArea.className = 'auth-area is-authenticated';
   authArea.innerHTML = `
@@ -71,9 +115,28 @@ function renderLoggedIn(user) {
       </button>
 
       <div class="profile-dropdown" data-profile-menu role="menu" hidden>
+        <div class="profile-dropdown-header">
+          ${renderAvatar(user, 'profile-dropdown-avatar')}
+          <div>
+            <strong>${name}</strong>
+            <span>${username}</span>
+          </div>
+        </div>
         <a href="#settings" role="menuitem">Settings</a>
         <a class="logout-link" href="/auth/logout" role="menuitem">Logout</a>
       </div>
+    </div>
+
+    <div class="mobile-account-panel">
+      <div class="mobile-account-header">
+        ${renderAvatar(user, 'mobile-account-avatar')}
+        <div>
+          <strong>${name}</strong>
+          <span>${username}</span>
+        </div>
+      </div>
+      <a href="#settings">Settings</a>
+      <a class="logout-link" href="/auth/logout">Logout</a>
     </div>
   `;
 

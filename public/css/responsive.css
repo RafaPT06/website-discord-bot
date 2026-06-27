@@ -334,3 +334,62 @@
     min-height: 48px;
   }
 }
+
+@media (max-width: 720px) {
+  .nav-links { background: rgba(8, 9, 19, .985); backdrop-filter: blur(24px); }
+  .auth-area.is-authenticated { width: 100%; display: block; }
+  .auth-area.is-authenticated .profile-menu-wrap { display: none; }
+  .mobile-account-panel {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: rgba(255,255,255,.045);
+  }
+  .mobile-account-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-account-header strong,
+  .mobile-account-header span { display: block; }
+  .mobile-account-header strong { color: var(--text); font-size: 1rem; }
+  .mobile-account-header span { color: var(--muted); margin-top: 3px; font-weight: 700; }
+  .mobile-account-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    flex: 0 0 auto;
+    color: white;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  }
+  .mobile-account-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .mobile-account-panel a {
+    width: 100%;
+    padding: 14px !important;
+    border-radius: 15px !important;
+    background: rgba(255,255,255,.055) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    font-weight: 850;
+    text-decoration: none;
+  }
+  .mobile-account-panel .logout-link { color: #fb7185 !important; }
+  .dashboard-hero { align-items: flex-start; flex-direction: column; padding: 22px; }
+  .dashboard-logout { width: 100%; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .dashboard-card { min-height: auto; padding: 20px; }
+  .dashboard-info-list div { flex-direction: column; gap: 6px; }
+  .dashboard-info-list strong { text-align: left; }
+}
+
+@media (max-width: 980px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}

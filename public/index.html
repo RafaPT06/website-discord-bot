@@ -22,9 +22,9 @@
   <div class="bg-glow bg-glow-two"></div>
 
   <header class="nav">
-    <a class="brand" href="#top" aria-label="Home" data-brand-link>
+    <a class="brand" href="#top" aria-label="Bot home">
       <span class="brand-icon" data-bot-avatar-small>M</span>
-      <span class="brand-label" data-bot-name-short>Meowz</span>
+      <span data-bot-name-short>Meowz</span>
     </a>
 
     <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
@@ -37,6 +37,7 @@
       <a href="#top" data-nav-link>Home</a>
       <a href="#commands" data-nav-link>Documentation</a>
       <a href="#changelog" data-nav-link>Changelog</a>
+      <a class="auth-only-nav" href="#dashboard" data-nav-link data-auth-only hidden>Dashboard</a>
       <div class="auth-area auth-loading" data-auth-area>Checking login...</div>
     </nav>
   </header>
@@ -81,6 +82,57 @@
 
         <p class="updated" data-updated>Loading live stats...</p>
       </aside>
+    </section>
+
+    <section id="dashboard" class="section dashboard-section" data-dashboard hidden>
+      <div class="dashboard-hero">
+        <div>
+          <span class="dashboard-eyebrow">Dashboard</span>
+          <h2 data-dashboard-title>Welcome back.</h2>
+          <p class="muted">Manage your Meowz experience and view your connected Discord account.</p>
+        </div>
+        <a class="btn btn-secondary dashboard-logout" href="/auth/logout">Logout</a>
+      </div>
+
+      <div class="dashboard-grid">
+        <article class="dashboard-card dashboard-profile-card">
+          <div class="dashboard-profile-top">
+            <div class="dashboard-avatar" data-dashboard-avatar>U</div>
+            <div>
+              <h3 data-dashboard-name>Discord user</h3>
+              <p data-dashboard-username>@discord</p>
+            </div>
+          </div>
+
+          <div class="dashboard-info-list">
+            <div>
+              <span>Discord ID</span>
+              <strong data-dashboard-id>—</strong>
+            </div>
+            <div>
+              <span>Status</span>
+              <strong>Connected</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="dashboard-card">
+          <span class="dashboard-card-label">Servers</span>
+          <h3>Servers with Meowz</h3>
+          <p class="muted">Server management will appear here once guild permissions are connected.</p>
+          <div class="dashboard-placeholder">Coming next</div>
+        </article>
+
+        <article class="dashboard-card">
+          <span class="dashboard-card-label">Quick actions</span>
+          <h3>Account actions</h3>
+          <p class="muted">Settings are prepared for the next dashboard step.</p>
+          <div class="dashboard-actions">
+            <a class="mini-action" href="#settings">Settings</a>
+            <a class="mini-action danger" href="/auth/logout">Logout</a>
+          </div>
+        </article>
+      </div>
     </section>
 
     <section id="features" class="section">

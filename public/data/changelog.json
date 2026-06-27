@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.12.0",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "New",
+        "text": "Added the first authenticated dashboard section with a personalized welcome and Discord account card."
+      },
+      {
+        "type": "Improved",
+        "text": "Kept the Meowz brand fixed in the navbar while showing the logged-in user avatar and name on the right."
+      },
+      {
+        "type": "Improved",
+        "text": "Cleaned up the mobile authenticated menu with a simple account header, Settings and Logout."
+      }
+    ]
+  },
+  {
     "version": "v1.11.0",
     "date": "2026-06-26",
     "changes": [
@@ -42,24 +60,6 @@
       {
         "type": "Improved",
         "text": "Replaced the placeholder login button with a real Discord login state in the navbar."
-      }
-    ]
-  },
-  {
-    "version": "v1.9.0",
-    "date": "2026-06-26",
-    "changes": [
-      {
-        "type": "Improved",
-        "text": "Reorganized the website project into modular CSS and JavaScript folders."
-      },
-      {
-        "type": "New",
-        "text": "Added an OAuth-ready server structure for future Discord login work."
-      },
-      {
-        "type": "Fixed",
-        "text": "Removed legacy style.css and script.js references so the project has one clean structure."
       }
     ]
   },
