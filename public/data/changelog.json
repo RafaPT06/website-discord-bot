@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.13.0",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Made server overview headers match the blockless dashboard page layout."
+      },
+      {
+        "type": "Improved",
+        "text": "Standardized page header spacing across dashboard, documentation and changelog pages."
+      }
+    ]
+  },
+  {
     "version": "v1.19.1",
     "date": "2026-06-27",
     "changes": [

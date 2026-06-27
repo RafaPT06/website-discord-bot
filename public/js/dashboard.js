@@ -100,19 +100,19 @@ function renderServerDetail(data) {
   ];
 
   els.detailContent.innerHTML = `
-    <div class="server-detail-hero">
+    <div class="server-detail-hero server-detail-hero-plain">
       <a class="server-breadcrumb" href="/dashboard">Dashboard / ${escapeHtml(server.name)}</a>
-      <div class="server-detail-heading">
+      <div class="server-detail-heading server-detail-heading-plain">
         ${serverIcon(server, 'server-detail-icon')}
         <div>
           <span class="dashboard-eyebrow">Server overview</span>
           <h2>${escapeHtml(server.name)}</h2>
+          <p class="muted">Basic server information is ready. Customization tools are coming soon.</p>
           <div class="server-detail-pills">
             <span>${escapeHtml(memberText)}</span>
             <span>Manage Server</span>
             <span>Bot Installed</span>
           </div>
-          <p class="muted">Basic server information is ready. Customization tools are coming soon.</p>
         </div>
       </div>
     </div>
