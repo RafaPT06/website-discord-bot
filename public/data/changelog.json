@@ -1,19 +1,19 @@
 [
   {
-    "version": "v1.9.1",
+    "version": "v1.15.0",
     "date": "2026-06-27",
     "changes": [
       {
         "type": "Fixed",
-        "text": "Removed the old connected account and stats blocks from the dashboard."
-      },
-      {
-        "type": "Fixed",
-        "text": "Improved server list fallback states when bot guild detection is not available."
+        "text": "Corrected dashboard server filtering so only manageable shared servers appear under Servers with Meowz."
       },
       {
         "type": "Improved",
-        "text": "Made the dashboard focus more clearly on server management."
+        "text": "Removed connected account and bot stat cards from the dashboard overview."
+      },
+      {
+        "type": "Improved",
+        "text": "Stored Discord guild permissions from OAuth so Available Servers can show servers where the user can add Meowz."
       }
     ]
   },

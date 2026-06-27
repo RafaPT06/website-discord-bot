@@ -137,7 +137,7 @@ router.get('/discord/callback', async (req, res) => {
       });
       const guildsData = await guildsResponse.json().catch(() => []);
       if (guildsResponse.ok && Array.isArray(guildsData)) {
-        guilds = guildsData.map(formatDiscordGuild).filter((guild) => guild.canManage).slice(0, 80);
+        guilds = guildsData.map(formatDiscordGuild).slice(0, 200);
       }
     } catch {
       guilds = [];

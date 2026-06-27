@@ -51,24 +51,31 @@ router.get('/user-guilds', async (req, res) => {
   if (!session?.user) return res.status(401).json({ authenticated: false, error: 'Login required.' });
 
   const userGuilds = Array.isArray(session.guilds) ? session.guilds : [];
-  const manageableGuilds = userGuilds.filter((guild) => guild.canManage);
+  const manageableGuilds = userGuilds.filter((guild) => guild?.canManage);
   const botGuildIds = await fetchBotGuildIds();
 
-  const detectionActive = botGuildIds.size > 0;
-  const withBot = detectionActive
-    ? manageableGuilds.filter((guild) => botGuildIds.has(String(guild.id)))
-    : [];
-  const available = detectionActive
-    ? manageableGuilds.filter((guild) => !botGuildIds.has(String(guild.id)))
-    : manageableGuilds;
+  const withBot = manageableGuilds
+    .filter((guild) => botGuildIds.has(String(guild.id)))
+    .map((guild) => ({ ...guild, botInstalled: true }));
+
+  const available = manageableGuilds
+    .filter((guild) => !botGuildIds.has(String(guild.id)))
+    .map((guild) => ({ ...guild, botInstalled: false }));
 
   res.json({
     authenticated: true,
     user: session.user,
     withBot,
     available,
-    manageableCount: manageableGuilds.length,
-    botGuildDetection: detectionActive ? 'active' : 'unavailable',
+    counts: {
+      userGuilds: userGuilds.length,
+      manageable: manageableGuilds.length,
+      withBot: withBot.length,
+      available: available.length,
+      botGuilds: botGuildIds.size,
+    },
+    botGuildDetection: botGuildIds.size ? 'active' : 'unavailable',
+    updatedAt: new Date().toISOString(),
   });
 });
 
