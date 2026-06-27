@@ -1,15 +1,41 @@
 import { initAuth } from './auth.js';
-import { loadChangelog } from './changelog.js';
-import { initDashboard } from './dashboard.js';
-import { initDocumentation } from './documentation.js';
 import { initNavigation } from './navigation.js';
-import { initPageModal } from './pageModal.js';
-import { initStats } from './stats.js';
+
+function setFooterYear() {
+  document.querySelectorAll('[data-footer-year]').forEach((el) => {
+    el.textContent = new Date().getFullYear();
+  });
+}
+
+async function bootPageModules() {
+  const jobs = [];
+
+  if (document.querySelector('[data-stat]') || document.querySelector('[data-status-pill]')) {
+    jobs.push(import('./stats.js').then(({ initStats }) => initStats()));
+  }
+
+  if (document.querySelector('[data-commands-body]')) {
+    jobs.push(Promise.all([
+      import('./pageModal.js'),
+      import('./documentation.js'),
+    ]).then(([modal, docs]) => {
+      modal.initPageModal();
+      docs.initDocumentation();
+    }));
+  }
+
+  if (document.querySelector('[data-changelog-list]') || document.querySelector('[data-changelog]')) {
+    jobs.push(import('./changelog.js').then(({ loadChangelog }) => loadChangelog()));
+  }
+
+  if (document.querySelector('[data-dashboard]') || document.querySelector('[data-dashboard-guest]')) {
+    jobs.push(import('./dashboard.js').then(({ initDashboard }) => initDashboard()));
+  }
+
+  await Promise.allSettled(jobs);
+}
 
 initNavigation();
-initPageModal();
-initStats();
-initDocumentation();
-loadChangelog();
+setFooterYear();
 initAuth();
-initDashboard();
+bootPageModules();

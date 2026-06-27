@@ -59,7 +59,7 @@ function requireSession(req, res) {
 }
 
 async function getDashboardGuildData(session) {
-  const botData = await requestBotApi('/api/guilds');
+  const botData = await requestBotApi('/api/guilds', { ttlMs: 30000 });
   const botGuilds = getBotGuildsFromResponse(botData);
   const botGuildMap = new Map(botGuilds.map((guild) => [guild.id, guild]));
   const manageableGuilds = Array.isArray(session.guilds) ? session.guilds : [];
@@ -106,7 +106,7 @@ router.get('/me', (req, res) => {
 
 router.get('/bot-stats', async (req, res) => {
   try {
-    const data = await requestBotApi('/api/stats');
+    const data = await requestBotApi('/api/stats', { ttlMs: 30000 });
     res.json(data);
   } catch (err) {
     res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not reach the bot API.' });
@@ -115,7 +115,7 @@ router.get('/bot-stats', async (req, res) => {
 
 router.get('/bot-commands', async (req, res) => {
   try {
-    const data = await requestBotApi('/api/commands');
+    const data = await requestBotApi('/api/commands', { ttlMs: 300000 });
     res.json(data);
   } catch (err) {
     res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not reach the bot API.' });

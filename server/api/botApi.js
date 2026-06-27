@@ -1,4 +1,11 @@
-async function requestBotApi(pathname) {
+const cache = new Map();
+
+function cacheKey(pathname) {
+  return pathname;
+}
+
+async function requestBotApi(pathname, options = {}) {
+  const { ttlMs = 0 } = options;
   const botApiUrl = process.env.BOT_API_URL;
   const botApiToken = process.env.BOT_API_TOKEN;
 
@@ -6,6 +13,12 @@ async function requestBotApi(pathname) {
     const error = new Error('BOT_API_URL is not configured on the website service.');
     error.statusCode = 503;
     throw error;
+  }
+
+  const key = cacheKey(pathname);
+  const cached = cache.get(key);
+  if (ttlMs && cached && Date.now() - cached.createdAt < ttlMs) {
+    return cached.data;
   }
 
   const headers = {};
@@ -20,6 +33,7 @@ async function requestBotApi(pathname) {
     throw error;
   }
 
+  if (ttlMs) cache.set(key, { createdAt: Date.now(), data });
   return data;
 }
 

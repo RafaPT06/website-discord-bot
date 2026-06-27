@@ -1,5 +1,27 @@
 [
   {
+    "version": "v1.18.0",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Consolidated website styles into a single stylesheet to reduce render-blocking requests."
+      },
+      {
+        "type": "Improved",
+        "text": "Lazy-loaded page-specific JavaScript so pages only load the modules they need."
+      },
+      {
+        "type": "Improved",
+        "text": "Added short caching for bot stats, commands and dashboard server data to improve perceived responsiveness."
+      },
+      {
+        "type": "Improved",
+        "text": "Reduced heavy blur effects on mobile for smoother navigation and interactions."
+      }
+    ]
+  },
+  {
     "version": "v1.17.0",
     "date": "2026-06-27",
     "changes": [
