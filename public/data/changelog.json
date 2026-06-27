@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.19.0",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Fixed mobile dashboard server sections so installed and available server cards stack vertically instead of squeezing side by side."
+      },
+      {
+        "type": "Fixed",
+        "text": "Improved server row spacing, text truncation and action button alignment on small screens."
+      }
+    ]
+  },
+  {
     "version": "v1.18.0",
     "date": "2026-06-27",
     "changes": [
