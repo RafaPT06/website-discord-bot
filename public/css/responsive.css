@@ -393,3 +393,27 @@
 @media (max-width: 980px) {
   .dashboard-grid { grid-template-columns: 1fr; }
 }
+
+
+@media (max-width: 900px) {
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .dashboard-stat-card {
+    min-height: auto;
+    padding: 18px;
+  }
+  .dashboard-welcome-card h2 {
+    font-size: clamp(2.35rem, 11vw, 3.4rem);
+  }
+  .dashboard-actions .mini-action {
+    justify-content: center;
+  }
+}

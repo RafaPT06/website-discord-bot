@@ -1,3 +1,4 @@
+import { getBotStats } from './api.js';
 import { escapeHtml } from './utils.js';
 
 const authArea = document.querySelector('[data-auth-area]');
@@ -62,6 +63,30 @@ function toggleProfileMenu() {
   button.setAttribute('aria-expanded', String(willOpen));
 }
 
+function setDashboardText(selector, value) {
+  const el = dashboardSection?.querySelector(selector);
+  if (el) el.textContent = value;
+}
+
+async function loadDashboardStats() {
+  if (!dashboardSection) return;
+
+  try {
+    const data = await getBotStats();
+    if (!data?.ok) throw new Error(data?.error || 'Stats unavailable');
+
+    setDashboardText('[data-dashboard-stat="servers"]', typeof data.servers === 'number' ? data.servers.toLocaleString() : '—');
+    setDashboardText('[data-dashboard-stat="commands"]', typeof data.commands === 'number' ? data.commands.toLocaleString() : '—');
+    setDashboardText('[data-dashboard-stat="status"]', data.online ? 'Online' : 'Offline');
+    setDashboardText('[data-dashboard-stat="ping"]', typeof data.ping === 'number' ? `${data.ping}ms` : '—');
+  } catch {
+    setDashboardText('[data-dashboard-stat="servers"]', '—');
+    setDashboardText('[data-dashboard-stat="commands"]', '—');
+    setDashboardText('[data-dashboard-stat="status"]', 'API offline');
+    setDashboardText('[data-dashboard-stat="ping"]', '—');
+  }
+}
+
 function renderDashboard(user) {
   if (!dashboardSection) return;
 
@@ -73,18 +98,18 @@ function renderDashboard(user) {
   const avatarEl = dashboardSection.querySelector('[data-dashboard-avatar]');
   const nameEl = dashboardSection.querySelector('[data-dashboard-name]');
   const usernameEl = dashboardSection.querySelector('[data-dashboard-username]');
-  const idEl = dashboardSection.querySelector('[data-dashboard-id]');
 
   if (title) title.textContent = `Welcome back, ${name}`;
   if (nameEl) nameEl.textContent = name;
   if (usernameEl) usernameEl.textContent = username;
-  if (idEl) idEl.textContent = user?.id || '—';
 
   if (avatarEl) {
     avatarEl.textContent = avatar ? '' : (name.slice(0, 1).toUpperCase() || 'U');
     avatarEl.classList.toggle('has-image', Boolean(avatar));
     avatarEl.style.backgroundImage = avatar ? `url(${avatar})` : '';
   }
+
+  loadDashboardStats();
 }
 
 function renderLoggedOut() {
@@ -119,14 +144,6 @@ function renderLoggedIn(user) {
       </button>
 
       <div class="profile-dropdown" data-profile-menu role="menu" hidden>
-        <div class="profile-dropdown-header">
-          ${renderAvatar(user, 'profile-dropdown-avatar')}
-          <div>
-            <strong>${name}</strong>
-            <span>${username}</span>
-          </div>
-        </div>
-        <a href="/dashboard" role="menuitem">Dashboard</a>
         <a href="#settings" role="menuitem">Settings</a>
         <a class="logout-link" href="/auth/logout" role="menuitem">Logout</a>
       </div>
@@ -140,7 +157,6 @@ function renderLoggedIn(user) {
           <span>${username}</span>
         </div>
       </div>
-      <a href="/dashboard">Dashboard</a>
       <a href="#settings">Settings</a>
       <a class="logout-link" href="/auth/logout">Logout</a>
     </div>

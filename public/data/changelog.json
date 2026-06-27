@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.14.0",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Reworked the dashboard overview so the main card focuses on useful actions instead of a large logout button."
+      },
+      {
+        "type": "New",
+        "text": "Added live dashboard stats for servers, commands, status and ping."
+      },
+      {
+        "type": "Improved",
+        "text": "Replaced the Discord ID block with cleaner account connection details and a servers preview card."
+      }
+    ]
+  },
+  {
     "version": "v1.13.0",
     "date": "2026-06-27",
     "changes": [
