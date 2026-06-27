@@ -13,6 +13,7 @@ function createApp() {
   app.get('/', (req, res) => res.sendFile(path.join(publicPath, 'index.html')));
   app.get('/dashboard', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
   app.get('/dashboard/server/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
+  app.get('/dashboard/server/:guildId/:section', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
   app.get('/docs', (req, res) => res.sendFile(path.join(publicPath, 'docs.html')));
   app.get('/documentation', (req, res) => res.redirect('/docs'));
   app.get('/commands', (req, res) => res.redirect('/docs'));

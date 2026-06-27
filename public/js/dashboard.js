@@ -15,9 +15,9 @@ const els = {
   detailContent: document.querySelector('[data-server-detail-content]'),
 };
 
-function currentServerId() {
-  const match = window.location.pathname.match(/^\/dashboard\/server\/([^/]+)\/?$/);
-  return match ? decodeURIComponent(match[1]) : null;
+function currentServerRoute() {
+  const match = window.location.pathname.match(/^\/dashboard\/server\/([^/]+)(?:\/([^/]+))?\/?$/);
+  return match ? { id: decodeURIComponent(match[1]), section: match[2] ? decodeURIComponent(match[2]) : 'overview' } : null;
 }
 
 function serverInitial(name = 'S') {
@@ -83,31 +83,31 @@ function renderDashboardError(message) {
   if (els.available) els.available.innerHTML = html;
 }
 
-function renderServerDetail(data) {
-  if (!els.home || !els.detail || !els.detailContent) return;
-  const server = data.server;
-  els.home.hidden = true;
-  els.detail.hidden = false;
-  document.title = `${server.name} — Meowz Dashboard`;
+function serverManageUrl(server, section = 'overview') {
+  const base = `/dashboard/server/${encodeURIComponent(server.id)}`;
+  return section === 'overview' ? base : `${base}/${encodeURIComponent(section)}`;
+}
 
+function renderServerHeader(server, activeSection = 'overview') {
   const memberText = typeof server.memberCount === 'number' ? `${formatNumber(server.memberCount)} member${server.memberCount === 1 ? '' : 's'}` : 'Members unavailable';
-  const tools = [
-    ['Leveling settings', 'XP system, level roles and leaderboards.'],
-    ['Welcome messages', 'Member join and leave messages.'],
-    ['Logs', 'Server activity and audit events.'],
-    ['AI image access', 'Control who can use image editing.'],
-    ['Moderation tools', 'Warnings, automod and actions.'],
+  const tabs = [
+    ['overview', 'Overview'],
+    ['leveling', 'Leveling'],
+    ['welcome', 'Welcome messages'],
+    ['logs', 'Logs'],
+    ['ai', 'AI image access'],
+    ['moderation', 'Moderation tools'],
   ];
 
-  els.detailContent.innerHTML = `
+  return `
     <div class="server-detail-hero server-detail-hero-plain">
       <a class="server-breadcrumb" href="/dashboard">Dashboard / ${escapeHtml(server.name)}</a>
       <div class="server-detail-heading server-detail-heading-plain">
         ${serverIcon(server, 'server-detail-icon')}
         <div>
-          <span class="dashboard-eyebrow">Server overview</span>
+          <span class="dashboard-eyebrow">Server dashboard</span>
           <h2>${escapeHtml(server.name)}</h2>
-          <p class="muted">Basic server information is ready. Customization tools are coming soon.</p>
+          <p class="muted">Manage Meowz features for this server.</p>
           <div class="server-detail-pills">
             <span>${escapeHtml(memberText)}</span>
             <span>Manage Server</span>
@@ -115,8 +115,23 @@ function renderServerDetail(data) {
           </div>
         </div>
       </div>
+      <nav class="server-section-tabs" aria-label="Server dashboard sections">
+        ${tabs.map(([section, label]) => `<a href="${escapeHtml(serverManageUrl(server, section))}" class="${section === activeSection ? 'is-active' : ''}">${escapeHtml(label)}</a>`).join('')}
+      </nav>
     </div>
+  `;
+}
 
+function renderServerOverview(server) {
+  const tools = [
+    ['Leveling settings', 'XP system, level roles and leaderboards.', 'leveling'],
+    ['Welcome messages', 'Member join and leave messages.', 'welcome'],
+    ['Logs', 'Server activity and audit events.', 'logs'],
+    ['AI image access', 'Control who can use image editing.', 'ai'],
+    ['Moderation tools', 'Warnings, automod and actions.', 'moderation'],
+  ];
+
+  return `
     <div class="server-detail-grid">
       <article class="dashboard-card compact">
         <span class="dashboard-card-label">Information</span>
@@ -142,11 +157,91 @@ function renderServerDetail(data) {
         <h3>Server tools</h3>
         <p class="muted">These sections will become configurable from the website later.</p>
         <div class="coming-grid">
-          ${tools.map(([title, description]) => `<span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(description)}</small><em>Coming soon</em></span>`).join('')}
+          ${tools.map(([title, description, section]) => `<a href="${escapeHtml(serverManageUrl(server, section))}"><strong>${escapeHtml(title)}</strong><small>${escapeHtml(description)}</small><em>Coming soon</em></a>`).join('')}
         </div>
       </article>
     </div>
   `;
+}
+
+function renderLevelingPage(server) {
+  return `
+    <div class="settings-page-grid">
+      <article class="dashboard-card compact settings-main-card">
+        <span class="dashboard-card-label">Leveling settings</span>
+        <h3>Leveling</h3>
+        <p class="muted">Configure XP, level-up messages and level rewards from the website. Editing is coming soon.</p>
+        <div class="settings-list">
+          <div><span>Status</span><strong>Coming soon</strong></div>
+          <div><span>Level-up channel</span><strong>Not configured</strong></div>
+          <div><span>XP per message</span><strong>15 XP</strong></div>
+          <div><span>Cooldown</span><strong>60 seconds</strong></div>
+          <div><span>Leaderboard</span><strong>Available in Discord</strong></div>
+        </div>
+      </article>
+
+      <article class="dashboard-card compact settings-side-card">
+        <span class="dashboard-card-label">Level roles</span>
+        <h3>Rewards</h3>
+        <p class="muted">Level role management will be added here later.</p>
+        <div class="settings-empty-state">
+          <strong>No roles configured yet.</strong>
+          <span>When this section is enabled, you will be able to add level rewards from the dashboard.</span>
+        </div>
+      </article>
+
+      <article class="dashboard-card compact server-coming-card">
+        <span class="dashboard-card-label">Preview</span>
+        <h3>What this page will manage</h3>
+        <div class="coming-grid coming-grid-two">
+          <span><strong>XP settings</strong><small>Adjust message XP and cooldowns.</small><em>Coming soon</em></span>
+          <span><strong>Level-up messages</strong><small>Choose where level-up messages are sent.</small><em>Coming soon</em></span>
+          <span><strong>Level roles</strong><small>Create rewards for reaching specific levels.</small><em>Coming soon</em></span>
+          <span><strong>Leaderboard</strong><small>View server ranking tools from the dashboard.</small><em>Coming soon</em></span>
+        </div>
+        <button class="btn btn-secondary disabled-button" type="button" disabled>Save changes coming soon</button>
+      </article>
+    </div>
+  `;
+}
+
+function renderPlaceholderSettingsPage(server, section) {
+  const labels = {
+    welcome: ['Welcome messages', 'Configure join, leave and greeting messages.'],
+    logs: ['Logs', 'Configure server activity and audit event logging.'],
+    ai: ['AI image access', 'Control who can use image editing in this server.'],
+    moderation: ['Moderation tools', 'Configure warnings, automod and moderation actions.'],
+  };
+  const [title, description] = labels[section] || ['Server tools', 'This server section is coming soon.'];
+  return `
+    <div class="settings-page-grid">
+      <article class="dashboard-card compact settings-main-card">
+        <span class="dashboard-card-label">Coming soon</span>
+        <h3>${escapeHtml(title)}</h3>
+        <p class="muted">${escapeHtml(description)}</p>
+        <div class="settings-empty-state">
+          <strong>This section is not available yet.</strong>
+          <span>For now, continue using the Discord commands while this dashboard page is being built.</span>
+        </div>
+      </article>
+    </div>
+  `;
+}
+
+function renderServerDetail(data, section = 'overview') {
+  if (!els.home || !els.detail || !els.detailContent) return;
+  const server = data.server;
+  const allowedSections = new Set(['overview', 'leveling', 'welcome', 'logs', 'ai', 'moderation']);
+  const activeSection = allowedSections.has(section) ? section : 'overview';
+  els.home.hidden = true;
+  els.detail.hidden = false;
+  document.title = `${server.name} — Meowz Dashboard`;
+
+  let content = renderServerOverview(server);
+  if (activeSection === 'leveling') content = renderLevelingPage(server);
+  if (activeSection !== 'overview' && activeSection !== 'leveling') content = renderPlaceholderSettingsPage(server, activeSection);
+
+  els.detailContent.innerHTML = `${renderServerHeader(server, activeSection)}${content}`;
 }
 
 function renderServerDetailError(message) {
@@ -163,10 +258,10 @@ function renderServerDetailError(message) {
   `;
 }
 
-async function loadServerDetail(id) {
+async function loadServerDetail(id, section = 'overview') {
   try {
     const data = await getDashboardServer(id);
-    renderServerDetail(data);
+    renderServerDetail(data, section);
   } catch (err) {
     renderServerDetailError(err.message);
   }
@@ -186,9 +281,9 @@ async function loadDashboardHome() {
 
 export function initDashboard() {
   if (!els.home && !els.detail) return;
-  const serverId = currentServerId();
-  if (serverId) {
-    loadServerDetail(serverId);
+  const serverRoute = currentServerRoute();
+  if (serverRoute) {
+    loadServerDetail(serverRoute.id, serverRoute.section);
   } else {
     loadDashboardHome();
   }

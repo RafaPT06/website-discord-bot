@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.20.0",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "New",
+        "text": "Added the first server feature page for Leveling settings."
+      },
+      {
+        "type": "New",
+        "text": "Added server dashboard section tabs for Overview, Leveling, Welcome messages, Logs, AI image access and Moderation tools."
+      },
+      {
+        "type": "Improved",
+        "text": "Linked server tool cards to their related dashboard sections."
+      }
+    ]
+  },
+  {
     "version": "v1.13.0",
     "date": "2026-06-27",
     "changes": [
