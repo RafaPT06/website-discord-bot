@@ -675,3 +675,115 @@ h1 { max-width: 720px; margin: 20px 0 18px; font-size: clamp(2.75rem, 8vw, 6.4re
     padding: 0 14px;
   }
 }
+
+/* Dashboard spacing pass */
+.server-dashboard-grid {
+  gap: 14px;
+  margin-top: 16px;
+  margin-bottom: 14px;
+}
+
+.server-list-card {
+  min-height: auto;
+  padding: 20px;
+}
+
+.server-card-heading {
+  margin-bottom: 14px;
+  gap: 10px;
+}
+
+.server-card-heading h3 {
+  margin-bottom: 6px;
+}
+
+.compact-muted {
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.server-list {
+  gap: 8px;
+}
+
+.server-row {
+  min-height: 76px;
+  padding: 10px;
+  border-radius: 18px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.server-row:active,
+.server-row:focus,
+.server-row:focus-visible {
+  outline: none;
+  transform: none;
+  background: rgba(255,255,255,.055);
+  border-color: rgba(255,255,255,.12);
+}
+
+.server-row:hover {
+  background: rgba(139,92,246,.075);
+}
+
+.server-empty-state {
+  padding: 16px;
+  border-radius: 18px;
+}
+
+.dashboard-actions-card {
+  padding: 20px;
+}
+
+@media (max-width: 720px) {
+  .server-dashboard-grid {
+    gap: 14px;
+    margin-top: 14px;
+  }
+
+  .server-list-card {
+    padding: 18px;
+    border-radius: 28px;
+  }
+
+  .server-card-heading {
+    margin-bottom: 12px;
+    align-items: center;
+  }
+
+  .server-card-note {
+    white-space: nowrap;
+  }
+
+  .server-list {
+    gap: 8px;
+  }
+
+  .server-row {
+    min-height: 78px;
+    padding: 10px;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+  }
+
+  .server-icon,
+  .skeleton-server span {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+  }
+
+  .server-row-action {
+    min-width: 66px;
+    height: 40px;
+    padding: 0 12px;
+  }
+
+  .server-empty-state {
+    padding: 16px;
+  }
+
+  .dashboard-actions-card {
+    padding: 18px;
+  }
+}

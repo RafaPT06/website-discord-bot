@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.16.2",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Tightened dashboard server card spacing and reduced oversized mobile gaps."
+      },
+      {
+        "type": "Fixed",
+        "text": "Prevented server rows from turning into a large blue highlighted block when tapped on mobile."
+      }
+    ]
+  },
+  {
     "version": "v1.16.1",
     "date": "2026-06-27",
     "changes": [
