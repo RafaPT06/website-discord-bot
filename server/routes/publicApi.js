@@ -54,15 +54,21 @@ router.get('/user-guilds', async (req, res) => {
   const manageableGuilds = userGuilds.filter((guild) => guild.canManage);
   const botGuildIds = await fetchBotGuildIds();
 
-  const withBot = manageableGuilds.filter((guild) => botGuildIds.has(String(guild.id)));
-  const available = manageableGuilds.filter((guild) => !botGuildIds.has(String(guild.id)));
+  const detectionActive = botGuildIds.size > 0;
+  const withBot = detectionActive
+    ? manageableGuilds.filter((guild) => botGuildIds.has(String(guild.id)))
+    : [];
+  const available = detectionActive
+    ? manageableGuilds.filter((guild) => !botGuildIds.has(String(guild.id)))
+    : manageableGuilds;
 
   res.json({
     authenticated: true,
     user: session.user,
     withBot,
     available,
-    botGuildDetection: botGuildIds.size ? 'active' : 'unavailable',
+    manageableCount: manageableGuilds.length,
+    botGuildDetection: detectionActive ? 'active' : 'unavailable',
   });
 });
 

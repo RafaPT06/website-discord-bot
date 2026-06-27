@@ -351,3 +351,39 @@ h1 { max-width: 720px; margin: 20px 0 18px; font-size: clamp(2.75rem, 8vw, 6.4re
 .skeleton-server span { width: 52px; height: 52px; border-radius: 18px; }
 .skeleton-server b { width: 140px; height: 18px; margin-bottom: 10px; }
 .skeleton-server i { width: 210px; max-width: 100%; height: 14px; }
+
+
+/* Dashboard cleanup after server-focused rework */
+.dashboard-overview-grid,
+.dashboard-account-card,
+.dashboard-stat-card {
+  display: none !important;
+}
+
+.server-dashboard-grid {
+  margin-top: 24px;
+}
+
+.dashboard-welcome-card {
+  align-items: center;
+}
+
+.dashboard-welcome-card .btn {
+  white-space: nowrap;
+}
+
+.server-empty-state .mini-action {
+  margin-top: 14px;
+  display: inline-flex;
+}
+
+@media (max-width: 720px) {
+  .dashboard-welcome-card {
+    align-items: stretch;
+  }
+
+  .dashboard-welcome-card .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

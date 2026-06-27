@@ -136,26 +136,35 @@ async function loadDashboardServers() {
 
   try {
     const response = await fetch('/api/user-guilds', { credentials: 'include' });
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok || !data?.authenticated) throw new Error(data?.error || 'Could not load servers.');
 
     const withBot = Array.isArray(data.withBot) ? data.withBot : [];
     const available = Array.isArray(data.available) ? data.available : [];
+    const allManageableCount = Number(data.manageableCount || withBot.length + available.length || 0);
+    const detectionUnavailable = data.botGuildDetection !== 'active';
 
     managedWrap.innerHTML = withBot.length
       ? withBot.map((guild) => serverRow(guild, 'manage')).join('')
       : emptyServerState(
-          'No manageable servers detected yet.',
-          'Once Meowz can confirm your shared servers, they will appear here.',
+          detectionUnavailable ? 'Server detection is not fully connected yet.' : 'No servers with Meowz found.',
+          detectionUnavailable
+            ? 'The dashboard needs the bot API /api/guilds endpoint or BOT_GUILD_IDS to detect where Meowz is installed.'
+            : 'Servers where Meowz is installed and you can manage them will appear here.',
           `<a class="mini-action" href="${inviteUrl()}" target="_blank" rel="noopener">Invite Meowz</a>`
         );
 
     availableWrap.innerHTML = available.length
       ? available.map((guild) => serverRow(guild, 'invite')).join('')
-      : emptyServerState('No available servers found.', 'Servers where you can add Meowz will appear here.');
+      : emptyServerState(
+          allManageableCount ? 'No available servers to invite.' : 'No manageable servers found.',
+          allManageableCount
+            ? 'Every manageable server we can detect already has Meowz, or server detection needs the bot guild list.'
+            : 'Only servers where you have Manage Server permission are shown here. Try logging out and logging in again if this looks wrong.'
+        );
   } catch (err) {
-    managedWrap.innerHTML = emptyServerState('Could not load servers.', err.message || 'Try refreshing the page.');
-    availableWrap.innerHTML = emptyServerState('Could not load available servers.', 'Try refreshing the page.');
+    managedWrap.innerHTML = emptyServerState('Could not load your servers.', err.message || 'Try refreshing the page.');
+    availableWrap.innerHTML = emptyServerState('Could not load available servers.', 'Try refreshing the page or log in again.');
   }
 }
 
@@ -164,24 +173,12 @@ function renderDashboard(user) {
 
   const name = displayName(user);
   const username = usernameText(user);
-  const avatar = avatarUrl(user, 128);
 
   const title = dashboardSection.querySelector('[data-dashboard-title]');
   const subtitle = dashboardSection.querySelector('[data-dashboard-subtitle]');
-  const avatarEl = dashboardSection.querySelector('[data-dashboard-avatar]');
-  const nameEl = dashboardSection.querySelector('[data-dashboard-name]');
-  const usernameEl = dashboardSection.querySelector('[data-dashboard-username]');
 
   if (title) title.textContent = `Welcome back, ${name}`;
   if (subtitle) subtitle.textContent = 'Choose a server to manage or add Meowz to a new one.';
-  if (nameEl) nameEl.textContent = name;
-  if (usernameEl) usernameEl.textContent = username;
-
-  if (avatarEl) {
-    avatarEl.textContent = avatar ? '' : (name.slice(0, 1).toUpperCase() || 'U');
-    avatarEl.classList.toggle('has-image', Boolean(avatar));
-    avatarEl.style.backgroundImage = avatar ? `url(${avatar})` : '';
-  }
 
   loadDashboardServers();
 }
