@@ -31,7 +31,6 @@ function setBotName(name) {
   setText(statEls.botNameHeading, safeName);
   setText(statEls.botNameShort, safeName);
   setText(statEls.footerBotName, safeName);
-  document.title = `${safeName} — Commands & Stats`;
 }
 
 function setAvatar(url, fallbackName) {

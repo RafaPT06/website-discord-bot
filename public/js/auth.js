@@ -3,6 +3,7 @@ import { escapeHtml } from './utils.js';
 const authArea = document.querySelector('[data-auth-area]');
 const authOnlyEls = document.querySelectorAll('[data-auth-only]');
 const dashboardSection = document.querySelector('[data-dashboard]');
+const dashboardGuest = document.querySelector('[data-dashboard-guest]');
 let activeUser = null;
 
 function avatarUrl(user, size = 96) {
@@ -38,6 +39,9 @@ function setAuthOnlyVisible(isVisible) {
 
   if (dashboardSection) {
     dashboardSection.hidden = !isVisible;
+  }
+  if (dashboardGuest) {
+    dashboardGuest.hidden = isVisible;
   }
 }
 
@@ -122,6 +126,7 @@ function renderLoggedIn(user) {
             <span>${username}</span>
           </div>
         </div>
+        <a href="/dashboard" role="menuitem">Dashboard</a>
         <a href="#settings" role="menuitem">Settings</a>
         <a class="logout-link" href="/auth/logout" role="menuitem">Logout</a>
       </div>
@@ -135,6 +140,7 @@ function renderLoggedIn(user) {
           <span>${username}</span>
         </div>
       </div>
+      <a href="/dashboard">Dashboard</a>
       <a href="#settings">Settings</a>
       <a class="logout-link" href="/auth/logout">Logout</a>
     </div>

@@ -109,7 +109,7 @@ router.get('/discord/callback', async (req, res) => {
     }
 
     setSession(res, formatDiscordUser(userData));
-    return res.redirect('/?auth=success');
+    return res.redirect('/dashboard?auth=success');
   } catch (err) {
     return redirectWithError(res, err.message);
   }

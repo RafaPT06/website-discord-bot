@@ -9,8 +9,14 @@ function createApp() {
   const publicPath = path.join(__dirname, '..', 'public');
 
   app.disable('x-powered-by');
-  app.set('trust proxy', 1);
   app.use(express.json());
+  app.get('/', (req, res) => res.sendFile(path.join(publicPath, 'index.html')));
+  app.get('/dashboard', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
+  app.get('/docs', (req, res) => res.sendFile(path.join(publicPath, 'docs.html')));
+  app.get('/documentation', (req, res) => res.redirect('/docs'));
+  app.get('/commands', (req, res) => res.redirect('/docs'));
+  app.get('/changelog', (req, res) => res.sendFile(path.join(publicPath, 'changelog.html')));
+
   app.use(express.static(publicPath));
 
   app.use('/api', publicApiRouter);

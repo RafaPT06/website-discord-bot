@@ -144,3 +144,12 @@ h1 { max-width: 720px; margin: 20px 0 18px; font-size: clamp(2.75rem, 8vw, 6.4re
   font-weight: 800;
 }
 .mini-action.danger { color: #fb7185; }
+
+
+.page-main {
+  padding-top: 34px;
+}
+
+.dashboard-guest[hidden] {
+  display: none !important;
+}

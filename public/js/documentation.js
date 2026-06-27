@@ -315,6 +315,7 @@ function initResponsiveDetailRefresh() {
 }
 
 export function initDocumentation() {
+  if (!els.body) return;
   initSearch();
   initCategoryTabs();
   initPagination();

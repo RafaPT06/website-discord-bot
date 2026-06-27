@@ -1,32 +1,27 @@
 # Meowz Website
 
-Public website and future dashboard for the Meowz Discord bot.
+Public website and Discord OAuth dashboard for Meowz.
 
-## Start locally
+## Routes
 
-```bash
-npm install
-npm start
-```
+- `/` — Home
+- `/dashboard` — Authenticated dashboard
+- `/docs` — Slash command documentation
+- `/changelog` — Website changelog
 
 ## Railway variables
 
 ```env
 BOT_API_URL=https://discord-bot-production-01ea.up.railway.app
-BOT_API_TOKEN=optional-if-you-add-one-later
+DISCORD_CLIENT_ID=your_client_id
+DISCORD_CLIENT_SECRET=your_client_secret
+DISCORD_REDIRECT_URI=https://meowz.up.railway.app/auth/discord/callback
+SESSION_SECRET=random_long_secret
 ```
 
-## Structure
+## Commands
 
-```text
-public/
-  css/       Modular styles
-  js/        Modular frontend scripts
-  data/      Static website data, including changelog
-server/
-  api/       Bot API helper
-  routes/    Website API and future auth routes
-  middleware/404 handling
+```bash
+npm install
+npm start
 ```
-
-OAuth will be added in the next milestone.

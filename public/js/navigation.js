@@ -10,7 +10,15 @@ function closeMobileMenu() {
   document.body.classList.remove('menu-open');
 }
 
+function setActiveRoute() {
+  const path = window.location.pathname === '/' ? '/' : window.location.pathname.replace(/\/$/, '');
+  document.querySelectorAll('[data-route]').forEach((link) => {
+    link.classList.toggle('active', link.dataset.route === path);
+  });
+}
+
 export function initNavigation() {
+  setActiveRoute();
   navEls.toggle?.addEventListener('click', () => {
     const isOpen = navEls.links?.classList.toggle('is-open');
     navEls.toggle.classList.toggle('is-open', Boolean(isOpen));
