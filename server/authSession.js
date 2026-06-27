@@ -64,8 +64,8 @@ function readSignedValue(value) {
 
   const [encoded, signature] = value.split('.');
   const expected = sign(encoded);
-  const a = Buffer.from(signature);
-  const b = Buffer.from(expected);
+  const a = Buffer.from(signature || '');
+  const b = Buffer.from(expected || '');
 
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
 
@@ -91,18 +91,31 @@ function clearOAuthState(res) {
   clearCookie(res, STATE_COOKIE);
 }
 
-function setSession(res, user, extra = {}) {
+function normalizeSession(input) {
+  if (!input) return { user: null, guilds: [] };
+  if (input.user) {
+    return {
+      user: input.user,
+      guilds: Array.isArray(input.guilds) ? input.guilds : [],
+      exp: input.exp,
+    };
+  }
+  return { user: input, guilds: [] };
+}
+
+function setSession(res, sessionData) {
+  const session = normalizeSession(sessionData);
   setCookie(
     res,
     SESSION_COOKIE,
-    createSignedValue({ user, ...extra, exp: Date.now() + SESSION_MAX_AGE_SECONDS * 1000 }),
+    createSignedValue({ ...session, exp: Date.now() + SESSION_MAX_AGE_SECONDS * 1000 }),
     SESSION_MAX_AGE_SECONDS
   );
 }
 
 function readSession(req) {
   const cookies = parseCookies(req);
-  return readSignedValue(cookies[SESSION_COOKIE]);
+  return normalizeSession(readSignedValue(cookies[SESSION_COOKIE]));
 }
 
 function clearSession(res) {

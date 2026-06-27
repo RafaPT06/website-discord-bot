@@ -12,6 +12,8 @@ const {
 const router = express.Router();
 const DISCORD_API = 'https://discord.com/api/v10';
 const DISCORD_AUTHORIZE_URL = 'https://discord.com/oauth2/authorize';
+const MANAGE_GUILD = 0x20n;
+const ADMINISTRATOR = 0x8n;
 
 function requiredEnv(name) {
   const value = process.env[name];
@@ -42,15 +44,19 @@ function formatDiscordUser(user) {
   };
 }
 
-function hasManageGuildPermission(guild) {
+function hasManageGuildPermission(permissions) {
   try {
-    const permissions = BigInt(guild.permissions || '0');
-    const manageGuild = 1n << 5n;
-    const administrator = 1n << 3n;
-    return Boolean(guild.owner || (permissions & manageGuild) || (permissions & administrator));
+    const value = BigInt(permissions || '0');
+    return (value & ADMINISTRATOR) === ADMINISTRATOR || (value & MANAGE_GUILD) === MANAGE_GUILD;
   } catch {
-    return Boolean(guild.owner);
+    return false;
   }
+}
+
+function guildIconUrl(guild, size = 96) {
+  if (!guild?.id || !guild?.icon) return null;
+  const ext = guild.icon.startsWith('a_') ? 'gif' : 'png';
+  return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.${ext}?size=${size}`;
 }
 
 function formatDiscordGuild(guild) {
@@ -58,10 +64,21 @@ function formatDiscordGuild(guild) {
     id: guild.id,
     name: guild.name,
     icon: guild.icon || null,
+    iconUrl: guildIconUrl(guild),
     owner: Boolean(guild.owner),
     permissions: String(guild.permissions || '0'),
-    canManage: hasManageGuildPermission(guild),
+    manageable: Boolean(guild.owner) || hasManageGuildPermission(guild.permissions),
   };
+}
+
+async function fetchDiscordGuilds(accessToken) {
+  const response = await fetch(`${DISCORD_API}/users/@me/guilds`, {
+    headers: { authorization: `Bearer ${accessToken}` },
+  });
+
+  const guilds = await response.json().catch(() => []);
+  if (!response.ok || !Array.isArray(guilds)) return [];
+  return guilds.map(formatDiscordGuild).filter((guild) => guild.manageable);
 }
 
 router.get('/discord', (req, res) => {
@@ -130,20 +147,8 @@ router.get('/discord/callback', async (req, res) => {
       return redirectWithError(res, 'Could not fetch Discord user.');
     }
 
-    let guilds = [];
-    try {
-      const guildsResponse = await fetch(`${DISCORD_API}/users/@me/guilds`, {
-        headers: { authorization: `Bearer ${tokenData.access_token}` },
-      });
-      const guildsData = await guildsResponse.json().catch(() => []);
-      if (guildsResponse.ok && Array.isArray(guildsData)) {
-        guilds = guildsData.map(formatDiscordGuild).slice(0, 200);
-      }
-    } catch {
-      guilds = [];
-    }
-
-    setSession(res, formatDiscordUser(userData), { guilds });
+    const guilds = await fetchDiscordGuilds(tokenData.access_token);
+    setSession(res, { user: formatDiscordUser(userData), guilds });
     return res.redirect('/dashboard?auth=success');
   } catch (err) {
     return redirectWithError(res, err.message);

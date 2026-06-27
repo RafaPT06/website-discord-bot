@@ -1,5 +1,6 @@
 import { initAuth } from './auth.js';
 import { loadChangelog } from './changelog.js';
+import { initDashboard } from './dashboard.js';
 import { initDocumentation } from './documentation.js';
 import { initNavigation } from './navigation.js';
 import { initPageModal } from './pageModal.js';
@@ -11,3 +12,4 @@ initStats();
 initDocumentation();
 loadChangelog();
 initAuth();
+initDashboard();

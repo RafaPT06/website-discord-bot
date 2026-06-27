@@ -4,29 +4,89 @@ const { readSession } = require('../authSession');
 
 const router = express.Router();
 
-
-function configuredBotGuildIds() {
-  return new Set(
-    String(process.env.BOT_GUILD_IDS || '')
-      .split(',')
-      .map((id) => id.trim())
-      .filter(Boolean)
-  );
+function getClientId() {
+  return process.env.DISCORD_CLIENT_ID || '';
 }
 
-async function fetchBotGuildIds() {
-  const ids = configuredBotGuildIds();
-  try {
-    const data = await requestBotApi('/api/guilds');
-    const guilds = Array.isArray(data?.guilds) ? data.guilds : Array.isArray(data) ? data : [];
-    for (const guild of guilds) {
-      const id = typeof guild === 'string' ? guild : guild?.id;
-      if (id) ids.add(String(id));
-    }
-  } catch {
-    // The bot API may not expose /api/guilds yet. In that case we still return available servers.
+function iconUrl(guild, size = 96) {
+  if (guild?.iconUrl) return guild.iconUrl;
+  if (!guild?.id || !guild?.icon) return null;
+  const ext = String(guild.icon).startsWith('a_') ? 'gif' : 'png';
+  return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.${ext}?size=${size}`;
+}
+
+function normalizeBotGuild(guild) {
+  const id = String(guild.id || guild.guildId || '');
+  return {
+    id,
+    name: guild.name || guild.guildName || 'Unknown server',
+    icon: guild.icon || null,
+    iconUrl: iconUrl({ ...guild, id }),
+    memberCount: guild.memberCount ?? guild.members ?? guild.member_count ?? null,
+  };
+}
+
+function getBotGuildsFromResponse(data) {
+  const raw = Array.isArray(data) ? data : (Array.isArray(data?.guilds) ? data.guilds : []);
+  return raw.map(normalizeBotGuild).filter((guild) => guild.id);
+}
+
+function getInviteUrl(guildId) {
+  const clientId = getClientId();
+  if (!clientId) return null;
+
+  const params = new URLSearchParams({
+    client_id: clientId,
+    permissions: '8',
+    scope: 'bot applications.commands',
+  });
+
+  if (guildId) {
+    params.set('guild_id', guildId);
+    params.set('disable_guild_select', 'true');
   }
-  return ids;
+
+  return `https://discord.com/oauth2/authorize?${params.toString()}`;
+}
+
+function requireSession(req, res) {
+  const session = readSession(req);
+  if (!session?.user) {
+    res.status(401).json({ ok: false, error: 'Login required.' });
+    return null;
+  }
+  return session;
+}
+
+async function getDashboardGuildData(session) {
+  const botData = await requestBotApi('/api/guilds');
+  const botGuilds = getBotGuildsFromResponse(botData);
+  const botGuildMap = new Map(botGuilds.map((guild) => [guild.id, guild]));
+  const manageableGuilds = Array.isArray(session.guilds) ? session.guilds : [];
+
+  const installed = manageableGuilds
+    .filter((guild) => botGuildMap.has(guild.id))
+    .map((guild) => {
+      const botGuild = botGuildMap.get(guild.id);
+      return {
+        ...guild,
+        ...botGuild,
+        iconUrl: botGuild.iconUrl || guild.iconUrl || iconUrl(guild),
+        installed: true,
+        manageUrl: `/dashboard/server/${guild.id}`,
+      };
+    });
+
+  const available = manageableGuilds
+    .filter((guild) => !botGuildMap.has(guild.id))
+    .map((guild) => ({
+      ...guild,
+      iconUrl: guild.iconUrl || iconUrl(guild),
+      installed: false,
+      inviteUrl: getInviteUrl(guild.id),
+    }));
+
+  return { installed, available, botGuilds };
 }
 
 router.get('/status', (req, res) => {
@@ -38,45 +98,10 @@ router.get('/status', (req, res) => {
   });
 });
 
-
 router.get('/me', (req, res) => {
   const session = readSession(req);
   if (!session?.user) return res.json({ authenticated: false, user: null });
   return res.json({ authenticated: true, user: session.user });
-});
-
-
-router.get('/user-guilds', async (req, res) => {
-  const session = readSession(req);
-  if (!session?.user) return res.status(401).json({ authenticated: false, error: 'Login required.' });
-
-  const userGuilds = Array.isArray(session.guilds) ? session.guilds : [];
-  const manageableGuilds = userGuilds.filter((guild) => guild?.canManage);
-  const botGuildIds = await fetchBotGuildIds();
-
-  const withBot = manageableGuilds
-    .filter((guild) => botGuildIds.has(String(guild.id)))
-    .map((guild) => ({ ...guild, botInstalled: true }));
-
-  const available = manageableGuilds
-    .filter((guild) => !botGuildIds.has(String(guild.id)))
-    .map((guild) => ({ ...guild, botInstalled: false }));
-
-  res.json({
-    authenticated: true,
-    user: session.user,
-    withBot,
-    available,
-    counts: {
-      userGuilds: userGuilds.length,
-      manageable: manageableGuilds.length,
-      withBot: withBot.length,
-      available: available.length,
-      botGuilds: botGuildIds.size,
-    },
-    botGuildDetection: botGuildIds.size ? 'active' : 'unavailable',
-    updatedAt: new Date().toISOString(),
-  });
 });
 
 router.get('/bot-stats', async (req, res) => {
@@ -84,10 +109,7 @@ router.get('/bot-stats', async (req, res) => {
     const data = await requestBotApi('/api/stats');
     res.json(data);
   } catch (err) {
-    res.status(err.statusCode || 502).json({
-      ok: false,
-      error: err.message || 'Could not reach the bot API.',
-    });
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not reach the bot API.' });
   }
 });
 
@@ -96,10 +118,57 @@ router.get('/bot-commands', async (req, res) => {
     const data = await requestBotApi('/api/commands');
     res.json(data);
   } catch (err) {
-    res.status(err.statusCode || 502).json({
-      ok: false,
-      error: err.message || 'Could not reach the bot API.',
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not reach the bot API.' });
+  }
+});
+
+router.get('/dashboard/guilds', async (req, res) => {
+  const session = requireSession(req, res);
+  if (!session) return;
+
+  try {
+    const data = await getDashboardGuildData(session);
+    res.json({ ok: true, ...data, updatedAt: new Date().toISOString() });
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load server dashboard.' });
+  }
+});
+
+router.get('/dashboard/server/:guildId', async (req, res) => {
+  const session = requireSession(req, res);
+  if (!session) return;
+
+  try {
+    const { installed } = await getDashboardGuildData(session);
+    const server = installed.find((guild) => guild.id === req.params.guildId);
+
+    if (!server) {
+      return res.status(404).json({
+        ok: false,
+        error: 'This server is not manageable from your Meowz dashboard.',
+      });
+    }
+
+    return res.json({
+      ok: true,
+      server: {
+        ...server,
+        status: 'Installed',
+        permissions: {
+          manageServer: true,
+        },
+        comingSoon: [
+          'Leveling settings',
+          'Welcome messages',
+          'Logs',
+          'AI image access',
+          'Moderation tools',
+        ],
+      },
+      updatedAt: new Date().toISOString(),
     });
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load server details.' });
   }
 });
 

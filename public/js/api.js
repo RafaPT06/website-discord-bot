@@ -1,5 +1,5 @@
 async function fetchJson(url) {
-  const response = await fetch(url, { cache: 'no-store' });
+  const response = await fetch(url, { cache: 'no-store', credentials: 'include' });
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
@@ -19,4 +19,12 @@ export function getBotCommands() {
 
 export function getChangelog() {
   return fetchJson('/data/changelog.json');
+}
+
+export function getDashboardGuilds() {
+  return fetchJson('/api/dashboard/guilds');
+}
+
+export function getDashboardServer(guildId) {
+  return fetchJson(`/api/dashboard/server/${encodeURIComponent(guildId)}`);
 }

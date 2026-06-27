@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Meowz</title>
-  <meta name="description" content="Manage your Meowz experience after signing in with Discord." />
+  <meta name="description" content="Manage your Meowz servers after signing in with Discord." />
 
   <meta property="og:title" content="Meowz | Discord Bot" />
   <meta property="og:description" content="A modern Discord bot with live stats, slash command docs, AI image editing, leveling and utilities." />
@@ -42,62 +42,75 @@
     </nav>
   </header>
 
-  <main id="top" class="page-main">
+  <main id="top" class="page-main dashboard-page">
     <section class="section dashboard-section" data-dashboard hidden>
-      <div class="dashboard-welcome-card">
-        <div>
-          <span class="dashboard-eyebrow">Dashboard</span>
-          <h2 data-dashboard-title>Welcome back.</h2>
-          <p class="muted" data-dashboard-subtitle>Choose a server to manage or add Meowz to a new one.</p>
+      <div data-dashboard-home>
+        <div class="dashboard-welcome-card">
+          <div>
+            <span class="dashboard-eyebrow">Dashboard</span>
+            <h2 data-dashboard-title>Welcome back.</h2>
+            <p class="muted" data-dashboard-intro>Choose a server below to manage Meowz.</p>
+          </div>
+          <div class="dashboard-welcome-actions">
+            <a class="btn btn-primary" href="/docs">View documentation</a>
+            <a class="btn btn-secondary" href="/changelog">View changelog</a>
+          </div>
         </div>
-        <div class="dashboard-welcome-actions">
-          <a class="btn btn-primary" href="/docs">Open documentation</a>
-          <a class="btn btn-secondary" href="/changelog">View changelog</a>
+
+        <div class="server-dashboard-grid">
+          <article class="dashboard-card server-list-card">
+            <div class="server-card-heading">
+              <div>
+                <span class="dashboard-card-label">Servers with Meowz</span>
+                <h3>Manage installed servers</h3>
+                <p class="muted">Only servers where you have Manage Server permissions are shown.</p>
+              </div>
+              <span class="server-card-note" data-installed-count>Loading</span>
+            </div>
+            <div class="server-list" data-installed-servers>
+              <div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>
+              <div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>
+            </div>
+          </article>
+
+          <article class="dashboard-card server-list-card">
+            <div class="server-card-heading">
+              <div>
+                <span class="dashboard-card-label">Available Servers</span>
+                <h3>Invite Meowz</h3>
+                <p class="muted">Servers where you can add Meowz will appear here.</p>
+              </div>
+              <span class="server-card-note" data-available-count>Loading</span>
+            </div>
+            <div class="server-list" data-available-servers>
+              <div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>
+              <div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>
+            </div>
+          </article>
         </div>
-      </div>
 
-      <div class="server-dashboard-grid">
-        <section class="dashboard-card server-list-card">
-          <div class="server-card-heading">
-            <div>
-              <span class="dashboard-card-label">Manage</span>
-              <h3>Servers with Meowz</h3>
-            </div>
-            <span class="server-card-note">Shared servers</span>
-          </div>
-          <div class="server-list" data-managed-servers>
-            <div class="server-row skeleton-server"><span></span><div><b></b><i></i></div></div>
-          </div>
-        </section>
-
-        <section class="dashboard-card server-list-card">
-          <div class="server-card-heading">
-            <div>
-              <span class="dashboard-card-label">Invite</span>
-              <h3>Available servers</h3>
-            </div>
-            <span class="server-card-note">Manage Server permission</span>
-          </div>
-          <div class="server-list" data-available-servers>
-            <div class="server-row skeleton-server"><span></span><div><b></b><i></i></div></div>
-          </div>
-        </section>
-      </div>
-
-      <section class="dashboard-card dashboard-actions-card">
-        <div>
+        <article class="dashboard-card dashboard-actions-card">
           <span class="dashboard-card-label">Quick actions</span>
-          <h3>Common dashboard pages</h3>
-          <p class="muted">Jump to the parts of Meowz you will use most often.</p>
-        </div>
-        <div class="dashboard-actions">
-          <a class="mini-action" href="/docs">Documentation</a>
-          <a class="mini-action" href="/changelog">Changelog</a>
-          <a class="mini-action" href="#settings">Settings</a>
-        </div>
-      </section>
-    </section>
+          <h3>Useful links</h3>
+          <p class="muted">Jump to the most useful public sections while server customization is being built.</p>
+          <div class="dashboard-actions">
+            <a class="mini-action" href="/docs">Documentation</a>
+            <a class="mini-action" href="/changelog">Changelog</a>
+            <a class="mini-action" href="#settings">Settings coming soon</a>
+          </div>
+        </article>
+      </div>
 
+      <div data-server-detail hidden>
+        <div data-server-detail-content>
+          <div class="dashboard-card server-detail-loading">
+            <span class="dashboard-card-label">Server overview</span>
+            <h2>Loading server...</h2>
+            <p class="muted">Fetching the selected server information.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <section class="section dashboard-guest" data-dashboard-guest hidden>
       <div class="dashboard-hero">
