@@ -377,9 +377,38 @@ h1 { max-width: 720px; margin: 20px 0 18px; font-size: clamp(2.75rem, 8vw, 6.4re
   display: inline-flex;
 }
 
+.dashboard-welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.dashboard-welcome-actions .btn {
+  margin: 0;
+}
+
+.server-row {
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.server-row:hover {
+  transform: translateY(-2px);
+  border-color: rgba(139, 92, 246, .35);
+  background: rgba(139, 92, 246, .08);
+}
+
 @media (max-width: 720px) {
   .dashboard-welcome-card {
     align-items: stretch;
+  }
+
+  .dashboard-welcome-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .dashboard-welcome-card .btn {

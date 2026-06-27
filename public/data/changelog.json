@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.15.1",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Added cleaner spacing between dashboard welcome action buttons."
+      },
+      {
+        "type": "Improved",
+        "text": "Polished server list row hover states and dashboard action layout."
+      }
+    ]
+  },
+  {
     "version": "v1.15.0",
     "date": "2026-06-27",
     "changes": [
