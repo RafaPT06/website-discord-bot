@@ -1,9 +1,6 @@
 import { escapeHtml } from './utils.js';
 
 const authArea = document.querySelector('[data-auth-area]');
-const brand = document.querySelector('[data-brand-link]');
-const brandIcon = document.querySelector('[data-bot-avatar-small]');
-const brandLabel = document.querySelector('[data-bot-name-short]');
 let activeUser = null;
 
 function avatarUrl(user) {
@@ -14,6 +11,18 @@ function avatarUrl(user) {
 
 function displayName(user) {
   return user?.globalName || user?.username || 'Discord User';
+}
+
+function renderAvatar(user) {
+  const image = avatarUrl(user);
+  const name = displayName(user);
+  const fallback = escapeHtml(name.slice(0, 1).toUpperCase() || 'U');
+
+  if (!image) {
+    return `<span class="nav-user-avatar nav-user-avatar-fallback" aria-hidden="true">${fallback}</span>`;
+  }
+
+  return `<span class="nav-user-avatar" aria-hidden="true"><img src="${image}" alt="" loading="lazy" /></span>`;
 }
 
 function closeProfileMenu() {
@@ -33,40 +42,8 @@ function toggleProfileMenu() {
   button.setAttribute('aria-expanded', String(willOpen));
 }
 
-function applyLoggedOutBrand() {
-  if (!brand || !brandIcon || !brandLabel) return;
-  brand.classList.remove('brand-user');
-  brandIcon.classList.remove('user-image', 'has-image');
-  brandIcon.style.backgroundImage = '';
-  brandIcon.textContent = 'M';
-  brandLabel.hidden = false;
-}
-
-function applyLoggedInBrand(user) {
-  if (!brand || !brandIcon || !brandLabel) return;
-  const image = avatarUrl(user);
-  const name = displayName(user);
-  brand.classList.add('brand-user');
-  brand.setAttribute('aria-label', `${name}'s profile`);
-
-  brandLabel.hidden = true;
-
-  if (image) {
-    brandIcon.classList.add('user-image', 'has-image');
-    brandIcon.style.backgroundImage = `url("${image}")`;
-    brandIcon.textContent = '';
-    return;
-  }
-
-  brandIcon.classList.remove('has-image');
-  brandIcon.classList.add('user-image');
-  brandIcon.style.backgroundImage = '';
-  brandIcon.textContent = escapeHtml(name.slice(0, 1).toUpperCase() || 'U');
-}
-
 function renderLoggedOut() {
   activeUser = null;
-  applyLoggedOutBrand();
 
   if (!authArea) return;
   authArea.className = 'auth-area';
@@ -75,23 +52,26 @@ function renderLoggedOut() {
 
 function renderLoggedIn(user) {
   activeUser = user;
-  applyLoggedInBrand(user);
 
   if (!authArea) return;
 
   const name = escapeHtml(displayName(user));
+  const username = escapeHtml(user?.username ? `@${user.username}` : '@discord');
 
   authArea.className = 'auth-area is-authenticated';
   authArea.innerHTML = `
     <div class="profile-menu-wrap">
-      <button class="profile-button" type="button" data-profile-toggle aria-haspopup="menu" aria-expanded="false">
-        <span>Profile</span>
+      <button class="nav-user-button" type="button" data-profile-toggle aria-haspopup="menu" aria-expanded="false">
+        ${renderAvatar(user)}
+        <span class="nav-user-text">
+          <span class="nav-user-name">${name}</span>
+          <span class="nav-user-subtitle">${username}</span>
+        </span>
         <span class="profile-chevron" aria-hidden="true">⌄</span>
       </button>
 
       <div class="profile-dropdown" data-profile-menu role="menu" hidden>
-        <div class="profile-dropdown-user">Signed in as ${name}</div>
-        <a href="#profile" role="menuitem">Profile</a>
+        <a href="#settings" role="menuitem">Settings</a>
         <a class="logout-link" href="/auth/logout" role="menuitem">Logout</a>
       </div>
     </div>

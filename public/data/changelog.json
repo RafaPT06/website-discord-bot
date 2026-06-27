@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.11.0",
+    "date": "2026-06-26",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Kept the Meowz logo and brand visible after login instead of replacing it with the user avatar."
+      },
+      {
+        "type": "Improved",
+        "text": "Reworked the authenticated navbar to show the user avatar and name beside a compact Settings and Logout dropdown."
+      }
+    ]
+  },
+  {
     "version": "v1.9.0",
     "date": "2026-06-26",
     "changes": [
