@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.21.0",
+    "date": "2026-06-27",
+    "changes": [
+      {
+        "type": "New",
+        "text": "Added skeleton pages for Welcome messages, Logs, AI image access and Moderation tools."
+      },
+      {
+        "type": "Improved",
+        "text": "Expanded server dashboard tabs so every server feature section now opens its own dashboard page."
+      },
+      {
+        "type": "Improved",
+        "text": "Added consistent coming soon previews and disabled save actions across all server setting pages."
+      }
+    ]
+  },
+  {
     "version": "v1.20.0",
     "date": "2026-06-27",
     "changes": [

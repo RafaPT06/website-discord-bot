@@ -205,24 +205,177 @@ function renderLevelingPage(server) {
   `;
 }
 
-function renderPlaceholderSettingsPage(server, section) {
-  const labels = {
-    welcome: ['Welcome messages', 'Configure join, leave and greeting messages.'],
-    logs: ['Logs', 'Configure server activity and audit event logging.'],
-    ai: ['AI image access', 'Control who can use image editing in this server.'],
-    moderation: ['Moderation tools', 'Configure warnings, automod and moderation actions.'],
-  };
-  const [title, description] = labels[section] || ['Server tools', 'This server section is coming soon.'];
+function disabledOption(label, value) {
+  return `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
+}
+
+function previewCard(title, description) {
+  return `<span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(description)}</small><em>Coming soon</em></span>`;
+}
+
+function comingSaveButton(label = 'Save changes coming soon') {
+  return `<button class="btn btn-secondary disabled-button" type="button" disabled>${escapeHtml(label)}</button>`;
+}
+
+function renderWelcomePage(server) {
   return `
     <div class="settings-page-grid">
       <article class="dashboard-card compact settings-main-card">
-        <span class="dashboard-card-label">Coming soon</span>
-        <h3>${escapeHtml(title)}</h3>
-        <p class="muted">${escapeHtml(description)}</p>
-        <div class="settings-empty-state">
-          <strong>This section is not available yet.</strong>
-          <span>For now, continue using the Discord commands while this dashboard page is being built.</span>
+        <span class="dashboard-card-label">Welcome messages</span>
+        <h3>Member greetings</h3>
+        <p class="muted">Configure join and leave messages for ${escapeHtml(server.name)}. Editing is coming soon.</p>
+        <div class="settings-list">
+          ${disabledOption('Status', 'Coming soon')}
+          ${disabledOption('Welcome channel', 'Not configured')}
+          ${disabledOption('Join message', 'Not configured')}
+          ${disabledOption('Leave message', 'Not configured')}
+          ${disabledOption('Test message', 'Unavailable')}
         </div>
+      </article>
+
+      <article class="dashboard-card compact settings-side-card">
+        <span class="dashboard-card-label">Templates</span>
+        <h3>Message variables</h3>
+        <p class="muted">Templates will support common placeholders when this section is enabled.</p>
+        <div class="settings-empty-state">
+          <strong>No templates configured yet.</strong>
+          <span>You will be able to use variables like user, server and member count later.</span>
+        </div>
+      </article>
+
+      <article class="dashboard-card compact server-coming-card">
+        <span class="dashboard-card-label">Preview</span>
+        <h3>What this page will manage</h3>
+        <div class="coming-grid coming-grid-two">
+          ${previewCard('Welcome channel', 'Choose where join messages are sent.')}
+          ${previewCard('Join messages', 'Customize the message sent when someone joins.')}
+          ${previewCard('Leave messages', 'Customize the message sent when someone leaves.')}
+          ${previewCard('Message preview', 'Test how messages look before saving.')}
+        </div>
+        ${comingSaveButton()}
+      </article>
+    </div>
+  `;
+}
+
+function renderLogsPage(server) {
+  return `
+    <div class="settings-page-grid">
+      <article class="dashboard-card compact settings-main-card">
+        <span class="dashboard-card-label">Logs</span>
+        <h3>Server activity</h3>
+        <p class="muted">Configure log channels and event tracking for ${escapeHtml(server.name)}. Editing is coming soon.</p>
+        <div class="settings-list">
+          ${disabledOption('Status', 'Coming soon')}
+          ${disabledOption('Log channel', 'Not configured')}
+          ${disabledOption('Message logs', 'Disabled')}
+          ${disabledOption('Member logs', 'Disabled')}
+          ${disabledOption('Moderation logs', 'Disabled')}
+        </div>
+      </article>
+
+      <article class="dashboard-card compact settings-side-card">
+        <span class="dashboard-card-label">Events</span>
+        <h3>Tracked activity</h3>
+        <p class="muted">Event toggles will appear here once logging settings are connected to the bot.</p>
+        <div class="settings-empty-state">
+          <strong>No log events configured yet.</strong>
+          <span>You will be able to enable message edits, deletes, joins, leaves and moderation actions.</span>
+        </div>
+      </article>
+
+      <article class="dashboard-card compact server-coming-card">
+        <span class="dashboard-card-label">Preview</span>
+        <h3>What this page will manage</h3>
+        <div class="coming-grid coming-grid-two">
+          ${previewCard('Log channels', 'Choose where server logs are sent.')}
+          ${previewCard('Message events', 'Track edits, deletes and message actions.')}
+          ${previewCard('Member events', 'Track joins, leaves and profile changes.')}
+          ${previewCard('Moderation events', 'Track warns, bans, kicks and admin actions.')}
+        </div>
+        ${comingSaveButton()}
+      </article>
+    </div>
+  `;
+}
+
+function renderAiPage(server) {
+  return `
+    <div class="settings-page-grid">
+      <article class="dashboard-card compact settings-main-card">
+        <span class="dashboard-card-label">AI image access</span>
+        <h3>Image editing permissions</h3>
+        <p class="muted">Control who can use AI image editing in ${escapeHtml(server.name)}. Editing is coming soon.</p>
+        <div class="settings-list">
+          ${disabledOption('Status', 'Coming soon')}
+          ${disabledOption('Allowed users', 'Managed in Discord')}
+          ${disabledOption('Allowed roles', 'Not configured')}
+          ${disabledOption('DM usage', 'Disabled')}
+          ${disabledOption('Output size', '1024x1024')}
+        </div>
+      </article>
+
+      <article class="dashboard-card compact settings-side-card">
+        <span class="dashboard-card-label">Safety</span>
+        <h3>Access control</h3>
+        <p class="muted">This page will eventually mirror your edit image access command in the web dashboard.</p>
+        <div class="settings-empty-state">
+          <strong>No website controls yet.</strong>
+          <span>For now, continue using the Discord edit image access command to manage allowed users.</span>
+        </div>
+      </article>
+
+      <article class="dashboard-card compact server-coming-card">
+        <span class="dashboard-card-label">Preview</span>
+        <h3>What this page will manage</h3>
+        <div class="coming-grid coming-grid-two">
+          ${previewCard('Allowed users', 'Add or remove specific people.')}
+          ${previewCard('Allowed roles', 'Let trusted roles use image editing.')}
+          ${previewCard('Usage controls', 'Configure limits and default options.')}
+          ${previewCard('Audit view', 'Review recent image edit usage later.')}
+        </div>
+        ${comingSaveButton()}
+      </article>
+    </div>
+  `;
+}
+
+function renderModerationPage(server) {
+  return `
+    <div class="settings-page-grid">
+      <article class="dashboard-card compact settings-main-card">
+        <span class="dashboard-card-label">Moderation tools</span>
+        <h3>Server moderation</h3>
+        <p class="muted">Configure warnings, automod and moderation controls for ${escapeHtml(server.name)}. Editing is coming soon.</p>
+        <div class="settings-list">
+          ${disabledOption('Status', 'Coming soon')}
+          ${disabledOption('Warnings', 'Not configured')}
+          ${disabledOption('Auto moderation', 'Disabled')}
+          ${disabledOption('Mod log channel', 'Not configured')}
+          ${disabledOption('Permission checks', 'Discord only')}
+        </div>
+      </article>
+
+      <article class="dashboard-card compact settings-side-card">
+        <span class="dashboard-card-label">Rules</span>
+        <h3>Automation</h3>
+        <p class="muted">Automod rules and moderation presets will be configured here later.</p>
+        <div class="settings-empty-state">
+          <strong>No moderation rules yet.</strong>
+          <span>You will be able to manage warning thresholds, blocked words and automated actions.</span>
+        </div>
+      </article>
+
+      <article class="dashboard-card compact server-coming-card">
+        <span class="dashboard-card-label">Preview</span>
+        <h3>What this page will manage</h3>
+        <div class="coming-grid coming-grid-two">
+          ${previewCard('Warnings', 'Configure warning rules and thresholds.')}
+          ${previewCard('Automod', 'Set automatic filters and actions.')}
+          ${previewCard('Moderation logs', 'Choose where actions are reported.')}
+          ${previewCard('Permissions', 'Control who can use moderation tools.')}
+        </div>
+        ${comingSaveButton()}
       </article>
     </div>
   `;
@@ -239,7 +392,10 @@ function renderServerDetail(data, section = 'overview') {
 
   let content = renderServerOverview(server);
   if (activeSection === 'leveling') content = renderLevelingPage(server);
-  if (activeSection !== 'overview' && activeSection !== 'leveling') content = renderPlaceholderSettingsPage(server, activeSection);
+  if (activeSection === 'welcome') content = renderWelcomePage(server);
+  if (activeSection === 'logs') content = renderLogsPage(server);
+  if (activeSection === 'ai') content = renderAiPage(server);
+  if (activeSection === 'moderation') content = renderModerationPage(server);
 
   els.detailContent.innerHTML = `${renderServerHeader(server, activeSection)}${content}`;
 }
