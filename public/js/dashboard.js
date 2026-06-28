@@ -1,4 +1,4 @@
-import { getDashboardGuilds, getDashboardServer } from './api.js';
+import { getDashboardGuilds, getDashboardServer, getImageAccess, addImageAccessUser, removeImageAccessUser } from './api.js';
 import { escapeHtml, formatNumber, setText } from './utils.js';
 
 const els = {
@@ -301,43 +301,132 @@ function renderLogsPage(server) {
 
 function renderAiPage(server) {
   return `
-    <div class="settings-page-grid">
-      <article class="dashboard-card compact settings-main-card">
+    <div class="settings-page-grid ai-access-page" data-ai-access-page data-guild-id="${escapeHtml(server.id)}">
+      <article class="dashboard-card compact settings-main-card ai-access-main">
         <span class="dashboard-card-label">AI image access</span>
-        <h3>Image editing permissions</h3>
-        <p class="muted">Control who can use AI image editing in ${escapeHtml(server.name)}. Editing is coming soon.</p>
-        <div class="settings-list">
-          ${disabledOption('Status', 'Coming soon')}
-          ${disabledOption('Allowed users', 'Managed in Discord')}
-          ${disabledOption('Allowed roles', 'Not configured')}
-          ${disabledOption('DM usage', 'Disabled')}
-          ${disabledOption('Output size', '1024x1024')}
-        </div>
+        <h3>Allowed users</h3>
+        <p class="muted">Control who can use the image editing command in ${escapeHtml(server.name)}.</p>
+
+        <form class="ai-access-form" data-ai-access-form>
+          <label for="ai-access-user-id">Discord user ID</label>
+          <div class="ai-access-input-row">
+            <input id="ai-access-user-id" name="userId" inputmode="numeric" autocomplete="off" placeholder="123456789012345678" />
+            <button class="btn btn-primary" type="submit">Add user</button>
+          </div>
+          <p class="muted tiny">Paste a Discord user ID. User search by username can be added later.</p>
+        </form>
       </article>
 
       <article class="dashboard-card compact settings-side-card">
-        <span class="dashboard-card-label">Safety</span>
-        <h3>Access control</h3>
-        <p class="muted">This page will eventually mirror your edit image access command in the web dashboard.</p>
-        <div class="settings-empty-state">
-          <strong>No website controls yet.</strong>
-          <span>For now, continue using the Discord edit image access command to manage allowed users.</span>
+        <span class="dashboard-card-label">Current access</span>
+        <h3>People allowed</h3>
+        <div class="ai-access-list" data-ai-access-list>
+          <div class="settings-empty-state"><strong>Loading allowed users...</strong><span>Please wait.</span></div>
         </div>
       </article>
 
       <article class="dashboard-card compact server-coming-card">
-        <span class="dashboard-card-label">Preview</span>
-        <h3>What this page will manage</h3>
+        <span class="dashboard-card-label">Command behavior</span>
+        <h3>How access works</h3>
         <div class="coming-grid coming-grid-two">
-          ${previewCard('Allowed users', 'Add or remove specific people.')}
-          ${previewCard('Allowed roles', 'Let trusted roles use image editing.')}
-          ${previewCard('Usage controls', 'Configure limits and default options.')}
-          ${previewCard('Audit view', 'Review recent image edit usage later.')}
+          <span><strong>Server only</strong><small>The image editing command stays disabled in DMs.</small><em>Active</em></span>
+          <span><strong>Allowed users</strong><small>Only users listed here can run the command.</small><em>Active</em></span>
+          <span><strong>Manage Server</strong><small>Server managers can update this list from the dashboard.</small><em>Active</em></span>
+          <span><strong>Roles</strong><small>Role-based access can be added later.</small><em>Coming soon</em></span>
         </div>
-        ${comingSaveButton()}
       </article>
     </div>
   `;
+}
+
+function renderAiAccessList(container, users = []) {
+  if (!container) return;
+  if (!users.length) {
+    container.innerHTML = `<div class="settings-empty-state"><strong>No users allowed yet.</strong><span>Add a trusted user ID to let them use AI image editing in this server.</span></div>`;
+    return;
+  }
+
+  container.innerHTML = users.map((entry) => {
+    const label = entry.displayName || entry.username || entry.userId;
+    const sub = entry.username && entry.userId !== entry.username ? entry.userId : 'Allowed user';
+    return `
+      <div class="ai-access-user-row" data-user-id="${escapeHtml(entry.userId)}">
+        <span class="ai-access-user-avatar">${escapeHtml((label || 'U').slice(0, 1).toUpperCase())}</span>
+        <span class="ai-access-user-main">
+          <strong>${escapeHtml(label)}</strong>
+          <small>${escapeHtml(sub)}</small>
+        </span>
+        <button class="server-row-action danger" type="button" data-remove-ai-user="${escapeHtml(entry.userId)}">Remove</button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function refreshAiAccess(guildId) {
+  const list = document.querySelector('[data-ai-access-list]');
+  if (!list) return;
+  try {
+    const data = await getImageAccess(guildId);
+    renderAiAccessList(list, data.users || []);
+  } catch (err) {
+    list.innerHTML = `<div class="settings-empty-state error"><strong>Could not load access list.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`;
+  }
+}
+
+function initAiAccessControls(guildId) {
+  const page = document.querySelector('[data-ai-access-page]');
+  if (!page) return;
+
+  refreshAiAccess(guildId);
+
+  const form = page.querySelector('[data-ai-access-form]');
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const input = form.querySelector('input[name="userId"]');
+    const userId = String(input?.value || '').trim();
+    if (!/^\d{15,25}$/.test(userId)) {
+      input?.focus();
+      input?.classList.add('is-invalid');
+      return;
+    }
+
+    const button = form.querySelector('button[type="submit"]');
+    const previous = button?.textContent;
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Adding...';
+    }
+
+    try {
+      await addImageAccessUser(guildId, userId);
+      if (input) input.value = '';
+      await refreshAiAccess(guildId);
+    } catch (err) {
+      const list = document.querySelector('[data-ai-access-list]');
+      if (list) list.innerHTML = `<div class="settings-empty-state error"><strong>Could not add user.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`;
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = previous || 'Add user';
+      }
+    }
+  });
+
+  page.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-remove-ai-user]');
+    if (!button) return;
+    const userId = button.getAttribute('data-remove-ai-user');
+    if (!userId) return;
+    button.disabled = true;
+    button.textContent = 'Removing...';
+    try {
+      await removeImageAccessUser(guildId, userId);
+      await refreshAiAccess(guildId);
+    } catch (err) {
+      button.disabled = false;
+      button.textContent = 'Remove';
+    }
+  });
 }
 
 function renderModerationPage(server) {
@@ -398,6 +487,7 @@ function renderServerDetail(data, section = 'overview') {
   if (activeSection === 'moderation') content = renderModerationPage(server);
 
   els.detailContent.innerHTML = `${renderServerHeader(server, activeSection)}${content}`;
+  if (activeSection === 'ai') initAiAccessControls(server.id);
 }
 
 function renderServerDetailError(message) {

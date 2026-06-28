@@ -1,11 +1,4 @@
-const cache = new Map();
-
-function cacheKey(pathname) {
-  return pathname;
-}
-
 async function requestBotApi(pathname, options = {}) {
-  const { ttlMs = 0 } = options;
   const botApiUrl = process.env.BOT_API_URL;
   const botApiToken = process.env.BOT_API_TOKEN;
 
@@ -15,16 +8,14 @@ async function requestBotApi(pathname, options = {}) {
     throw error;
   }
 
-  const key = cacheKey(pathname);
-  const cached = cache.get(key);
-  if (ttlMs && cached && Date.now() - cached.createdAt < ttlMs) {
-    return cached.data;
-  }
-
-  const headers = {};
+  const headers = { ...(options.headers || {}) };
   if (botApiToken) headers.authorization = `Bearer ${botApiToken}`;
+  if (options.body && !headers['content-type']) headers['content-type'] = 'application/json';
 
-  const response = await fetch(`${botApiUrl.replace(/\/$/, '')}${pathname}`, { headers });
+  const response = await fetch(`${botApiUrl.replace(/\/$/, '')}${pathname}`, {
+    ...options,
+    headers,
+  });
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
@@ -33,7 +24,6 @@ async function requestBotApi(pathname, options = {}) {
     throw error;
   }
 
-  if (ttlMs) cache.set(key, { createdAt: Date.now(), data });
   return data;
 }
 

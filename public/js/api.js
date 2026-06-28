@@ -1,48 +1,16 @@
 const memoryCache = new Map();
 
-function cacheKey(url) {
-  return `meowz-cache:${url}`;
-}
-
-function readCached(url, ttlMs) {
-  if (!ttlMs) return null;
-
-  const memoryItem = memoryCache.get(url);
-  if (memoryItem && Date.now() - memoryItem.createdAt < ttlMs) {
-    return memoryItem.data;
-  }
-
-  try {
-    const raw = sessionStorage.getItem(cacheKey(url));
-    if (!raw) return null;
-    const item = JSON.parse(raw);
-    if (Date.now() - item.createdAt > ttlMs) return null;
-    memoryCache.set(url, item);
-    return item.data;
-  } catch {
-    return null;
-  }
-}
-
-function writeCached(url, data, ttlMs) {
-  if (!ttlMs) return;
-  const item = { createdAt: Date.now(), data };
-  memoryCache.set(url, item);
-  try {
-    sessionStorage.setItem(cacheKey(url), JSON.stringify(item));
-  } catch {
-    // Ignore quota/storage errors.
-  }
-}
-
 async function fetchJson(url, options = {}) {
-  const { ttlMs = 0 } = options;
-  const cached = readCached(url, ttlMs);
-  if (cached) return cached;
+  const { cacheKey, cacheMs = 0, ...fetchOptions } = options;
+  if (cacheKey && cacheMs > 0) {
+    const cached = memoryCache.get(cacheKey);
+    if (cached && Date.now() - cached.at < cacheMs) return cached.data;
+  }
 
   const response = await fetch(url, {
-    cache: ttlMs ? 'default' : 'no-store',
-    credentials: 'include',
+    cache: 'no-store',
+    headers: { 'content-type': 'application/json', ...(fetchOptions.headers || {}) },
+    ...fetchOptions,
   });
   const data = await response.json().catch(() => null);
 
@@ -50,26 +18,47 @@ async function fetchJson(url, options = {}) {
     throw new Error(data?.error || `Request failed with ${response.status}`);
   }
 
-  writeCached(url, data, ttlMs);
+  if (cacheKey && cacheMs > 0) memoryCache.set(cacheKey, { at: Date.now(), data });
   return data;
 }
 
 export function getBotStats() {
-  return fetchJson('/api/bot-stats', { ttlMs: 30000 });
+  return fetchJson('/api/bot-stats', { cacheKey: 'bot-stats', cacheMs: 15000 });
 }
 
 export function getBotCommands() {
-  return fetchJson('/api/bot-commands', { ttlMs: 300000 });
+  return fetchJson('/api/bot-commands', { cacheKey: 'bot-commands', cacheMs: 30000 });
 }
 
 export function getChangelog() {
-  return fetchJson('/data/changelog.json', { ttlMs: 300000 });
+  return fetchJson('/data/changelog.json', { cacheKey: 'changelog', cacheMs: 30000 });
 }
 
 export function getDashboardGuilds() {
-  return fetchJson('/api/dashboard/guilds', { ttlMs: 30000 });
+  return fetchJson('/api/dashboard/guilds', { cacheKey: 'dashboard-guilds', cacheMs: 10000 });
 }
 
 export function getDashboardServer(guildId) {
-  return fetchJson(`/api/dashboard/server/${encodeURIComponent(guildId)}`, { ttlMs: 30000 });
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}`, { cacheKey: `dashboard-server:${guildId}`, cacheMs: 10000 });
+}
+
+export function getImageAccess(guildId) {
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access`, { cacheKey: `image-access:${guildId}`, cacheMs: 5000 });
+}
+
+export async function addImageAccessUser(guildId, userId) {
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access`, {
+    method: 'POST',
+    body: JSON.stringify({ userId }),
+  });
+  memoryCache.delete(`image-access:${guildId}`);
+  return data;
+}
+
+export async function removeImageAccessUser(guildId, userId) {
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access/${encodeURIComponent(userId)}`, {
+    method: 'DELETE',
+  });
+  memoryCache.delete(`image-access:${guildId}`);
+  return data;
 }

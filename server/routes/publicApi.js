@@ -3,99 +3,123 @@ const { requestBotApi } = require('../api/botApi');
 const { readSession } = require('../authSession');
 
 const router = express.Router();
+const DISCORD_API = 'https://discord.com/api/v10';
+const MANAGE_GUILD = 0x20n;
+const ADMINISTRATOR = 0x8n;
 
-function getClientId() {
-  return process.env.DISCORD_CLIENT_ID || '';
+function requireAuth(req, res, next) {
+  const session = readSession(req);
+  if (!session?.user) return res.status(401).json({ ok: false, error: 'Login required.' });
+  req.sessionData = session;
+  return next();
 }
 
-function iconUrl(guild, size = 96) {
+function hasManageGuild(permissions) {
+  try {
+    const value = BigInt(permissions || '0');
+    return (value & ADMINISTRATOR) === ADMINISTRATOR || (value & MANAGE_GUILD) === MANAGE_GUILD;
+  } catch {
+    return false;
+  }
+}
+
+function discordGuildIcon(guild) {
+  if (!guild?.icon) return null;
+  const ext = guild.icon.startsWith('a_') ? 'gif' : 'png';
+  return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.${ext}?size=128`;
+}
+
+function botGuildIcon(guild) {
   if (guild?.iconUrl) return guild.iconUrl;
-  if (!guild?.id || !guild?.icon) return null;
-  const ext = String(guild.icon).startsWith('a_') ? 'gif' : 'png';
-  return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.${ext}?size=${size}`;
-}
-
-function normalizeBotGuild(guild) {
-  const id = String(guild.id || guild.guildId || '');
-  return {
-    id,
-    name: guild.name || guild.guildName || 'Unknown server',
-    icon: guild.icon || null,
-    iconUrl: iconUrl({ ...guild, id }),
-    memberCount: guild.memberCount ?? guild.members ?? guild.member_count ?? null,
-  };
-}
-
-function getBotGuildsFromResponse(data) {
-  const raw = Array.isArray(data) ? data : (Array.isArray(data?.guilds) ? data.guilds : []);
-  return raw.map(normalizeBotGuild).filter((guild) => guild.id);
+  if (!guild?.icon) return null;
+  return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`;
 }
 
 function getInviteUrl(guildId) {
-  const clientId = getClientId();
-  if (!clientId) return null;
-
+  const clientId = process.env.DISCORD_CLIENT_ID;
+  if (!clientId) return 'https://discord.com/oauth2/authorize';
   const params = new URLSearchParams({
     client_id: clientId,
     permissions: '8',
     scope: 'bot applications.commands',
+    guild_id: guildId,
+    disable_guild_select: 'true',
   });
-
-  if (guildId) {
-    params.set('guild_id', guildId);
-    params.set('disable_guild_select', 'true');
-  }
-
   return `https://discord.com/oauth2/authorize?${params.toString()}`;
 }
 
-function requireSession(req, res) {
-  const session = readSession(req);
-  if (!session?.user) {
-    res.status(401).json({ ok: false, error: 'Login required.' });
-    return null;
+async function getUserGuilds(session) {
+  const accessToken = session.accessToken;
+  if (!accessToken) {
+    const error = new Error('Discord session is missing guild access. Log out and log in again.');
+    error.statusCode = 401;
+    throw error;
   }
-  return session;
+
+  const response = await fetch(`${DISCORD_API}/users/@me/guilds`, {
+    headers: { authorization: `Bearer ${accessToken}` },
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = new Error(data?.message || 'Could not fetch Discord guilds. Log out and log in again.');
+    error.statusCode = response.status;
+    throw error;
+  }
+  return Array.isArray(data) ? data : [];
 }
 
 async function getDashboardGuildData(session) {
-  const botData = await requestBotApi('/api/guilds', { ttlMs: 30000 });
-  const botGuilds = getBotGuildsFromResponse(botData);
-  const botGuildMap = new Map(botGuilds.map((guild) => [guild.id, guild]));
-  const manageableGuilds = Array.isArray(session.guilds) ? session.guilds : [];
+  const [botData, userGuilds] = await Promise.all([
+    requestBotApi('/api/guilds'),
+    getUserGuilds(session),
+  ]);
 
-  const installed = manageableGuilds
-    .filter((guild) => botGuildMap.has(guild.id))
-    .map((guild) => {
-      const botGuild = botGuildMap.get(guild.id);
-      return {
-        ...guild,
-        ...botGuild,
-        iconUrl: botGuild.iconUrl || guild.iconUrl || iconUrl(guild),
-        installed: true,
-        manageUrl: `/dashboard/server/${guild.id}`,
-      };
-    });
+  const botGuilds = new Map((botData.guilds || []).map((guild) => [guild.id, guild]));
+  const manageable = userGuilds.filter((guild) => hasManageGuild(guild.permissions));
 
-  const available = manageableGuilds
-    .filter((guild) => !botGuildMap.has(guild.id))
-    .map((guild) => ({
-      ...guild,
-      iconUrl: guild.iconUrl || iconUrl(guild),
-      installed: false,
-      inviteUrl: getInviteUrl(guild.id),
-    }));
+  const installed = [];
+  const available = [];
 
-  return { installed, available, botGuilds };
+  for (const guild of manageable) {
+    const botGuild = botGuilds.get(guild.id);
+    if (botGuild) {
+      installed.push({
+        id: guild.id,
+        name: botGuild.name || guild.name,
+        iconUrl: botGuildIcon(botGuild) || discordGuildIcon(guild),
+        memberCount: botGuild.memberCount ?? null,
+        manageUrl: `/dashboard/server/${encodeURIComponent(guild.id)}`,
+      });
+    } else {
+      available.push({
+        id: guild.id,
+        name: guild.name,
+        iconUrl: discordGuildIcon(guild),
+        inviteUrl: getInviteUrl(guild.id),
+      });
+    }
+  }
+
+  installed.sort((a, b) => a.name.localeCompare(b.name));
+  available.sort((a, b) => a.name.localeCompare(b.name));
+
+  return { installed, available, botGuilds, manageable };
+}
+
+async function requireManageableInstalledServer(req, res, next) {
+  try {
+    const data = await getDashboardGuildData(req.sessionData);
+    const server = data.installed.find((guild) => guild.id === req.params.guildId);
+    if (!server) return res.status(403).json({ ok: false, error: 'You can only manage servers where you have Manage Server and Meowz is installed.' });
+    req.dashboardServer = server;
+    return next();
+  } catch (err) {
+    return res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not verify server access.' });
+  }
 }
 
 router.get('/status', (req, res) => {
-  res.json({
-    ok: true,
-    status: 'online',
-    name: 'Meowz Website',
-    updatedAt: new Date().toISOString(),
-  });
+  res.json({ ok: true, status: 'online', name: 'Meowz Website', updatedAt: new Date().toISOString() });
 });
 
 router.get('/me', (req, res) => {
@@ -106,7 +130,7 @@ router.get('/me', (req, res) => {
 
 router.get('/bot-stats', async (req, res) => {
   try {
-    const data = await requestBotApi('/api/stats', { ttlMs: 30000 });
+    const data = await requestBotApi('/api/stats');
     res.json(data);
   } catch (err) {
     res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not reach the bot API.' });
@@ -115,60 +139,55 @@ router.get('/bot-stats', async (req, res) => {
 
 router.get('/bot-commands', async (req, res) => {
   try {
-    const data = await requestBotApi('/api/commands', { ttlMs: 300000 });
+    const data = await requestBotApi('/api/commands');
     res.json(data);
   } catch (err) {
     res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not reach the bot API.' });
   }
 });
 
-router.get('/dashboard/guilds', async (req, res) => {
-  const session = requireSession(req, res);
-  if (!session) return;
-
+router.get('/dashboard/guilds', requireAuth, async (req, res) => {
   try {
-    const data = await getDashboardGuildData(session);
-    res.json({ ok: true, ...data, updatedAt: new Date().toISOString() });
+    const data = await getDashboardGuildData(req.sessionData);
+    res.json({ ok: true, installed: data.installed, available: data.available, updatedAt: new Date().toISOString() });
   } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load server dashboard.' });
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load dashboard servers.' });
   }
 });
 
-router.get('/dashboard/server/:guildId', async (req, res) => {
-  const session = requireSession(req, res);
-  if (!session) return;
+router.get('/dashboard/servers/:guildId', requireAuth, requireManageableInstalledServer, (req, res) => {
+  res.json({ ok: true, server: req.dashboardServer, updatedAt: new Date().toISOString() });
+});
 
+router.get('/dashboard/servers/:guildId/image-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
   try {
-    const { installed } = await getDashboardGuildData(session);
-    const server = installed.find((guild) => guild.id === req.params.guildId);
-
-    if (!server) {
-      return res.status(404).json({
-        ok: false,
-        error: 'This server is not manageable from your Meowz dashboard.',
-      });
-    }
-
-    return res.json({
-      ok: true,
-      server: {
-        ...server,
-        status: 'Installed',
-        permissions: {
-          manageServer: true,
-        },
-        comingSoon: [
-          'Leveling settings',
-          'Welcome messages',
-          'Logs',
-          'AI image access',
-          'Moderation tools',
-        ],
-      },
-      updatedAt: new Date().toISOString(),
-    });
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/image-access`);
+    res.json(data);
   } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load server details.' });
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load image access.' });
+  }
+});
+
+router.post('/dashboard/servers/:guildId/image-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/image-access`, {
+      method: 'POST',
+      body: JSON.stringify({ userId: req.body?.userId }),
+    });
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not add user.' });
+  }
+});
+
+router.delete('/dashboard/servers/:guildId/image-access/:userId', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/image-access/${encodeURIComponent(req.params.userId)}`, {
+      method: 'DELETE',
+    });
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not remove user.' });
   }
 });
 

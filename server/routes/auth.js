@@ -12,8 +12,6 @@ const {
 const router = express.Router();
 const DISCORD_API = 'https://discord.com/api/v10';
 const DISCORD_AUTHORIZE_URL = 'https://discord.com/oauth2/authorize';
-const MANAGE_GUILD = 0x20n;
-const ADMINISTRATOR = 0x8n;
 
 function requiredEnv(name) {
   const value = process.env[name];
@@ -42,43 +40,6 @@ function formatDiscordUser(user) {
     avatar: user.avatar || null,
     accentColor: user.accent_color || null,
   };
-}
-
-function hasManageGuildPermission(permissions) {
-  try {
-    const value = BigInt(permissions || '0');
-    return (value & ADMINISTRATOR) === ADMINISTRATOR || (value & MANAGE_GUILD) === MANAGE_GUILD;
-  } catch {
-    return false;
-  }
-}
-
-function guildIconUrl(guild, size = 96) {
-  if (!guild?.id || !guild?.icon) return null;
-  const ext = guild.icon.startsWith('a_') ? 'gif' : 'png';
-  return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.${ext}?size=${size}`;
-}
-
-function formatDiscordGuild(guild) {
-  return {
-    id: guild.id,
-    name: guild.name,
-    icon: guild.icon || null,
-    iconUrl: guildIconUrl(guild),
-    owner: Boolean(guild.owner),
-    permissions: String(guild.permissions || '0'),
-    manageable: Boolean(guild.owner) || hasManageGuildPermission(guild.permissions),
-  };
-}
-
-async function fetchDiscordGuilds(accessToken) {
-  const response = await fetch(`${DISCORD_API}/users/@me/guilds`, {
-    headers: { authorization: `Bearer ${accessToken}` },
-  });
-
-  const guilds = await response.json().catch(() => []);
-  if (!response.ok || !Array.isArray(guilds)) return [];
-  return guilds.map(formatDiscordGuild).filter((guild) => guild.manageable);
 }
 
 router.get('/discord', (req, res) => {
@@ -147,8 +108,12 @@ router.get('/discord/callback', async (req, res) => {
       return redirectWithError(res, 'Could not fetch Discord user.');
     }
 
-    const guilds = await fetchDiscordGuilds(tokenData.access_token);
-    setSession(res, { user: formatDiscordUser(userData), guilds });
+    setSession(res, {
+      user: formatDiscordUser(userData),
+      accessToken: tokenData.access_token,
+      tokenType: tokenData.token_type || 'Bearer',
+      expiresAt: tokenData.expires_in ? Date.now() + Number(tokenData.expires_in) * 1000 : null,
+    });
     return res.redirect('/dashboard?auth=success');
   } catch (err) {
     return redirectWithError(res, err.message);
