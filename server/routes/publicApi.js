@@ -6,6 +6,9 @@ const router = express.Router();
 const DISCORD_API = 'https://discord.com/api/v10';
 const MANAGE_GUILD = 0x20n;
 const ADMINISTRATOR = 0x8n;
+const USER_GUILDS_CACHE_MS = 45 * 1000;
+const userGuildCache = new Map();
+
 
 function requireAuth(req, res, next) {
   const session = readSession(req);
@@ -56,16 +59,30 @@ async function getUserGuilds(session) {
     throw error;
   }
 
+  const userId = session.user?.id || 'unknown';
+  const cacheKey = `${userId}:${accessToken.slice(-12)}`;
+  const cached = userGuildCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < USER_GUILDS_CACHE_MS) {
+    return cached.guilds;
+  }
+
   const response = await fetch(`${DISCORD_API}/users/@me/guilds`, {
     headers: { authorization: `Bearer ${accessToken}` },
   });
   const data = await response.json().catch(() => null);
   if (!response.ok) {
-    const error = new Error(data?.message || 'Could not fetch Discord guilds. Log out and log in again.');
+    const error = new Error(
+      response.status === 429
+        ? 'Discord is rate limiting server permission checks. Wait a few seconds and try again.'
+        : data?.message || 'Could not fetch Discord guilds. Log out and log in again.'
+    );
     error.statusCode = response.status;
     throw error;
   }
-  return Array.isArray(data) ? data : [];
+
+  const guilds = Array.isArray(data) ? data : [];
+  userGuildCache.set(cacheKey, { at: Date.now(), guilds });
+  return guilds;
 }
 
 async function getDashboardGuildData(session) {

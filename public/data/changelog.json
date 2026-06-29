@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.24.1",
+    "date": "2026-06-29",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Reduced duplicate Discord permission checks on dashboard server feature pages to prevent rate limit errors."
+      },
+      {
+        "type": "Fixed",
+        "text": "Improved AI image access loading so repeated refreshes share one request and show clearer errors."
+      }
+    ]
+  },
+  {
     "version": "v1.21.0",
     "date": "2026-06-27",
     "changes": [

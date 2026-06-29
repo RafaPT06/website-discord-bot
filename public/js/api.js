@@ -43,7 +43,7 @@ export function getDashboardServer(guildId) {
 }
 
 export function getImageAccess(guildId) {
-  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access`, { cacheKey: `image-access:${guildId}`, cacheMs: 5000 });
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access`, { cacheKey: `image-access:${guildId}`, cacheMs: 15000 });
 }
 
 export async function addImageAccessUser(guildId, userId) {

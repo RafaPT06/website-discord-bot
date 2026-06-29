@@ -362,16 +362,27 @@ function renderAiAccessList(container, users = []) {
   }).join('');
 }
 
+let aiAccessRefreshPromise = null;
+
 async function refreshAiAccess(guildId) {
   const list = document.querySelector('[data-ai-access-list]');
   if (!list) return;
-  try {
-    const data = await getImageAccess(guildId);
-    renderAiAccessList(list, data.users || []);
-  } catch (err) {
-    list.innerHTML = `<div class="settings-empty-state error"><strong>Could not load access list.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`;
-  }
+  if (aiAccessRefreshPromise) return aiAccessRefreshPromise;
+
+  aiAccessRefreshPromise = (async () => {
+    try {
+      const data = await getImageAccess(guildId);
+      renderAiAccessList(list, data.users || []);
+    } catch (err) {
+      list.innerHTML = `<div class="settings-empty-state error"><strong>Could not load access list.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`;
+    } finally {
+      aiAccessRefreshPromise = null;
+    }
+  })();
+
+  return aiAccessRefreshPromise;
 }
+
 
 function initAiAccessControls(guildId) {
   const page = document.querySelector('[data-ai-access-page]');
