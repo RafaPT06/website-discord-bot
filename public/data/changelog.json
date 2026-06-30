@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.24.3",
+    "date": "2026-06-30",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "AI image access now shows default access for Manage Server users and the bot owner with disabled default badges."
+      },
+      {
+        "type": "Improved",
+        "text": "Added an explanation note to clarify who can use the image editing command by default."
+      }
+    ]
+  },
+  {
     "version": "v1.24.2",
     "date": "2026-06-29",
     "changes": [

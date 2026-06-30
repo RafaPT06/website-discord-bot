@@ -320,6 +320,10 @@ function renderAiPage(server) {
       <article class="dashboard-card compact settings-side-card">
         <span class="dashboard-card-label">Current access</span>
         <h3>People allowed</h3>
+        <div class="ai-access-note" role="note">
+          <strong>Default access</strong>
+          <span>Users with Manage Server permission and the bot owner can use this command by default. These entries cannot be removed here.</span>
+        </div>
         <div class="ai-access-list" data-ai-access-list>
           <div class="settings-empty-state"><strong>Loading allowed users...</strong><span>Please wait.</span></div>
         </div>
@@ -339,14 +343,31 @@ function renderAiPage(server) {
   `;
 }
 
+function defaultAiAccessRows() {
+  return `
+    <div class="ai-access-user-row is-default">
+      <span class="ai-access-user-avatar">M</span>
+      <span class="ai-access-user-main">
+        <strong>Manage Server users</strong>
+        <small>Allowed by default</small>
+      </span>
+      <button class="server-row-action is-disabled" type="button" disabled title="Users with Manage Server permission can use AI image editing by default.">Default</button>
+    </div>
+    <div class="ai-access-user-row is-default">
+      <span class="ai-access-user-avatar">O</span>
+      <span class="ai-access-user-main">
+        <strong>Bot owner</strong>
+        <small>Always allowed</small>
+      </span>
+      <button class="server-row-action is-disabled" type="button" disabled title="The bot owner can always use AI image editing.">Default</button>
+    </div>
+  `;
+}
+
 function renderAiAccessList(container, users = []) {
   if (!container) return;
-  if (!users.length) {
-    container.innerHTML = `<div class="settings-empty-state"><strong>No users allowed yet.</strong><span>Add a trusted user ID to let them use AI image editing in this server.</span></div>`;
-    return;
-  }
 
-  container.innerHTML = users.map((entry) => {
+  const customRows = users.map((entry) => {
     const label = entry.displayName || entry.username || entry.userId;
     const sub = entry.username && entry.userId !== entry.username ? entry.userId : 'Allowed user';
     return `
@@ -360,6 +381,9 @@ function renderAiAccessList(container, users = []) {
       </div>
     `;
   }).join('');
+
+  const emptyCustomRows = `<div class="settings-empty-state compact"><strong>No extra users added.</strong><span>Add a trusted user ID only when they do not already have default access.</span></div>`;
+  container.innerHTML = `${defaultAiAccessRows()}${customRows || emptyCustomRows}`;
 }
 
 let aiAccessRefreshPromise = null;
