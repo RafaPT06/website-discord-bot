@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.24.2",
+    "date": "2026-06-29",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Polished server feature pages on mobile with a more compact server header and cleaner one-column settings layout."
+      },
+      {
+        "type": "Fixed",
+        "text": "Adjusted AI image access form and allowed-user cards so they fit better on phone screens."
+      }
+    ]
+  },
+  {
     "version": "v1.24.1",
     "date": "2026-06-29",
     "changes": [
