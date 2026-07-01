@@ -320,10 +320,6 @@ function renderAiPage(server) {
       <article class="dashboard-card compact settings-side-card">
         <span class="dashboard-card-label">Current access</span>
         <h3>People allowed</h3>
-        <div class="ai-access-note" role="note">
-          <strong>Default access</strong>
-          <span>Users with Manage Server permission and the bot owner can use this command by default. These entries cannot be removed here.</span>
-        </div>
         <div class="ai-access-list" data-ai-access-list>
           <div class="settings-empty-state"><strong>Loading allowed users...</strong><span>Please wait.</span></div>
         </div>
@@ -343,47 +339,62 @@ function renderAiPage(server) {
   `;
 }
 
-function defaultAiAccessRows() {
+function formatAccessSource(entry) {
+  if (entry.source === 'bot_owner') return 'Bot owner · default access';
+  if (entry.source === 'manage_server') return 'Manage Server · default access';
+  return 'Manually allowed';
+}
+
+function renderAccessAvatar(entry, label) {
+  if (entry.avatarUrl) {
+    return `<span class="ai-access-user-avatar"><img src="${escapeHtml(entry.avatarUrl)}" alt="" /></span>`;
+  }
+  return `<span class="ai-access-user-avatar">${escapeHtml((label || 'U').slice(0, 1).toUpperCase())}</span>`;
+}
+
+function renderAccessRow(entry, isDefault = false) {
+  const label = entry.displayName || entry.username || entry.userId;
+  const sub = entry.userId || formatAccessSource(entry);
+  const source = formatAccessSource(entry);
+  const button = isDefault
+    ? `<button class="server-row-action danger is-disabled" type="button" disabled title="Default access cannot be removed from here.">Remove</button>`
+    : `<button class="server-row-action danger" type="button" data-remove-ai-user="${escapeHtml(entry.userId)}">Remove</button>`;
+
   return `
-    <div class="ai-access-user-row is-default">
-      <span class="ai-access-user-avatar">M</span>
+    <div class="ai-access-user-row${isDefault ? ' is-default-access' : ''}" data-user-id="${escapeHtml(entry.userId)}">
+      ${renderAccessAvatar(entry, label)}
       <span class="ai-access-user-main">
-        <strong>Manage Server users</strong>
-        <small>Allowed by default</small>
+        <strong>${escapeHtml(label)}</strong>
+        <small>${escapeHtml(sub)}</small>
+        <em>${escapeHtml(source)}</em>
       </span>
-      <button class="server-row-action is-disabled" type="button" disabled title="Users with Manage Server permission can use AI image editing by default.">Default</button>
-    </div>
-    <div class="ai-access-user-row is-default">
-      <span class="ai-access-user-avatar">O</span>
-      <span class="ai-access-user-main">
-        <strong>Bot owner</strong>
-        <small>Always allowed</small>
-      </span>
-      <button class="server-row-action is-disabled" type="button" disabled title="The bot owner can always use AI image editing.">Default</button>
+      ${button}
     </div>
   `;
 }
 
-function renderAiAccessList(container, users = []) {
+function renderAiAccessList(container, payload = {}) {
   if (!container) return;
 
-  const customRows = users.map((entry) => {
-    const label = entry.displayName || entry.username || entry.userId;
-    const sub = entry.username && entry.userId !== entry.username ? entry.userId : 'Allowed user';
-    return `
-      <div class="ai-access-user-row" data-user-id="${escapeHtml(entry.userId)}">
-        <span class="ai-access-user-avatar">${escapeHtml((label || 'U').slice(0, 1).toUpperCase())}</span>
-        <span class="ai-access-user-main">
-          <strong>${escapeHtml(label)}</strong>
-          <small>${escapeHtml(sub)}</small>
-        </span>
-        <button class="server-row-action danger" type="button" data-remove-ai-user="${escapeHtml(entry.userId)}">Remove</button>
-      </div>
-    `;
-  }).join('');
+  const defaultUsers = Array.isArray(payload.defaultUsers) ? payload.defaultUsers : [];
+  const users = Array.isArray(payload.users) ? payload.users : (Array.isArray(payload) ? payload : []);
 
-  const emptyCustomRows = `<div class="settings-empty-state compact"><strong>No extra users added.</strong><span>Add a trusted user ID only when they do not already have default access.</span></div>`;
-  container.innerHTML = `${defaultAiAccessRows()}${customRows || emptyCustomRows}`;
+  const defaultHtml = defaultUsers.length
+    ? `<div class="ai-access-section"><strong class="ai-access-section-title">Default access</strong>${defaultUsers.map((entry) => renderAccessRow(entry, true)).join('')}</div>`
+    : '';
+
+  const manualHtml = users.length
+    ? `<div class="ai-access-section"><strong class="ai-access-section-title">Manually allowed</strong>${users.map((entry) => renderAccessRow(entry, false)).join('')}</div>`
+    : `<div class="settings-empty-state"><strong>No manually added users yet.</strong><span>Add a trusted user ID if they do not already have default access.</span></div>`;
+
+  container.innerHTML = `
+    <div class="ai-access-note">
+      <strong>Default access</strong>
+      <span>Bot owner and users with Manage Server permission can use this command by default. Their Remove button is disabled because this access comes from Discord permissions.</span>
+    </div>
+    ${defaultHtml}
+    ${manualHtml}
+  `;
 }
 
 let aiAccessRefreshPromise = null;
@@ -396,7 +407,7 @@ async function refreshAiAccess(guildId) {
   aiAccessRefreshPromise = (async () => {
     try {
       const data = await getImageAccess(guildId);
-      renderAiAccessList(list, data.users || []);
+      renderAiAccessList(list, data);
     } catch (err) {
       list.innerHTML = `<div class="settings-empty-state error"><strong>Could not load access list.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`;
     } finally {
