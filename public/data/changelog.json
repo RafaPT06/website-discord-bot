@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.24.4",
+    "date": "2026-07-01",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Polished AI Image Access so default-access users and manually allowed users are shown as separate sections with user counts."
+      },
+      {
+        "type": "Improved",
+        "text": "Added a confirmation modal before removing a manually allowed user."
+      },
+      {
+        "type": "Fixed",
+        "text": "Disabled Remove buttons now clearly show that bot owner and Manage Server access cannot be removed from the dashboard."
+      }
+    ]
+  },
+  {
     "version": "v1.13.8",
     "date": "2026-06-30",
     "changes": [

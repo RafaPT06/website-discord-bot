@@ -354,18 +354,19 @@ function renderAccessAvatar(entry, label) {
 
 function renderAccessRow(entry, isDefault = false) {
   const label = entry.displayName || entry.username || entry.userId;
-  const sub = entry.userId || formatAccessSource(entry);
+  const sub = entry.username && entry.username !== label ? entry.username : entry.userId;
   const source = formatAccessSource(entry);
+  const safeUserId = escapeHtml(entry.userId || '');
   const button = isDefault
-    ? `<button class="server-row-action danger is-disabled" type="button" disabled title="Default access cannot be removed from here.">Remove</button>`
-    : `<button class="server-row-action danger" type="button" data-remove-ai-user="${escapeHtml(entry.userId)}">Remove</button>`;
+    ? `<button class="server-row-action danger is-disabled" type="button" disabled aria-disabled="true" title="This user has default access from Discord permissions.">Remove</button>`
+    : `<button class="server-row-action danger" type="button" data-remove-ai-user="${safeUserId}" data-remove-ai-label="${escapeHtml(label)}">Remove</button>`;
 
   return `
-    <div class="ai-access-user-row${isDefault ? ' is-default-access' : ''}" data-user-id="${escapeHtml(entry.userId)}">
+    <div class="ai-access-user-row${isDefault ? ' is-default-access' : ''}" data-user-id="${safeUserId}">
       ${renderAccessAvatar(entry, label)}
       <span class="ai-access-user-main">
         <strong>${escapeHtml(label)}</strong>
-        <small>${escapeHtml(sub)}</small>
+        <small>${escapeHtml(sub || 'Discord user')}</small>
         <em>${escapeHtml(source)}</em>
       </span>
       ${button}
@@ -380,21 +381,74 @@ function renderAiAccessList(container, payload = {}) {
   const users = Array.isArray(payload.users) ? payload.users : (Array.isArray(payload) ? payload : []);
 
   const defaultHtml = defaultUsers.length
-    ? `<div class="ai-access-section"><strong class="ai-access-section-title">Default access</strong>${defaultUsers.map((entry) => renderAccessRow(entry, true)).join('')}</div>`
-    : '';
+    ? `<div class="ai-access-section"><div class="ai-access-section-heading"><strong class="ai-access-section-title">Default access</strong><span>${defaultUsers.length} user${defaultUsers.length === 1 ? '' : 's'}</span></div>${defaultUsers.map((entry) => renderAccessRow(entry, true)).join('')}</div>`
+    : `<div class="settings-empty-state"><strong>No default-access users found.</strong><span>Default access appears here when the bot can read the server owner and Manage Server members.</span></div>`;
 
   const manualHtml = users.length
-    ? `<div class="ai-access-section"><strong class="ai-access-section-title">Manually allowed</strong>${users.map((entry) => renderAccessRow(entry, false)).join('')}</div>`
+    ? `<div class="ai-access-section"><div class="ai-access-section-heading"><strong class="ai-access-section-title">Manually allowed</strong><span>${users.length} user${users.length === 1 ? '' : 's'}</span></div>${users.map((entry) => renderAccessRow(entry, false)).join('')}</div>`
     : `<div class="settings-empty-state"><strong>No manually added users yet.</strong><span>Add a trusted user ID if they do not already have default access.</span></div>`;
 
   container.innerHTML = `
     <div class="ai-access-note">
-      <strong>Default access</strong>
-      <span>Bot owner and users with Manage Server permission can use this command by default. Their Remove button is disabled because this access comes from Discord permissions.</span>
+      <strong>Default access cannot be removed here</strong>
+      <span>The bot owner and users with Manage Server permission can use /edit_image by default. Their Remove buttons stay disabled because that access comes from Discord permissions.</span>
     </div>
     ${defaultHtml}
     ${manualHtml}
   `;
+}
+
+function ensureAiConfirmModal() {
+  let modal = document.querySelector('[data-ai-confirm-modal]');
+  if (modal) return modal;
+
+  modal = document.createElement('div');
+  modal.className = 'ai-confirm-backdrop';
+  modal.hidden = true;
+  modal.setAttribute('data-ai-confirm-modal', '');
+  modal.innerHTML = `
+    <div class="ai-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="ai-confirm-title">
+      <span class="dashboard-card-label">Confirm removal</span>
+      <h3 id="ai-confirm-title">Remove manual access?</h3>
+      <p data-ai-confirm-text>This user will no longer be manually allowed to use /edit_image.</p>
+      <div class="ai-confirm-actions">
+        <button class="btn btn-secondary" type="button" data-ai-confirm-cancel>Cancel</button>
+        <button class="btn btn-danger" type="button" data-ai-confirm-accept>Remove access</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function confirmAiAccessRemoval(label) {
+  const modal = ensureAiConfirmModal();
+  const text = modal.querySelector('[data-ai-confirm-text]');
+  if (text) text.textContent = `Remove manual AI image access from ${label}?`;
+  modal.hidden = false;
+  document.body.classList.add('modal-open');
+
+  return new Promise((resolve) => {
+    const cleanup = (answer) => {
+      modal.hidden = true;
+      document.body.classList.remove('modal-open');
+      modal.querySelector('[data-ai-confirm-cancel]')?.removeEventListener('click', onCancel);
+      modal.querySelector('[data-ai-confirm-accept]')?.removeEventListener('click', onAccept);
+      modal.removeEventListener('click', onBackdrop);
+      window.removeEventListener('keydown', onKeydown);
+      resolve(answer);
+    };
+    const onCancel = () => cleanup(false);
+    const onAccept = () => cleanup(true);
+    const onBackdrop = (event) => { if (event.target === modal) cleanup(false); };
+    const onKeydown = (event) => { if (event.key === 'Escape') cleanup(false); };
+
+    modal.querySelector('[data-ai-confirm-cancel]')?.addEventListener('click', onCancel);
+    modal.querySelector('[data-ai-confirm-accept]')?.addEventListener('click', onAccept);
+    modal.addEventListener('click', onBackdrop);
+    window.addEventListener('keydown', onKeydown);
+    setTimeout(() => modal.querySelector('[data-ai-confirm-cancel]')?.focus(), 0);
+  });
 }
 
 let aiAccessRefreshPromise = null;
@@ -460,9 +514,14 @@ function initAiAccessControls(guildId) {
 
   page.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-remove-ai-user]');
-    if (!button) return;
+    if (!button || button.disabled) return;
     const userId = button.getAttribute('data-remove-ai-user');
     if (!userId) return;
+
+    const label = button.getAttribute('data-remove-ai-label') || userId;
+    const confirmed = await confirmAiAccessRemoval(label);
+    if (!confirmed) return;
+
     button.disabled = true;
     button.textContent = 'Removing...';
     try {
@@ -471,6 +530,8 @@ function initAiAccessControls(guildId) {
     } catch (err) {
       button.disabled = false;
       button.textContent = 'Remove';
+      const list = document.querySelector('[data-ai-access-list]');
+      if (list) list.insertAdjacentHTML('afterbegin', `<div class="settings-empty-state error"><strong>Could not remove user.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`);
     }
   });
 }
