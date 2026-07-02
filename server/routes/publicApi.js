@@ -164,11 +164,22 @@ async function getDashboardGuildData(session, options = {}) {
 
 async function requireManageableInstalledServer(req, res, next) {
   try {
-    const data = await getDashboardGuildData(req.sessionData, { mode: req.query.mode });
-    const server = data.installed.find((guild) => guild.id === req.params.guildId);
+    let data = await getDashboardGuildData(req.sessionData, { mode: req.query.mode });
+    let server = data.installed.find((guild) => guild.id === req.params.guildId);
+
+    // The bot owner must be able to manage/view every server where Meowz is installed,
+    // even when they do not personally have Discord's Manage Server permission there.
+    // Some feature routes are opened without ?mode=owner, so retry in owner mode before
+    // rejecting access. Normal users still keep the Manage Server requirement.
+    if (!server && data.isOwner) {
+      data = await getDashboardGuildData(req.sessionData, { mode: 'owner' });
+      server = data.installed.find((guild) => guild.id === req.params.guildId);
+    }
+
     if (!server) {
       return res.status(403).json({ ok: false, error: 'You can only manage servers where you have Manage Server and Meowz is installed.' });
     }
+
     req.dashboardServer = server;
     req.dashboardMode = data.mode;
     req.isDashboardOwner = data.isOwner;

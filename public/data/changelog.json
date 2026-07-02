@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.24.6",
+    "date": "2026-07-02",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Bot owner access now bypasses Manage Server checks on server feature pages such as AI Image Access."
+      },
+      {
+        "type": "Fixed",
+        "text": "Owner View servers can now load feature data even when the owner does not have Discord Manage Server permission in that server."
+      }
+    ]
+  },
+  {
     "version": "v1.24.5",
     "date": "2026-07-02",
     "changes": [
