@@ -1,4 +1,4 @@
-import { getDashboardGuilds, getDashboardServer, getImageAccess, addImageAccessUser, removeImageAccessUser, getLevelingSettings, saveLevelingSettings } from './api.js';
+import { getDashboardGuilds, getDashboardServer, getImageAccess, addImageAccessUser, removeImageAccessUser, getLevelingSettings, saveLevelingSettings, getWelcomeSettings, saveWelcomeSettings, getLogSettings, saveLogSettings, getModerationSettings, saveModerationSettings } from './api.js';
 import { escapeHtml, formatNumber, setText } from './utils.js';
 
 const els = {
@@ -345,84 +345,252 @@ function comingSaveButton(label = 'Save changes coming soon') {
 
 function renderWelcomePage(server) {
   return `
-    <div class="settings-page-grid">
-      <article class="dashboard-card compact settings-main-card">
+    <div class="settings-page-grid welcome-settings-page" data-welcome-page data-guild-id="${escapeHtml(server.id)}">
+      <form class="dashboard-card compact settings-main-card settings-form" data-welcome-form>
         <span class="dashboard-card-label">Welcome messages</span>
         <h3>Member greetings</h3>
-        <p class="muted">Configure join and leave messages for ${escapeHtml(server.name)}. Editing is coming soon.</p>
+        <p class="muted">Configure join and leave messages for ${escapeHtml(server.name)}.</p>
+
+        <label class="setting-toggle-row">
+          <span>
+            <strong>Enable welcome messages</strong>
+            <small>Send a message when someone joins.</small>
+          </span>
+          <input type="checkbox" name="welcomeEnabled" data-welcome-enabled />
+        </label>
+
+        <label class="setting-toggle-row">
+          <span>
+            <strong>Enable leave messages</strong>
+            <small>Send a message when someone leaves.</small>
+          </span>
+          <input type="checkbox" name="goodbyeEnabled" data-goodbye-enabled />
+        </label>
+
+        <div class="form-grid-two">
+          <label>
+            <span>Welcome channel ID</span>
+            <input type="text" name="welcomeChannelId" inputmode="numeric" autocomplete="off" placeholder="Channel ID" data-welcome-channel />
+          </label>
+          <label>
+            <span>Leave channel ID</span>
+            <input type="text" name="goodbyeChannelId" inputmode="numeric" autocomplete="off" placeholder="Channel ID" data-goodbye-channel />
+          </label>
+        </div>
+
+        <label>
+          <span>Welcome message</span>
+          <textarea name="welcomeMessage" rows="4" maxlength="1000" placeholder="Welcome {user} to {server}." data-welcome-message></textarea>
+        </label>
+
+        <label>
+          <span>Leave message</span>
+          <textarea name="goodbyeMessage" rows="4" maxlength="1000" placeholder="{user} left {server}." data-goodbye-message></textarea>
+        </label>
+
+        <div class="settings-form-actions">
+          <button class="btn btn-primary" type="submit" data-welcome-save>Save settings</button>
+          <span class="settings-save-status" data-welcome-status></span>
+        </div>
+      </form>
+
+      <article class="dashboard-card compact settings-side-card">
+        <span class="dashboard-card-label">Variables</span>
+        <h3>Message placeholders</h3>
         <div class="settings-list">
-          ${disabledOption('Status', 'Coming soon')}
-          ${disabledOption('Welcome channel', 'Not configured')}
-          ${disabledOption('Join message', 'Not configured')}
-          ${disabledOption('Leave message', 'Not configured')}
-          ${disabledOption('Test message', 'Unavailable')}
+          <div><span>User mention</span><strong>{user}</strong></div>
+          <div><span>Username</span><strong>{username}</strong></div>
+          <div><span>Server name</span><strong>{server}</strong></div>
+          <div><span>Member count</span><strong>{memberCount}</strong></div>
         </div>
       </article>
 
       <article class="dashboard-card compact settings-side-card">
-        <span class="dashboard-card-label">Templates</span>
-        <h3>Message variables</h3>
-        <p class="muted">Templates will support common placeholders when this section is enabled.</p>
-        <div class="settings-empty-state">
-          <strong>No templates configured yet.</strong>
-          <span>You will be able to use variables like user, server and member count later.</span>
+        <span class="dashboard-card-label">Current values</span>
+        <h3>Active configuration</h3>
+        <div class="settings-list" data-welcome-current>
+          <div><span>Status</span><strong>Loading...</strong></div>
+          <div><span>Welcome channel</span><strong>Loading...</strong></div>
+          <div><span>Leave channel</span><strong>Loading...</strong></div>
         </div>
-      </article>
-
-      <article class="dashboard-card compact server-coming-card">
-        <span class="dashboard-card-label">Preview</span>
-        <h3>What this page will manage</h3>
-        <div class="coming-grid coming-grid-two">
-          ${previewCard('Welcome channel', 'Choose where join messages are sent.')}
-          ${previewCard('Join messages', 'Customize the message sent when someone joins.')}
-          ${previewCard('Leave messages', 'Customize the message sent when someone leaves.')}
-          ${previewCard('Message preview', 'Test how messages look before saving.')}
-        </div>
-        ${comingSaveButton()}
       </article>
     </div>
   `;
 }
 
+function populateWelcomeForm(settings) {
+  const page = document.querySelector('[data-welcome-page]');
+  if (!page) return;
+  page.querySelector('[data-welcome-enabled]').checked = settings.welcomeEnabled !== false;
+  page.querySelector('[data-goodbye-enabled]').checked = settings.goodbyeEnabled !== false;
+  page.querySelector('[data-welcome-channel]').value = settings.welcomeChannelId || '';
+  page.querySelector('[data-goodbye-channel]').value = settings.goodbyeChannelId || '';
+  page.querySelector('[data-welcome-message]').value = settings.welcomeMessage || '';
+  page.querySelector('[data-goodbye-message]').value = settings.goodbyeMessage || '';
+  renderWelcomeCurrent(settings);
+}
+
+function renderWelcomeCurrent(settings) {
+  const current = document.querySelector('[data-welcome-current]');
+  if (!current) return;
+  current.innerHTML = `
+    <div><span>Welcome status</span><strong>${settings.welcomeEnabled !== false ? 'Enabled' : 'Disabled'}</strong></div>
+    <div><span>Leave status</span><strong>${settings.goodbyeEnabled !== false ? 'Enabled' : 'Disabled'}</strong></div>
+    <div><span>Welcome channel</span><strong>${settings.welcomeChannelId ? escapeHtml(settings.welcomeChannelId) : 'Not configured'}</strong></div>
+    <div><span>Leave channel</span><strong>${settings.goodbyeChannelId ? escapeHtml(settings.goodbyeChannelId) : 'Not configured'}</strong></div>
+  `;
+}
+
+async function initWelcomeControls(guildId) {
+  const page = document.querySelector('[data-welcome-page]');
+  if (!page) return;
+  const form = page.querySelector('[data-welcome-form]');
+  const status = page.querySelector('[data-welcome-status]');
+  const saveButton = page.querySelector('[data-welcome-save]');
+
+  try {
+    const data = await getWelcomeSettings(guildId);
+    populateWelcomeForm(data.settings || {});
+  } catch (err) {
+    if (status) status.textContent = err.message || 'Could not load settings.';
+  }
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const payload = {
+      welcomeEnabled: Boolean(form.elements.welcomeEnabled?.checked),
+      goodbyeEnabled: Boolean(form.elements.goodbyeEnabled?.checked),
+      welcomeChannelId: String(form.elements.welcomeChannelId?.value || '').trim(),
+      goodbyeChannelId: String(form.elements.goodbyeChannelId?.value || '').trim(),
+      welcomeMessage: String(form.elements.welcomeMessage?.value || '').trim(),
+      goodbyeMessage: String(form.elements.goodbyeMessage?.value || '').trim(),
+    };
+
+    for (const key of ['welcomeChannelId', 'goodbyeChannelId']) {
+      if (payload[key] && !/^\d{15,25}$/.test(payload[key])) {
+        if (status) status.textContent = 'Invalid channel ID.';
+        return;
+      }
+    }
+
+    if (saveButton) { saveButton.disabled = true; saveButton.textContent = 'Saving...'; }
+    if (status) status.textContent = '';
+    try {
+      const data = await saveWelcomeSettings(guildId, payload);
+      populateWelcomeForm(data.settings || payload);
+      if (status) status.textContent = 'Saved.';
+    } catch (err) {
+      if (status) status.textContent = err.message || 'Could not save settings.';
+    } finally {
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = 'Save settings'; }
+    }
+  });
+}
+
 function renderLogsPage(server) {
   return `
-    <div class="settings-page-grid">
-      <article class="dashboard-card compact settings-main-card">
+    <div class="settings-page-grid logs-settings-page" data-logs-page data-guild-id="${escapeHtml(server.id)}">
+      <form class="dashboard-card compact settings-main-card settings-form" data-logs-form>
         <span class="dashboard-card-label">Logs</span>
         <h3>Server activity</h3>
-        <p class="muted">Configure log channels and event tracking for ${escapeHtml(server.name)}. Editing is coming soon.</p>
-        <div class="settings-list">
-          ${disabledOption('Status', 'Coming soon')}
-          ${disabledOption('Log channel', 'Not configured')}
-          ${disabledOption('Message logs', 'Disabled')}
-          ${disabledOption('Member logs', 'Disabled')}
-          ${disabledOption('Moderation logs', 'Disabled')}
+        <p class="muted">Configure log channels and event tracking for ${escapeHtml(server.name)}.</p>
+
+        <label class="setting-toggle-row">
+          <span><strong>Enable logs</strong><small>Send selected server events to a log channel.</small></span>
+          <input type="checkbox" name="enabled" data-logs-enabled />
+        </label>
+
+        <label>
+          <span>Log channel ID</span>
+          <input type="text" name="channelId" inputmode="numeric" autocomplete="off" placeholder="Channel ID" data-logs-channel />
+        </label>
+
+        <div class="settings-toggle-stack">
+          <label class="setting-toggle-row"><span><strong>Message events</strong><small>Track message edits and deletes later.</small></span><input type="checkbox" name="messageEvents" data-logs-message /></label>
+          <label class="setting-toggle-row"><span><strong>Member events</strong><small>Track joins, leaves and member updates.</small></span><input type="checkbox" name="memberEvents" data-logs-member /></label>
+          <label class="setting-toggle-row"><span><strong>Moderation events</strong><small>Track moderation actions and warnings.</small></span><input type="checkbox" name="moderationEvents" data-logs-moderation /></label>
         </div>
-      </article>
+
+        <div class="settings-form-actions">
+          <button class="btn btn-primary" type="submit" data-logs-save>Save settings</button>
+          <span class="settings-save-status" data-logs-status></span>
+        </div>
+      </form>
 
       <article class="dashboard-card compact settings-side-card">
-        <span class="dashboard-card-label">Events</span>
-        <h3>Tracked activity</h3>
-        <p class="muted">Event toggles will appear here once logging settings are connected to the bot.</p>
-        <div class="settings-empty-state">
-          <strong>No log events configured yet.</strong>
-          <span>You will be able to enable message edits, deletes, joins, leaves and moderation actions.</span>
+        <span class="dashboard-card-label">Current values</span>
+        <h3>Active configuration</h3>
+        <div class="settings-list" data-logs-current>
+          <div><span>Status</span><strong>Loading...</strong></div>
+          <div><span>Log channel</span><strong>Loading...</strong></div>
         </div>
-      </article>
-
-      <article class="dashboard-card compact server-coming-card">
-        <span class="dashboard-card-label">Preview</span>
-        <h3>What this page will manage</h3>
-        <div class="coming-grid coming-grid-two">
-          ${previewCard('Log channels', 'Choose where server logs are sent.')}
-          ${previewCard('Message events', 'Track edits, deletes and message actions.')}
-          ${previewCard('Member events', 'Track joins, leaves and profile changes.')}
-          ${previewCard('Moderation events', 'Track warns, bans, kicks and admin actions.')}
-        </div>
-        ${comingSaveButton()}
       </article>
     </div>
   `;
+}
+
+function populateLogsForm(settings) {
+  const page = document.querySelector('[data-logs-page]');
+  if (!page) return;
+  page.querySelector('[data-logs-enabled]').checked = settings.enabled === true;
+  page.querySelector('[data-logs-channel]').value = settings.channelId || '';
+  page.querySelector('[data-logs-message]').checked = settings.messageEvents !== false;
+  page.querySelector('[data-logs-member]').checked = settings.memberEvents !== false;
+  page.querySelector('[data-logs-moderation]').checked = settings.moderationEvents !== false;
+  renderLogsCurrent(settings);
+}
+
+function renderLogsCurrent(settings) {
+  const current = document.querySelector('[data-logs-current]');
+  if (!current) return;
+  current.innerHTML = `
+    <div><span>Status</span><strong>${settings.enabled === true ? 'Enabled' : 'Disabled'}</strong></div>
+    <div><span>Log channel</span><strong>${settings.channelId ? escapeHtml(settings.channelId) : 'Not configured'}</strong></div>
+    <div><span>Message events</span><strong>${settings.messageEvents !== false ? 'Enabled' : 'Disabled'}</strong></div>
+    <div><span>Member events</span><strong>${settings.memberEvents !== false ? 'Enabled' : 'Disabled'}</strong></div>
+    <div><span>Moderation events</span><strong>${settings.moderationEvents !== false ? 'Enabled' : 'Disabled'}</strong></div>
+  `;
+}
+
+async function initLogsControls(guildId) {
+  const page = document.querySelector('[data-logs-page]');
+  if (!page) return;
+  const form = page.querySelector('[data-logs-form]');
+  const status = page.querySelector('[data-logs-status]');
+  const saveButton = page.querySelector('[data-logs-save]');
+
+  try {
+    const data = await getLogSettings(guildId);
+    populateLogsForm(data.settings || {});
+  } catch (err) {
+    if (status) status.textContent = err.message || 'Could not load settings.';
+  }
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const payload = {
+      enabled: Boolean(form.elements.enabled?.checked),
+      channelId: String(form.elements.channelId?.value || '').trim(),
+      messageEvents: Boolean(form.elements.messageEvents?.checked),
+      memberEvents: Boolean(form.elements.memberEvents?.checked),
+      moderationEvents: Boolean(form.elements.moderationEvents?.checked),
+    };
+    if (payload.channelId && !/^\d{15,25}$/.test(payload.channelId)) {
+      if (status) status.textContent = 'Invalid channel ID.';
+      return;
+    }
+    if (saveButton) { saveButton.disabled = true; saveButton.textContent = 'Saving...'; }
+    if (status) status.textContent = '';
+    try {
+      const data = await saveLogSettings(guildId, payload);
+      populateLogsForm(data.settings || payload);
+      if (status) status.textContent = 'Saved.';
+    } catch (err) {
+      if (status) status.textContent = err.message || 'Could not save settings.';
+    } finally {
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = 'Save settings'; }
+    }
+  });
 }
 
 function renderAiPage(server) {
@@ -664,43 +832,113 @@ function initAiAccessControls(guildId) {
 
 function renderModerationPage(server) {
   return `
-    <div class="settings-page-grid">
-      <article class="dashboard-card compact settings-main-card">
+    <div class="settings-page-grid moderation-settings-page" data-moderation-page data-guild-id="${escapeHtml(server.id)}">
+      <form class="dashboard-card compact settings-main-card settings-form" data-moderation-form>
         <span class="dashboard-card-label">Moderation tools</span>
         <h3>Server moderation</h3>
-        <p class="muted">Configure warnings, automod and moderation controls for ${escapeHtml(server.name)}. Editing is coming soon.</p>
-        <div class="settings-list">
-          ${disabledOption('Status', 'Coming soon')}
-          ${disabledOption('Warnings', 'Not configured')}
-          ${disabledOption('Auto moderation', 'Disabled')}
-          ${disabledOption('Mod log channel', 'Not configured')}
-          ${disabledOption('Permission checks', 'Discord only')}
+        <p class="muted">Configure warnings, automod and moderation controls for ${escapeHtml(server.name)}.</p>
+
+        <label class="setting-toggle-row">
+          <span><strong>Enable moderation tools</strong><small>Allow Meowz moderation settings for this server.</small></span>
+          <input type="checkbox" name="enabled" data-moderation-enabled />
+        </label>
+
+        <label>
+          <span>Moderation log channel ID</span>
+          <input type="text" name="modLogChannelId" inputmode="numeric" autocomplete="off" placeholder="Channel ID" data-moderation-channel />
+        </label>
+
+        <div class="settings-toggle-stack">
+          <label class="setting-toggle-row"><span><strong>Warnings</strong><small>Enable warning-based moderation controls.</small></span><input type="checkbox" name="warningsEnabled" data-moderation-warnings /></label>
+          <label class="setting-toggle-row"><span><strong>Auto moderation</strong><small>Enable automatic filters when configured.</small></span><input type="checkbox" name="automodEnabled" data-moderation-automod /></label>
         </div>
-      </article>
+
+        <label>
+          <span>Blocked words</span>
+          <textarea name="blockedWords" rows="5" maxlength="2000" placeholder="One word or phrase per line" data-moderation-blocked></textarea>
+        </label>
+
+        <div class="settings-form-actions">
+          <button class="btn btn-primary" type="submit" data-moderation-save>Save settings</button>
+          <span class="settings-save-status" data-moderation-status></span>
+        </div>
+      </form>
 
       <article class="dashboard-card compact settings-side-card">
-        <span class="dashboard-card-label">Rules</span>
-        <h3>Automation</h3>
-        <p class="muted">Automod rules and moderation presets will be configured here later.</p>
-        <div class="settings-empty-state">
-          <strong>No moderation rules yet.</strong>
-          <span>You will be able to manage warning thresholds, blocked words and automated actions.</span>
+        <span class="dashboard-card-label">Current values</span>
+        <h3>Active configuration</h3>
+        <div class="settings-list" data-moderation-current>
+          <div><span>Status</span><strong>Loading...</strong></div>
+          <div><span>Mod log channel</span><strong>Loading...</strong></div>
         </div>
-      </article>
-
-      <article class="dashboard-card compact server-coming-card">
-        <span class="dashboard-card-label">Preview</span>
-        <h3>What this page will manage</h3>
-        <div class="coming-grid coming-grid-two">
-          ${previewCard('Warnings', 'Configure warning rules and thresholds.')}
-          ${previewCard('Automod', 'Set automatic filters and actions.')}
-          ${previewCard('Moderation logs', 'Choose where actions are reported.')}
-          ${previewCard('Permissions', 'Control who can use moderation tools.')}
-        </div>
-        ${comingSaveButton()}
       </article>
     </div>
   `;
+}
+
+function populateModerationForm(settings) {
+  const page = document.querySelector('[data-moderation-page]');
+  if (!page) return;
+  page.querySelector('[data-moderation-enabled]').checked = settings.enabled === true;
+  page.querySelector('[data-moderation-channel]').value = settings.modLogChannelId || '';
+  page.querySelector('[data-moderation-warnings]').checked = settings.warningsEnabled !== false;
+  page.querySelector('[data-moderation-automod]').checked = settings.automodEnabled === true;
+  page.querySelector('[data-moderation-blocked]').value = settings.blockedWords || '';
+  renderModerationCurrent(settings);
+}
+
+function renderModerationCurrent(settings) {
+  const current = document.querySelector('[data-moderation-current]');
+  if (!current) return;
+  const blockedCount = String(settings.blockedWords || '').split(/\n|,/).map((v) => v.trim()).filter(Boolean).length;
+  current.innerHTML = `
+    <div><span>Status</span><strong>${settings.enabled === true ? 'Enabled' : 'Disabled'}</strong></div>
+    <div><span>Warnings</span><strong>${settings.warningsEnabled !== false ? 'Enabled' : 'Disabled'}</strong></div>
+    <div><span>Automod</span><strong>${settings.automodEnabled === true ? 'Enabled' : 'Disabled'}</strong></div>
+    <div><span>Mod log channel</span><strong>${settings.modLogChannelId ? escapeHtml(settings.modLogChannelId) : 'Not configured'}</strong></div>
+    <div><span>Blocked words</span><strong>${blockedCount}</strong></div>
+  `;
+}
+
+async function initModerationControls(guildId) {
+  const page = document.querySelector('[data-moderation-page]');
+  if (!page) return;
+  const form = page.querySelector('[data-moderation-form]');
+  const status = page.querySelector('[data-moderation-status]');
+  const saveButton = page.querySelector('[data-moderation-save]');
+
+  try {
+    const data = await getModerationSettings(guildId);
+    populateModerationForm(data.settings || {});
+  } catch (err) {
+    if (status) status.textContent = err.message || 'Could not load settings.';
+  }
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const payload = {
+      enabled: Boolean(form.elements.enabled?.checked),
+      warningsEnabled: Boolean(form.elements.warningsEnabled?.checked),
+      automodEnabled: Boolean(form.elements.automodEnabled?.checked),
+      modLogChannelId: String(form.elements.modLogChannelId?.value || '').trim(),
+      blockedWords: String(form.elements.blockedWords?.value || '').trim(),
+    };
+    if (payload.modLogChannelId && !/^\d{15,25}$/.test(payload.modLogChannelId)) {
+      if (status) status.textContent = 'Invalid channel ID.';
+      return;
+    }
+    if (saveButton) { saveButton.disabled = true; saveButton.textContent = 'Saving...'; }
+    if (status) status.textContent = '';
+    try {
+      const data = await saveModerationSettings(guildId, payload);
+      populateModerationForm(data.settings || payload);
+      if (status) status.textContent = 'Saved.';
+    } catch (err) {
+      if (status) status.textContent = err.message || 'Could not save settings.';
+    } finally {
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = 'Save settings'; }
+    }
+  });
 }
 
 function renderServerDetail(data, section = 'overview') {
@@ -722,6 +960,9 @@ function renderServerDetail(data, section = 'overview') {
   els.detailContent.innerHTML = `${renderServerHeader(server, activeSection)}${content}`;
   if (activeSection === 'ai') initAiAccessControls(server.id);
   if (activeSection === 'leveling') initLevelingControls(server.id);
+  if (activeSection === 'welcome') initWelcomeControls(server.id);
+  if (activeSection === 'logs') initLogsControls(server.id);
+  if (activeSection === 'moderation') initModerationControls(server.id);
 }
 
 function renderServerDetailError(message) {

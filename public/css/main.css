@@ -2857,3 +2857,46 @@ body.sheet-open { overflow: hidden; }
   .form-grid-two { grid-template-columns: 1fr; }
   .settings-form-actions .btn { width: 100%; }
 }
+
+.settings-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.settings-form label > span {
+  color: var(--muted);
+  font-size: .86rem;
+  font-weight: 850;
+}
+
+.settings-form input[type="text"],
+.settings-form input[type="number"],
+.settings-form textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 13px 14px;
+  background: rgba(255,255,255,.055);
+  color: var(--text);
+  outline: none;
+  font: inherit;
+  resize: vertical;
+}
+
+.settings-form input:focus,
+.settings-form textarea:focus {
+  border-color: rgba(139,92,246,.58);
+  box-shadow: 0 0 0 4px rgba(139,92,246,.14);
+}
+
+.settings-toggle-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-save-status {
+  color: var(--muted);
+  font-weight: 800;
+}

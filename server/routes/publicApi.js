@@ -298,4 +298,87 @@ router.put('/dashboard/servers/:guildId/leveling', requireAuth, requireManageabl
   }
 });
 
+
+router.get('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/welcome`);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load welcome settings.' });
+  }
+});
+
+router.put('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/welcome`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        welcomeEnabled: typeof req.body?.welcomeEnabled === 'boolean' ? req.body.welcomeEnabled : undefined,
+        goodbyeEnabled: typeof req.body?.goodbyeEnabled === 'boolean' ? req.body.goodbyeEnabled : undefined,
+        welcomeChannelId: req.body?.welcomeChannelId,
+        goodbyeChannelId: req.body?.goodbyeChannelId,
+        welcomeMessage: req.body?.welcomeMessage,
+        goodbyeMessage: req.body?.goodbyeMessage,
+      }),
+    });
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save welcome settings.' });
+  }
+});
+
+router.get('/dashboard/servers/:guildId/logs', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/logs`);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load log settings.' });
+  }
+});
+
+router.put('/dashboard/servers/:guildId/logs', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/logs`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        enabled: typeof req.body?.enabled === 'boolean' ? req.body.enabled : undefined,
+        channelId: req.body?.channelId,
+        messageEvents: typeof req.body?.messageEvents === 'boolean' ? req.body.messageEvents : undefined,
+        memberEvents: typeof req.body?.memberEvents === 'boolean' ? req.body.memberEvents : undefined,
+        moderationEvents: typeof req.body?.moderationEvents === 'boolean' ? req.body.moderationEvents : undefined,
+      }),
+    });
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save log settings.' });
+  }
+});
+
+router.get('/dashboard/servers/:guildId/moderation', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation`);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load moderation settings.' });
+  }
+});
+
+router.put('/dashboard/servers/:guildId/moderation', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        enabled: typeof req.body?.enabled === 'boolean' ? req.body.enabled : undefined,
+        warningsEnabled: typeof req.body?.warningsEnabled === 'boolean' ? req.body.warningsEnabled : undefined,
+        automodEnabled: typeof req.body?.automodEnabled === 'boolean' ? req.body.automodEnabled : undefined,
+        modLogChannelId: req.body?.modLogChannelId,
+        blockedWords: req.body?.blockedWords,
+      }),
+    });
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save moderation settings.' });
+  }
+});
+
 module.exports = { router };

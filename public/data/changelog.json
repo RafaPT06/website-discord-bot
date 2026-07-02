@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.13.0",
+    "date": "2026-07-02",
+    "changes": [
+      {
+        "type": "New",
+        "text": "Added functional Welcome Messages settings for server dashboards."
+      },
+      {
+        "type": "New",
+        "text": "Added functional Logs settings with event toggles and channel configuration."
+      },
+      {
+        "type": "New",
+        "text": "Added functional Moderation settings for warnings, automod and blocked words."
+      }
+    ]
+  },
+  {
     "version": "v1.12.0",
     "date": "2026-07-02",
     "changes": [

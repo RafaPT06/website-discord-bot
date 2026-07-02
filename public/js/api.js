@@ -76,3 +76,43 @@ export async function saveLevelingSettings(guildId, settings) {
   memoryCache.delete(`leveling:${guildId}`);
   return data;
 }
+
+
+export function getWelcomeSettings(guildId) {
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/welcome`, { cacheKey: `welcome:${guildId}`, cacheMs: 10000 });
+}
+
+export async function saveWelcomeSettings(guildId, settings) {
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/welcome`, {
+    method: 'PUT',
+    body: JSON.stringify(settings || {}),
+  });
+  memoryCache.delete(`welcome:${guildId}`);
+  return data;
+}
+
+export function getLogSettings(guildId) {
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/logs`, { cacheKey: `logs:${guildId}`, cacheMs: 10000 });
+}
+
+export async function saveLogSettings(guildId, settings) {
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/logs`, {
+    method: 'PUT',
+    body: JSON.stringify(settings || {}),
+  });
+  memoryCache.delete(`logs:${guildId}`);
+  return data;
+}
+
+export function getModerationSettings(guildId) {
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation`, { cacheKey: `moderation:${guildId}`, cacheMs: 10000 });
+}
+
+export async function saveModerationSettings(guildId, settings) {
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation`, {
+    method: 'PUT',
+    body: JSON.stringify(settings || {}),
+  });
+  memoryCache.delete(`moderation:${guildId}`);
+  return data;
+}
