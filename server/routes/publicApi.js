@@ -271,4 +271,31 @@ router.delete('/dashboard/servers/:guildId/image-access/:userId', requireAuth, r
   }
 });
 
+
+router.get('/dashboard/servers/:guildId/leveling', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/leveling`);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load leveling settings.' });
+  }
+});
+
+router.put('/dashboard/servers/:guildId/leveling', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/leveling`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        enabled: typeof req.body?.enabled === 'boolean' ? req.body.enabled : undefined,
+        xpPerMessage: req.body?.xpPerMessage,
+        cooldownSeconds: req.body?.cooldownSeconds,
+        channelId: req.body?.channelId,
+      }),
+    });
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save leveling settings.' });
+  }
+});
+
 module.exports = { router };

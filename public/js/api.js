@@ -36,12 +36,11 @@ export function getChangelog() {
 
 export function getDashboardGuilds(mode = 'user') {
   const safeMode = mode === 'owner' ? 'owner' : 'user';
-  return fetchJson(`/api/dashboard/guilds?mode=${safeMode}`, { cacheKey: `dashboard-guilds:${safeMode}`, cacheMs: 10000 });
+  return fetchJson(`/api/dashboard/guilds?mode=${encodeURIComponent(safeMode)}`, { cacheKey: `dashboard-guilds:${safeMode}`, cacheMs: 10000 });
 }
 
-export function getDashboardServer(guildId, mode = 'user') {
-  const safeMode = mode === 'owner' ? 'owner' : 'user';
-  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}?mode=${safeMode}`, { cacheKey: `dashboard-server:${guildId}:${safeMode}`, cacheMs: 10000 });
+export function getDashboardServer(guildId) {
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}`, { cacheKey: `dashboard-server:${guildId}`, cacheMs: 10000 });
 }
 
 export function getImageAccess(guildId) {
@@ -62,5 +61,18 @@ export async function removeImageAccessUser(guildId, userId) {
     method: 'DELETE',
   });
   memoryCache.delete(`image-access:${guildId}`);
+  return data;
+}
+
+export function getLevelingSettings(guildId) {
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/leveling`, { cacheKey: `leveling:${guildId}`, cacheMs: 10000 });
+}
+
+export async function saveLevelingSettings(guildId, settings) {
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/leveling`, {
+    method: 'PUT',
+    body: JSON.stringify(settings || {}),
+  });
+  memoryCache.delete(`leveling:${guildId}`);
   return data;
 }

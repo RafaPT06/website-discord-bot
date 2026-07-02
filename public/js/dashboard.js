@@ -1,4 +1,4 @@
-import { getDashboardGuilds, getDashboardServer, getImageAccess, addImageAccessUser, removeImageAccessUser } from './api.js';
+import { getDashboardGuilds, getDashboardServer, getImageAccess, addImageAccessUser, removeImageAccessUser, getLevelingSettings, saveLevelingSettings } from './api.js';
 import { escapeHtml, formatNumber, setText } from './utils.js';
 
 const els = {
@@ -13,57 +13,27 @@ const els = {
   heroManagedCount: document.querySelector('[data-dashboard-managed-count]'),
   heroAvailableCount: document.querySelector('[data-dashboard-available-count]'),
   detailContent: document.querySelector('[data-server-detail-content]'),
-  ownerToggle: document.querySelector('[data-owner-view-toggle]'),
-  modeButtons: document.querySelectorAll('[data-view-mode]'),
-  modeLabel: document.querySelector('[data-view-mode-label]'),
+  ownerModeSwitch: document.querySelector('[data-owner-mode-switch]'),
 };
 
-const VIEW_MODE_KEY = 'meowzDashboardViewMode';
-let dashboardViewMode = localStorage.getItem(VIEW_MODE_KEY) === 'owner' ? 'owner' : 'user';
-let ownerToggleReady = false;
+const OWNER_VIEW_KEY = 'meowzDashboardViewMode';
+
+function getDashboardViewMode() {
+  return localStorage.getItem(OWNER_VIEW_KEY) === 'owner' ? 'owner' : 'user';
+}
 
 function setDashboardViewMode(mode) {
-  dashboardViewMode = mode === 'owner' ? 'owner' : 'user';
-  localStorage.setItem(VIEW_MODE_KEY, dashboardViewMode);
-  updateOwnerToggleState();
+  localStorage.setItem(OWNER_VIEW_KEY, mode === 'owner' ? 'owner' : 'user');
 }
 
-function updateOwnerToggleState() {
-  els.modeButtons?.forEach((button) => {
-    const active = button.dataset.viewMode === dashboardViewMode;
+function updateOwnerModeButtons(mode) {
+  document.querySelectorAll('[data-owner-mode-button]').forEach((button) => {
+    const active = button.getAttribute('data-owner-mode-button') === mode;
     button.classList.toggle('is-active', active);
-    button.setAttribute('aria-pressed', String(active));
+    button.setAttribute('aria-pressed', active ? 'true' : 'false');
   });
-  if (els.modeLabel) {
-    els.modeLabel.textContent = dashboardViewMode === 'owner'
-      ? 'Owner View shows every server where Meowz is installed.'
-      : 'User Preview shows what normal server managers see.';
-  }
 }
 
-function revealOwnerToggle(canUseOwnerMode) {
-  if (!els.ownerToggle) return;
-  els.ownerToggle.hidden = !canUseOwnerMode;
-  if (!canUseOwnerMode && dashboardViewMode === 'owner') {
-    setDashboardViewMode('user');
-  } else {
-    updateOwnerToggleState();
-  }
-}
-
-function initOwnerToggle() {
-  if (ownerToggleReady) return;
-  ownerToggleReady = true;
-  els.modeButtons?.forEach((button) => {
-    button.addEventListener('click', () => {
-      const nextMode = button.dataset.viewMode === 'owner' ? 'owner' : 'user';
-      if (nextMode === dashboardViewMode) return;
-      setDashboardViewMode(nextMode);
-      loadDashboardHome();
-    });
-  });
-  updateOwnerToggleState();
-}
 
 function currentServerRoute() {
   const match = window.location.pathname.match(/^\/dashboard\/server\/([^/]+)(?:\/([^/]+))?\/?$/);
@@ -101,7 +71,7 @@ function renderServerList(container, servers, type) {
     const href = isInstalled ? server.manageUrl : server.inviteUrl;
     const label = isInstalled ? 'Open' : 'Invite';
     const subtitle = isInstalled
-      ? (server.ownerViewOnly ? `${serverSubtitle(server, 'Meowz installed')} · Owner view` : serverSubtitle(server, 'Meowz installed'))
+      ? (server.ownerViewOnly ? 'Owner view only' : serverSubtitle(server, 'Meowz installed'))
       : 'You can invite Meowz here';
     const target = isInstalled ? '' : ' target="_blank" rel="noopener noreferrer"';
 
@@ -121,36 +91,17 @@ function renderServerList(container, servers, type) {
 function renderDashboard(data) {
   const installed = Array.isArray(data.installed) ? data.installed : [];
   const available = Array.isArray(data.available) ? data.available : [];
-  const canUseOwnerMode = Boolean(data.isOwner);
-  const activeMode = data.mode === 'owner' ? 'owner' : 'user';
+  const mode = data.mode === 'owner' ? 'owner' : 'user';
 
-  if (activeMode !== dashboardViewMode) {
-    dashboardViewMode = activeMode;
-    localStorage.setItem(VIEW_MODE_KEY, dashboardViewMode);
+  if (els.ownerModeSwitch) {
+    els.ownerModeSwitch.hidden = !data.isOwner;
+    updateOwnerModeButtons(mode);
   }
-
-  revealOwnerToggle(canUseOwnerMode);
 
   setText(els.installedCount, `${installed.length} server${installed.length === 1 ? '' : 's'}`);
   setText(els.availableCount, `${available.length} server${available.length === 1 ? '' : 's'}`);
   setText(els.heroManagedCount, formatNumber(installed.length));
   setText(els.heroAvailableCount, formatNumber(available.length));
-
-  const installedCard = els.installed?.closest('.server-list-card');
-  const installedLabel = installedCard?.querySelector('.dashboard-card-label');
-  const installedTitle = installedCard?.querySelector('h3');
-  const installedText = installedCard?.querySelector('.compact-muted');
-
-  if (dashboardViewMode === 'owner') {
-    if (installedLabel) installedLabel.textContent = 'All Meowz servers';
-    if (installedTitle) installedTitle.textContent = 'Owner server overview';
-    if (installedText) installedText.textContent = 'Every server where Meowz is installed is shown here.';
-  } else {
-    if (installedLabel) installedLabel.textContent = 'Servers with Meowz';
-    if (installedTitle) installedTitle.textContent = 'Manage installed servers';
-    if (installedText) installedText.textContent = 'Choose a server to open its overview.';
-  }
-
   renderServerList(els.installed, installed, 'installed');
   renderServerList(els.available, available, 'available');
 }
@@ -244,43 +195,140 @@ function renderServerOverview(server) {
 
 function renderLevelingPage(server) {
   return `
-    <div class="settings-page-grid">
-      <article class="dashboard-card compact settings-main-card">
+    <div class="settings-page-grid leveling-settings-page" data-leveling-page data-guild-id="${escapeHtml(server.id)}">
+      <form class="dashboard-card compact settings-main-card leveling-settings-form" data-leveling-form>
         <span class="dashboard-card-label">Leveling settings</span>
         <h3>Leveling</h3>
-        <p class="muted">Configure XP, level-up messages and level rewards from the website. Editing is coming soon.</p>
-        <div class="settings-list">
-          <div><span>Status</span><strong>Coming soon</strong></div>
-          <div><span>Level-up channel</span><strong>Not configured</strong></div>
-          <div><span>XP per message</span><strong>15 XP</strong></div>
-          <div><span>Cooldown</span><strong>60 seconds</strong></div>
-          <div><span>Leaderboard</span><strong>Available in Discord</strong></div>
+        <p class="muted">Configure XP, level-up messages and cooldowns for ${escapeHtml(server.name)}.</p>
+
+        <label class="setting-toggle-row">
+          <span>
+            <strong>Enable leveling</strong>
+            <small>Allow members to earn XP by chatting.</small>
+          </span>
+          <input type="checkbox" name="enabled" data-leveling-enabled />
+        </label>
+
+        <div class="form-grid-two">
+          <label>
+            <span>XP per message</span>
+            <input type="number" name="xpPerMessage" min="1" max="500" step="1" placeholder="15" data-leveling-xp />
+          </label>
+          <label>
+            <span>Cooldown seconds</span>
+            <input type="number" name="cooldownSeconds" min="5" max="3600" step="1" placeholder="60" data-leveling-cooldown />
+          </label>
         </div>
-      </article>
+
+        <label>
+          <span>Level-up channel ID</span>
+          <input type="text" name="channelId" inputmode="numeric" autocomplete="off" placeholder="Leave empty to use the current chat channel" data-leveling-channel />
+        </label>
+
+        <div class="settings-form-actions">
+          <button class="btn btn-primary" type="submit" data-leveling-save>Save settings</button>
+          <span class="settings-save-status" data-leveling-status></span>
+        </div>
+      </form>
 
       <article class="dashboard-card compact settings-side-card">
-        <span class="dashboard-card-label">Level roles</span>
-        <h3>Rewards</h3>
-        <p class="muted">Level role management will be added here later.</p>
-        <div class="settings-empty-state">
-          <strong>No roles configured yet.</strong>
-          <span>When this section is enabled, you will be able to add level rewards from the dashboard.</span>
+        <span class="dashboard-card-label">Current values</span>
+        <h3>Active configuration</h3>
+        <div class="settings-list" data-leveling-current>
+          <div><span>Status</span><strong>Loading...</strong></div>
+          <div><span>Level-up channel</span><strong>Loading...</strong></div>
+          <div><span>XP per message</span><strong>Loading...</strong></div>
+          <div><span>Cooldown</span><strong>Loading...</strong></div>
         </div>
       </article>
 
       <article class="dashboard-card compact server-coming-card">
         <span class="dashboard-card-label">Preview</span>
-        <h3>What this page will manage</h3>
+        <h3>What this page controls</h3>
         <div class="coming-grid coming-grid-two">
-          <span><strong>XP settings</strong><small>Adjust message XP and cooldowns.</small><em>Coming soon</em></span>
-          <span><strong>Level-up messages</strong><small>Choose where level-up messages are sent.</small><em>Coming soon</em></span>
-          <span><strong>Level roles</strong><small>Create rewards for reaching specific levels.</small><em>Coming soon</em></span>
-          <span><strong>Leaderboard</strong><small>View server ranking tools from the dashboard.</small><em>Coming soon</em></span>
+          <span><strong>XP settings</strong><small>Adjust message XP and cooldowns.</small><em>Active</em></span>
+          <span><strong>Level-up messages</strong><small>Choose where level-up messages are sent.</small><em>Active</em></span>
+          <span><strong>Level roles</strong><small>Create rewards for reaching specific levels later.</small><em>Coming soon</em></span>
+          <span><strong>Leaderboard</strong><small>Ranking tools are still available in Discord.</small><em>Available</em></span>
         </div>
-        <button class="btn btn-secondary disabled-button" type="button" disabled>Save changes coming soon</button>
       </article>
     </div>
   `;
+}
+
+function renderLevelingCurrent(settings) {
+  const current = document.querySelector('[data-leveling-current]');
+  if (!current) return;
+  current.innerHTML = `
+    <div><span>Status</span><strong>${settings.enabled ? 'Enabled' : 'Disabled'}</strong></div>
+    <div><span>Level-up channel</span><strong>${settings.channelId ? escapeHtml(settings.channelId) : 'Current chat channel'}</strong></div>
+    <div><span>XP per message</span><strong>${escapeHtml(String(settings.xpPerMessage || 15))} XP</strong></div>
+    <div><span>Cooldown</span><strong>${escapeHtml(String(settings.cooldownSeconds || 60))} seconds</strong></div>
+  `;
+}
+
+function populateLevelingForm(settings) {
+  const page = document.querySelector('[data-leveling-page]');
+  if (!page) return;
+  const enabled = page.querySelector('[data-leveling-enabled]');
+  const xp = page.querySelector('[data-leveling-xp]');
+  const cooldown = page.querySelector('[data-leveling-cooldown]');
+  const channel = page.querySelector('[data-leveling-channel]');
+  if (enabled) enabled.checked = settings.enabled !== false;
+  if (xp) xp.value = String(settings.xpPerMessage || 15);
+  if (cooldown) cooldown.value = String(settings.cooldownSeconds || 60);
+  if (channel) channel.value = settings.channelId || '';
+  renderLevelingCurrent(settings);
+}
+
+async function initLevelingControls(guildId) {
+  const page = document.querySelector('[data-leveling-page]');
+  if (!page) return;
+  const form = page.querySelector('[data-leveling-form]');
+  const status = page.querySelector('[data-leveling-status]');
+  const saveButton = page.querySelector('[data-leveling-save]');
+
+  try {
+    const data = await getLevelingSettings(guildId);
+    populateLevelingForm(data.settings || {});
+  } catch (err) {
+    if (status) status.textContent = err.message || 'Could not load settings.';
+  }
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const payload = {
+      enabled: Boolean(form.elements.enabled?.checked),
+      xpPerMessage: Number(form.elements.xpPerMessage?.value || 15),
+      cooldownSeconds: Number(form.elements.cooldownSeconds?.value || 60),
+      channelId: String(form.elements.channelId?.value || '').trim(),
+    };
+
+    if (payload.channelId && !/^\d{15,25}$/.test(payload.channelId)) {
+      if (status) status.textContent = 'Invalid channel ID.';
+      form.elements.channelId?.focus();
+      return;
+    }
+
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent = 'Saving...';
+    }
+    if (status) status.textContent = '';
+
+    try {
+      const data = await saveLevelingSettings(guildId, payload);
+      populateLevelingForm(data.settings || payload);
+      if (status) status.textContent = 'Saved.';
+    } catch (err) {
+      if (status) status.textContent = err.message || 'Could not save settings.';
+    } finally {
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = 'Save settings';
+      }
+    }
+  });
 }
 
 function disabledOption(label, value) {
@@ -673,6 +721,7 @@ function renderServerDetail(data, section = 'overview') {
 
   els.detailContent.innerHTML = `${renderServerHeader(server, activeSection)}${content}`;
   if (activeSection === 'ai') initAiAccessControls(server.id);
+  if (activeSection === 'leveling') initLevelingControls(server.id);
 }
 
 function renderServerDetailError(message) {
@@ -691,7 +740,7 @@ function renderServerDetailError(message) {
 
 async function loadServerDetail(id, section = 'overview') {
   try {
-    const data = await getDashboardServer(id, dashboardViewMode);
+    const data = await getDashboardServer(id);
     renderServerDetail(data, section);
   } catch (err) {
     renderServerDetailError(err.message);
@@ -703,8 +752,7 @@ async function loadDashboardHome() {
   if (els.detail) els.detail.hidden = true;
   els.home.hidden = false;
   try {
-    initOwnerToggle();
-    const data = await getDashboardGuilds(dashboardViewMode);
+    const data = await getDashboardGuilds(getDashboardViewMode());
     renderDashboard(data);
   } catch (err) {
     renderDashboardError(err.message);
@@ -713,7 +761,13 @@ async function loadDashboardHome() {
 
 export function initDashboard() {
   if (!els.home && !els.detail) return;
-  initOwnerToggle();
+  document.querySelectorAll('[data-owner-mode-button]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const mode = button.getAttribute('data-owner-mode-button') === 'owner' ? 'owner' : 'user';
+      setDashboardViewMode(mode);
+      loadDashboardHome();
+    });
+  });
   const serverRoute = currentServerRoute();
   if (serverRoute) {
     loadServerDetail(serverRoute.id, serverRoute.section);

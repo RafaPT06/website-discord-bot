@@ -1,33 +1,19 @@
 [
   {
-    "version": "v1.24.6",
-    "date": "2026-07-02",
-    "changes": [
-      {
-        "type": "Fixed",
-        "text": "Bot owner access now bypasses Manage Server checks on server feature pages such as AI Image Access."
-      },
-      {
-        "type": "Fixed",
-        "text": "Owner View servers can now load feature data even when the owner does not have Discord Manage Server permission in that server."
-      }
-    ]
-  },
-  {
-    "version": "v1.24.5",
+    "version": "v1.12.0",
     "date": "2026-07-02",
     "changes": [
       {
         "type": "New",
-        "text": "Added an owner-only dashboard view toggle so the bot owner can switch between Owner View and User Preview."
+        "text": "Added functional leveling settings for server dashboards."
       },
       {
         "type": "New",
-        "text": "Owner View shows every server where Meowz is installed, while User Preview keeps the normal Manage Server filtering."
+        "text": "Added owner and user preview dashboard modes."
       },
       {
         "type": "Improved",
-        "text": "Dashboard view mode is remembered locally so owner testing stays consistent after refresh."
+        "text": "Leveling settings now load and save through the bot API."
       }
     ]
   },
