@@ -34,12 +34,14 @@ export function getChangelog() {
   return fetchJson('/data/changelog.json', { cacheKey: 'changelog', cacheMs: 30000 });
 }
 
-export function getDashboardGuilds() {
-  return fetchJson('/api/dashboard/guilds', { cacheKey: 'dashboard-guilds', cacheMs: 10000 });
+export function getDashboardGuilds(mode = 'user') {
+  const safeMode = mode === 'owner' ? 'owner' : 'user';
+  return fetchJson(`/api/dashboard/guilds?mode=${safeMode}`, { cacheKey: `dashboard-guilds:${safeMode}`, cacheMs: 10000 });
 }
 
-export function getDashboardServer(guildId) {
-  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}`, { cacheKey: `dashboard-server:${guildId}`, cacheMs: 10000 });
+export function getDashboardServer(guildId, mode = 'user') {
+  const safeMode = mode === 'owner' ? 'owner' : 'user';
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}?mode=${safeMode}`, { cacheKey: `dashboard-server:${guildId}:${safeMode}`, cacheMs: 10000 });
 }
 
 export function getImageAccess(guildId) {

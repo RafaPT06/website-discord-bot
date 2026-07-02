@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.24.5",
+    "date": "2026-07-02",
+    "changes": [
+      {
+        "type": "New",
+        "text": "Added an owner-only dashboard view toggle so the bot owner can switch between Owner View and User Preview."
+      },
+      {
+        "type": "New",
+        "text": "Owner View shows every server where Meowz is installed, while User Preview keeps the normal Manage Server filtering."
+      },
+      {
+        "type": "Improved",
+        "text": "Dashboard view mode is remembered locally so owner testing stays consistent after refresh."
+      }
+    ]
+  },
+  {
     "version": "v1.24.4",
     "date": "2026-07-01",
     "changes": [

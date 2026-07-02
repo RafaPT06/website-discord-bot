@@ -13,7 +13,57 @@ const els = {
   heroManagedCount: document.querySelector('[data-dashboard-managed-count]'),
   heroAvailableCount: document.querySelector('[data-dashboard-available-count]'),
   detailContent: document.querySelector('[data-server-detail-content]'),
+  ownerToggle: document.querySelector('[data-owner-view-toggle]'),
+  modeButtons: document.querySelectorAll('[data-view-mode]'),
+  modeLabel: document.querySelector('[data-view-mode-label]'),
 };
+
+const VIEW_MODE_KEY = 'meowzDashboardViewMode';
+let dashboardViewMode = localStorage.getItem(VIEW_MODE_KEY) === 'owner' ? 'owner' : 'user';
+let ownerToggleReady = false;
+
+function setDashboardViewMode(mode) {
+  dashboardViewMode = mode === 'owner' ? 'owner' : 'user';
+  localStorage.setItem(VIEW_MODE_KEY, dashboardViewMode);
+  updateOwnerToggleState();
+}
+
+function updateOwnerToggleState() {
+  els.modeButtons?.forEach((button) => {
+    const active = button.dataset.viewMode === dashboardViewMode;
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  if (els.modeLabel) {
+    els.modeLabel.textContent = dashboardViewMode === 'owner'
+      ? 'Owner View shows every server where Meowz is installed.'
+      : 'User Preview shows what normal server managers see.';
+  }
+}
+
+function revealOwnerToggle(canUseOwnerMode) {
+  if (!els.ownerToggle) return;
+  els.ownerToggle.hidden = !canUseOwnerMode;
+  if (!canUseOwnerMode && dashboardViewMode === 'owner') {
+    setDashboardViewMode('user');
+  } else {
+    updateOwnerToggleState();
+  }
+}
+
+function initOwnerToggle() {
+  if (ownerToggleReady) return;
+  ownerToggleReady = true;
+  els.modeButtons?.forEach((button) => {
+    button.addEventListener('click', () => {
+      const nextMode = button.dataset.viewMode === 'owner' ? 'owner' : 'user';
+      if (nextMode === dashboardViewMode) return;
+      setDashboardViewMode(nextMode);
+      loadDashboardHome();
+    });
+  });
+  updateOwnerToggleState();
+}
 
 function currentServerRoute() {
   const match = window.location.pathname.match(/^\/dashboard\/server\/([^/]+)(?:\/([^/]+))?\/?$/);
@@ -50,7 +100,9 @@ function renderServerList(container, servers, type) {
     const isInstalled = type === 'installed';
     const href = isInstalled ? server.manageUrl : server.inviteUrl;
     const label = isInstalled ? 'Open' : 'Invite';
-    const subtitle = isInstalled ? serverSubtitle(server, 'Meowz installed') : 'You can invite Meowz here';
+    const subtitle = isInstalled
+      ? (server.ownerViewOnly ? `${serverSubtitle(server, 'Meowz installed')} · Owner view` : serverSubtitle(server, 'Meowz installed'))
+      : 'You can invite Meowz here';
     const target = isInstalled ? '' : ' target="_blank" rel="noopener noreferrer"';
 
     return `
@@ -69,10 +121,36 @@ function renderServerList(container, servers, type) {
 function renderDashboard(data) {
   const installed = Array.isArray(data.installed) ? data.installed : [];
   const available = Array.isArray(data.available) ? data.available : [];
+  const canUseOwnerMode = Boolean(data.isOwner);
+  const activeMode = data.mode === 'owner' ? 'owner' : 'user';
+
+  if (activeMode !== dashboardViewMode) {
+    dashboardViewMode = activeMode;
+    localStorage.setItem(VIEW_MODE_KEY, dashboardViewMode);
+  }
+
+  revealOwnerToggle(canUseOwnerMode);
+
   setText(els.installedCount, `${installed.length} server${installed.length === 1 ? '' : 's'}`);
   setText(els.availableCount, `${available.length} server${available.length === 1 ? '' : 's'}`);
   setText(els.heroManagedCount, formatNumber(installed.length));
   setText(els.heroAvailableCount, formatNumber(available.length));
+
+  const installedCard = els.installed?.closest('.server-list-card');
+  const installedLabel = installedCard?.querySelector('.dashboard-card-label');
+  const installedTitle = installedCard?.querySelector('h3');
+  const installedText = installedCard?.querySelector('.compact-muted');
+
+  if (dashboardViewMode === 'owner') {
+    if (installedLabel) installedLabel.textContent = 'All Meowz servers';
+    if (installedTitle) installedTitle.textContent = 'Owner server overview';
+    if (installedText) installedText.textContent = 'Every server where Meowz is installed is shown here.';
+  } else {
+    if (installedLabel) installedLabel.textContent = 'Servers with Meowz';
+    if (installedTitle) installedTitle.textContent = 'Manage installed servers';
+    if (installedText) installedText.textContent = 'Choose a server to open its overview.';
+  }
+
   renderServerList(els.installed, installed, 'installed');
   renderServerList(els.available, available, 'available');
 }
@@ -613,7 +691,7 @@ function renderServerDetailError(message) {
 
 async function loadServerDetail(id, section = 'overview') {
   try {
-    const data = await getDashboardServer(id);
+    const data = await getDashboardServer(id, dashboardViewMode);
     renderServerDetail(data, section);
   } catch (err) {
     renderServerDetailError(err.message);
@@ -625,7 +703,8 @@ async function loadDashboardHome() {
   if (els.detail) els.detail.hidden = true;
   els.home.hidden = false;
   try {
-    const data = await getDashboardGuilds();
+    initOwnerToggle();
+    const data = await getDashboardGuilds(dashboardViewMode);
     renderDashboard(data);
   } catch (err) {
     renderDashboardError(err.message);
@@ -634,6 +713,7 @@ async function loadDashboardHome() {
 
 export function initDashboard() {
   if (!els.home && !els.detail) return;
+  initOwnerToggle();
   const serverRoute = currentServerRoute();
   if (serverRoute) {
     loadServerDetail(serverRoute.id, serverRoute.section);
