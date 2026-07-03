@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.13.1",
+    "date": "2026-07-03",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Polished spacing across server settings pages so buttons, forms and tabs feel more consistent."
+      },
+      {
+        "type": "New",
+        "text": "Added a Welcome Messages preview card that updates while editing message templates."
+      },
+      {
+        "type": "Improved",
+        "text": "Improved mobile layout for server settings cards and save actions."
+      }
+    ]
+  },
+  {
     "version": "v1.13.0",
     "date": "2026-07-02",
     "changes": [

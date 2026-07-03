@@ -2900,3 +2900,178 @@ body.sheet-open { overflow: hidden; }
   color: var(--muted);
   font-weight: 800;
 }
+
+/* Server settings polish */
+.settings-page-grid {
+  align-items: start;
+  gap: 18px;
+}
+
+.settings-main-card,
+.settings-side-card,
+.server-coming-card {
+  display: grid;
+  gap: 14px;
+}
+
+.settings-main-card h3,
+.settings-side-card h3,
+.server-coming-card h3 {
+  margin-bottom: 0;
+}
+
+.settings-main-card .muted,
+.settings-side-card .muted,
+.server-coming-card .muted {
+  margin: 0;
+}
+
+.settings-form,
+.leveling-settings-form,
+.ai-access-form {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-form-actions,
+.ai-access-input-row {
+  gap: 12px;
+}
+
+.settings-form-actions .btn,
+.ai-access-input-row .btn {
+  min-height: 46px;
+}
+
+.form-grid-two {
+  gap: 16px;
+}
+
+.setting-toggle-row {
+  min-height: 70px;
+}
+
+.settings-toggle-stack {
+  gap: 12px;
+}
+
+.settings-list {
+  gap: 12px;
+}
+
+.settings-list div {
+  min-height: 54px;
+}
+
+.server-section-tabs {
+  gap: 10px;
+  margin-top: 4px;
+  padding-bottom: 6px;
+}
+
+.server-section-tabs a {
+  min-height: 40px;
+  padding: 0 15px;
+}
+
+.welcome-preview-card {
+  grid-column: span 1;
+}
+
+.welcome-preview-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.welcome-preview-message {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(0, 0, 0, .18);
+}
+
+.welcome-preview-message span {
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.welcome-preview-message strong {
+  color: var(--text);
+  line-height: 1.55;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.welcome-preview-message.is-muted {
+  background: rgba(255, 255, 255, .04);
+}
+
+@media (max-width: 900px) {
+  .settings-page-grid {
+    gap: 14px;
+  }
+
+  .settings-main-card,
+  .settings-side-card,
+  .server-coming-card {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 720px) {
+  .settings-page-grid {
+    gap: 12px;
+  }
+
+  .settings-main-card,
+  .settings-side-card,
+  .server-coming-card {
+    padding: 18px !important;
+    border-radius: 24px;
+  }
+
+  .settings-form,
+  .leveling-settings-form,
+  .ai-access-form {
+    gap: 14px;
+  }
+
+  .setting-toggle-row {
+    min-height: auto;
+    padding: 13px;
+  }
+
+  .settings-form-actions {
+    display: grid;
+    gap: 10px;
+  }
+
+  .settings-form-actions .btn,
+  .settings-form-actions .settings-save-status {
+    width: 100%;
+  }
+
+  .settings-save-status {
+    min-height: 20px;
+  }
+
+  .server-section-tabs {
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .server-section-tabs a {
+    min-height: 38px;
+    padding: 0 13px;
+  }
+
+  .welcome-preview-message {
+    padding: 14px;
+    border-radius: 16px;
+  }
+}

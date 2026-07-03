@@ -405,6 +405,22 @@ function renderWelcomePage(server) {
         </div>
       </article>
 
+      <article class="dashboard-card compact settings-side-card welcome-preview-card">
+        <span class="dashboard-card-label">Preview</span>
+        <h3>Message preview</h3>
+        <p class="muted">Preview how the welcome and leave messages will look before saving.</p>
+        <div class="welcome-preview-stack">
+          <div class="welcome-preview-message">
+            <span>Welcome message</span>
+            <strong data-welcome-preview>Loading preview...</strong>
+          </div>
+          <div class="welcome-preview-message is-muted">
+            <span>Leave message</span>
+            <strong data-goodbye-preview>Loading preview...</strong>
+          </div>
+        </div>
+      </article>
+
       <article class="dashboard-card compact settings-side-card">
         <span class="dashboard-card-label">Current values</span>
         <h3>Active configuration</h3>
@@ -418,7 +434,31 @@ function renderWelcomePage(server) {
   `;
 }
 
-function populateWelcomeForm(settings) {
+function formatWelcomePreview(template, server, fallback) {
+  const raw = String(template || '').trim() || fallback;
+  return raw
+    .replaceAll('{user}', '@Rafa')
+    .replaceAll('{username}', 'Rafa')
+    .replaceAll('{server}', server?.name || 'Meowz Server')
+    .replaceAll('{memberCount}', typeof server?.memberCount === 'number' ? formatNumber(server.memberCount + 1) : '128');
+}
+
+function updateWelcomePreview(server) {
+  const page = document.querySelector('[data-welcome-page]');
+  if (!page) return;
+  const welcomePreview = page.querySelector('[data-welcome-preview]');
+  const goodbyePreview = page.querySelector('[data-goodbye-preview]');
+  const welcomeText = page.querySelector('[data-welcome-message]')?.value;
+  const goodbyeText = page.querySelector('[data-goodbye-message]')?.value;
+  if (welcomePreview) {
+    welcomePreview.textContent = formatWelcomePreview(welcomeText, server, 'Welcome {user} to {server}.');
+  }
+  if (goodbyePreview) {
+    goodbyePreview.textContent = formatWelcomePreview(goodbyeText, server, '{username} left {server}.');
+  }
+}
+
+function populateWelcomeForm(settings, server = null) {
   const page = document.querySelector('[data-welcome-page]');
   if (!page) return;
   page.querySelector('[data-welcome-enabled]').checked = settings.welcomeEnabled !== false;
@@ -428,6 +468,7 @@ function populateWelcomeForm(settings) {
   page.querySelector('[data-welcome-message]').value = settings.welcomeMessage || '';
   page.querySelector('[data-goodbye-message]').value = settings.goodbyeMessage || '';
   renderWelcomeCurrent(settings);
+  updateWelcomePreview(server);
 }
 
 function renderWelcomeCurrent(settings) {
@@ -441,16 +482,21 @@ function renderWelcomeCurrent(settings) {
   `;
 }
 
-async function initWelcomeControls(guildId) {
+async function initWelcomeControls(guildId, server = null) {
   const page = document.querySelector('[data-welcome-page]');
   if (!page) return;
   const form = page.querySelector('[data-welcome-form]');
   const status = page.querySelector('[data-welcome-status]');
   const saveButton = page.querySelector('[data-welcome-save]');
 
+  page.querySelectorAll('[data-welcome-message], [data-goodbye-message]').forEach((input) => {
+    input.addEventListener('input', () => updateWelcomePreview(server));
+  });
+  updateWelcomePreview(server);
+
   try {
     const data = await getWelcomeSettings(guildId);
-    populateWelcomeForm(data.settings || {});
+    populateWelcomeForm(data.settings || {}, server);
   } catch (err) {
     if (status) status.textContent = err.message || 'Could not load settings.';
   }
@@ -477,7 +523,7 @@ async function initWelcomeControls(guildId) {
     if (status) status.textContent = '';
     try {
       const data = await saveWelcomeSettings(guildId, payload);
-      populateWelcomeForm(data.settings || payload);
+      populateWelcomeForm(data.settings || payload, server);
       if (status) status.textContent = 'Saved.';
     } catch (err) {
       if (status) status.textContent = err.message || 'Could not save settings.';
@@ -960,7 +1006,7 @@ function renderServerDetail(data, section = 'overview') {
   els.detailContent.innerHTML = `${renderServerHeader(server, activeSection)}${content}`;
   if (activeSection === 'ai') initAiAccessControls(server.id);
   if (activeSection === 'leveling') initLevelingControls(server.id);
-  if (activeSection === 'welcome') initWelcomeControls(server.id);
+  if (activeSection === 'welcome') initWelcomeControls(server.id, server);
   if (activeSection === 'logs') initLogsControls(server.id);
   if (activeSection === 'moderation') initModerationControls(server.id);
 }
