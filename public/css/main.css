@@ -3043,3 +3043,281 @@ body.sheet-open { overflow: hidden; }
   .discord-preview-bot-avatar { width: 38px; height: 38px; }
   .welcome-card-image { min-height: 185px; border-radius: 18px; }
 }
+
+/* Dashboard app UI refinement pass */
+.owner-view-panel small {
+  display: block;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
+@media (min-width: 1100px) {
+  .server-app-shell {
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 26px;
+  }
+
+  .server-app-main > .server-detail-hero-plain {
+    display: none;
+  }
+
+  .server-app-sidebar {
+    top: 78px;
+    border-radius: 22px;
+    background: rgba(7, 10, 22, .88);
+  }
+
+  .server-app-topbar {
+    position: sticky;
+    top: 72px;
+    z-index: 25;
+    margin: -4px 0 24px;
+    padding: 10px 0;
+    background: linear-gradient(180deg, rgba(7, 8, 16, .96), rgba(7, 8, 16, .72));
+    backdrop-filter: blur(18px);
+  }
+
+  .welcome-designer-grid,
+  .settings-page-grid.ai-access-page {
+    grid-template-columns: minmax(0, .95fr) minmax(380px, 1.05fr);
+    gap: 22px;
+  }
+}
+
+.server-app-status,
+.server-breadcrumb {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,.045);
+  text-decoration: none;
+}
+
+.welcome-designer-card,
+.welcome-preview-card,
+.settings-main-card,
+.settings-side-card,
+.server-coming-card {
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.028));
+}
+
+.input-select-shell {
+  align-items: center;
+}
+
+.input-select-shell input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 800;
+}
+
+.input-select-shell input::placeholder { color: var(--muted); }
+
+.welcome-input,
+.welcome-textarea,
+.fake-select,
+.welcome-variable-select {
+  transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+
+.welcome-input:focus,
+.welcome-textarea:focus,
+.input-select-shell:focus-within,
+.welcome-variable-select:focus {
+  border-color: rgba(139, 92, 246, .55);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, .12);
+}
+
+.welcome-variable-select {
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255,255,255,.055);
+  cursor: pointer;
+}
+
+.welcome-preview-card {
+  position: sticky;
+  top: 128px;
+}
+
+.welcome-preview-card [data-welcome-preview] .discord-preview-post + .discord-preview-post {
+  display: none;
+}
+
+.discord-preview-content p {
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.welcome-card-image {
+  width: min(100%, 520px);
+  aspect-ratio: 2 / .96;
+  min-height: 0;
+}
+
+.welcome-card-image strong { margin-top: 12px; }
+.welcome-card-image small { margin: 2px 0; }
+.welcome-card-image b { margin-top: 0; }
+
+.settings-status-pill.is-disabled {
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, .25);
+  background: rgba(248, 113, 113, .08);
+}
+
+@media (max-width: 1099px) {
+  .server-app-shell {
+    display: block;
+  }
+  .server-app-sidebar,
+  .server-app-topbar {
+    display: none !important;
+  }
+  .server-detail-hero-plain {
+    margin-bottom: 22px;
+  }
+  .welcome-preview-card {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .dashboard-page {
+    width: min(100% - 24px, 1120px);
+  }
+
+  .server-detail-heading-plain {
+    align-items: flex-start;
+  }
+
+  .server-detail-heading-plain h2 {
+    font-size: clamp(2.6rem, 15vw, 4.2rem);
+    line-height: .95;
+  }
+
+  .server-section-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+
+  .server-section-tabs::-webkit-scrollbar { display: none; }
+
+  .server-section-tabs a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .welcome-designer-grid,
+  .settings-page-grid,
+  .settings-page-grid.ai-access-page {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+
+  .welcome-designer-card,
+  .welcome-preview-card,
+  .settings-main-card,
+  .settings-side-card,
+  .server-coming-card {
+    padding: 22px;
+    border-radius: 26px;
+  }
+
+  .settings-card-title-row,
+  .switch-row,
+  .message-label-row {
+    align-items: flex-start;
+  }
+
+  .message-label-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .message-label-row .mini-action,
+  .welcome-variable-select {
+    width: 100%;
+  }
+
+  .input-select-shell,
+  .fake-select {
+    display: grid;
+    grid-template-columns: auto 1fr;
+  }
+
+  .input-select-shell small,
+  .fake-select small {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+  }
+
+  .welcome-save-button {
+    min-height: 52px;
+  }
+
+  .discord-preview-date {
+    gap: 8px;
+    font-size: .78rem;
+  }
+
+  .discord-preview-message {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .discord-preview-bot-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .discord-preview-author {
+    flex-wrap: wrap;
+  }
+
+  .welcome-card-image {
+    width: 100%;
+    aspect-ratio: 1.86 / 1;
+    border-radius: 18px;
+  }
+
+  .welcome-card-member {
+    top: 10px;
+    padding: 4px 14px;
+    font-size: .8rem;
+  }
+
+  .welcome-card-avatar {
+    width: 54px;
+    height: 54px;
+    margin-top: 18px;
+  }
+
+  .welcome-card-image strong {
+    font-size: clamp(1.25rem, 7vw, 1.75rem);
+    margin-top: 8px;
+  }
+
+  .welcome-card-image b {
+    font-size: clamp(1.05rem, 6vw, 1.5rem);
+  }
+
+  .preview-note {
+    font-size: .82rem;
+  }
+
+  .footer-card {
+    margin-top: 28px;
+  }
+}

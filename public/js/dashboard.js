@@ -1,4 +1,4 @@
-import { getDashboardGuilds, getDashboardServer, getImageAccess, addImageAccessUser, removeImageAccessUser } from './api.js';
+import { getDashboardGuilds, getDashboardServer, getImageAccess, addImageAccessUser, removeImageAccessUser, getWelcomeSettings, saveWelcomeSettings } from './api.js';
 import { escapeHtml, formatNumber, setText } from './utils.js';
 
 const els = {
@@ -288,67 +288,77 @@ function comingSaveButton(label = 'Save changes coming soon') {
 }
 
 function renderWelcomePage(server) {
-  const sampleName = 'Rafa';
-  const sampleServer = server.name || 'Server';
   return `
-    <div class="welcome-designer-grid">
+    <div class="welcome-designer-grid" data-welcome-page data-guild-id="${escapeHtml(server.id)}" data-server-name="${escapeHtml(server.name)}">
       <article class="dashboard-card compact welcome-designer-card">
         <span class="dashboard-card-label">Welcome messages</span>
         <div class="settings-card-title-row">
           <h3>Welcome Messages</h3>
-          <span class="settings-status-pill">Enabled</span>
+          <span class="settings-status-pill" data-welcome-status>Loading</span>
         </div>
         <p class="muted">Customize how Meowz welcomes new members to ${escapeHtml(server.name)}.</p>
 
-        <div class="welcome-setting-block switch-row">
-          <span>
-            <strong>Enable welcome messages</strong>
-            <small>Send a message when someone joins the server.</small>
-          </span>
-          <label class="ui-switch"><input type="checkbox" checked disabled /><span></span></label>
-        </div>
+        <form class="welcome-settings-form" data-welcome-form>
+          <div class="welcome-setting-block switch-row">
+            <span>
+              <strong>Enable welcome messages</strong>
+              <small>Send a message when someone joins the server.</small>
+            </span>
+            <label class="ui-switch"><input type="checkbox" name="welcomeEnabled" data-welcome-enabled /><span></span></label>
+          </div>
 
-        <label class="welcome-field-label">Welcome Channel</label>
-        <div class="fake-select"><span># hi</span><small>Channel selection coming soon</small></div>
+          <label class="welcome-field-label" for="welcome-channel-input">Welcome Channel</label>
+          <div class="fake-select input-select-shell"><span>#</span><input id="welcome-channel-input" name="welcomeChannelId" autocomplete="off" placeholder="Channel ID or name" /><small>Channel picker coming later</small></div>
 
-        <label class="welcome-field-label">Message Style</label>
-        <div class="fake-select"><span>Custom Card (Modern)</span><small>Discord-style card preview</small></div>
+          <label class="welcome-field-label" for="welcome-style-select">Message Style</label>
+          <select id="welcome-style-select" class="welcome-input" name="messageStyle">
+            <option value="modern">Custom Card (Modern)</option>
+            <option value="text">Text only</option>
+          </select>
 
-        <div class="message-label-row">
-          <label class="welcome-field-label" for="welcome-message-preview-input">Welcome Message</label>
-          <button type="button" class="mini-action" disabled>Insert Variable</button>
-        </div>
-        <textarea id="welcome-message-preview-input" class="welcome-textarea" rows="5" disabled>WELCOME {user}
-TO
-{server}</textarea>
-        <div class="character-count">31/200</div>
+          <div class="message-label-row">
+            <label class="welcome-field-label" for="welcome-message-preview-input">Welcome Message</label>
+            <select class="mini-action welcome-variable-select" data-welcome-variable>
+              <option value="">Insert Variable</option>
+              <option value="{user}">{user}</option>
+              <option value="{server}">{server}</option>
+              <option value="{memberCount}">{memberCount}</option>
+            </select>
+          </div>
+          <textarea id="welcome-message-preview-input" class="welcome-textarea" rows="5" name="welcomeMessage" maxlength="200" data-welcome-message>WELCOME {user}\nTO\n{server}</textarea>
+          <div class="character-count" data-welcome-count>0/200</div>
 
-        <label class="welcome-field-label">Leave Message (Optional)</label>
-        <input class="welcome-input" disabled value="Goodbye {user}. We hope to see you again soon." />
+          <label class="welcome-field-label" for="leave-message-input">Leave Message (Optional)</label>
+          <input id="leave-message-input" class="welcome-input" name="leaveMessage" data-leave-message maxlength="200" value="Goodbye {user}. We hope to see you again soon." />
 
-        <div class="welcome-options">
-          <span><input type="checkbox" checked disabled /> Show member number on the card</span>
-          <span><input type="checkbox" checked disabled /> Show avatar on the card</span>
-        </div>
+          <div class="welcome-options">
+            <label><input type="checkbox" name="showMemberNumber" data-show-member checked /> Show member number on the card</label>
+            <label><input type="checkbox" name="showAvatar" data-show-avatar checked /> Show avatar on the card</label>
+          </div>
 
-        <button class="btn btn-primary welcome-save-button" type="button" disabled>Save Changes</button>
+          <button class="btn btn-primary welcome-save-button" type="submit" data-welcome-save>Save Changes</button>
+          <p class="muted tiny" data-welcome-feedback></p>
+        </form>
       </article>
 
       <article class="dashboard-card compact welcome-preview-card">
         <span class="dashboard-card-label">Live preview</span>
         <h3>Discord preview</h3>
         <p class="muted">This is how the welcome message will look in Discord.</p>
-
-        ${renderDiscordWelcomePreview('June 26, 2026', 'C', sampleServer, 11)}
-        ${renderDiscordWelcomePreview('June 30, 2026', 'OwO', sampleServer, 11, true)}
-
+        <div data-welcome-preview>${renderDiscordWelcomePreview('June 30, 2026', 'Rafa', server.name || 'Server', 11)}</div>
         <p class="muted tiny preview-note">This is a preview. The actual Discord message can look slightly different depending on device size.</p>
       </article>
     </div>
   `;
 }
 
-function renderDiscordWelcomePreview(dateLabel, userName, serverName, memberNumber, blueAvatar = false) {
+function renderDiscordWelcomePreview(dateLabel, userName, serverName, memberNumber, blueAvatar = false, customMessage = '', options = {}) {
+  const showMember = options.showMember !== false;
+  const showAvatar = options.showAvatar !== false;
+  const messageLines = String(customMessage || `WELCOME ${userName}\nTO\n${serverName}`).split('\n').filter(Boolean);
+  const headline = messageLines[0] || `WELCOME ${userName}`;
+  const middle = messageLines[1] || 'TO';
+  const bottom = messageLines[2] || serverName;
   return `
     <div class="discord-preview-post">
       <div class="discord-preview-date"><span></span><strong>${escapeHtml(dateLabel)}</strong><span></span></div>
@@ -358,11 +368,11 @@ function renderDiscordWelcomePreview(dateLabel, userName, serverName, memberNumb
           <div class="discord-preview-author"><strong>Meowz</strong><em>APP</em><small>12:11 AM</small></div>
           <p>Welcome <mark>@${escapeHtml(userName)}</mark> to <strong>${escapeHtml(serverName)}</strong>!</p>
           <div class="welcome-card-image">
-            <div class="welcome-card-member">MEMBER #${formatNumber(memberNumber)}</div>
-            <span class="welcome-card-avatar ${blueAvatar ? 'blue' : ''}">${escapeHtml(userName.slice(0, 1).toUpperCase())}</span>
-            <strong>WELCOME ${escapeHtml(userName.toUpperCase())}</strong>
-            <small>TO</small>
-            <b>${escapeHtml(serverName.toUpperCase())}</b>
+            ${showMember ? `<div class="welcome-card-member">MEMBER #${formatNumber(memberNumber)}</div>` : ''}
+            ${showAvatar ? `<span class="welcome-card-avatar ${blueAvatar ? 'blue' : ''}">${escapeHtml(userName.slice(0, 1).toUpperCase())}</span>` : ''}
+            <strong>${escapeHtml(headline.toUpperCase())}</strong>
+            <small>${escapeHtml(middle.toUpperCase())}</small>
+            <b>${escapeHtml(bottom.toUpperCase())}</b>
           </div>
         </div>
       </div>
@@ -648,6 +658,110 @@ function initAiAccessControls(guildId) {
   });
 }
 
+
+function replaceWelcomeVariables(template, userName, serverName, memberNumber) {
+  return String(template || '')
+    .replaceAll('{user}', userName)
+    .replaceAll('{server}', serverName)
+    .replaceAll('{memberCount}', String(memberNumber));
+}
+
+function updateWelcomePreview() {
+  const page = document.querySelector('[data-welcome-page]');
+  if (!page) return;
+  const serverName = page.dataset.serverName || 'Server';
+  const message = page.querySelector('[data-welcome-message]')?.value || 'WELCOME {user}\nTO\n{server}';
+  const showMember = page.querySelector('[data-show-member]')?.checked !== false;
+  const showAvatar = page.querySelector('[data-show-avatar]')?.checked !== false;
+  const preview = page.querySelector('[data-welcome-preview]');
+  const count = page.querySelector('[data-welcome-count]');
+  if (count) count.textContent = `${message.length}/200`;
+  if (!preview) return;
+
+  const rendered = replaceWelcomeVariables(message, 'Rafa', serverName, 11);
+  preview.innerHTML = renderDiscordWelcomePreview('June 30, 2026', 'Rafa', serverName, 11, false, rendered, { showMember, showAvatar });
+}
+
+function setWelcomeFormState(settings = {}) {
+  const page = document.querySelector('[data-welcome-page]');
+  if (!page) return;
+  const enabled = settings.welcomeEnabled !== false;
+  const status = page.querySelector('[data-welcome-status]');
+  if (status) {
+    status.textContent = enabled ? 'Enabled' : 'Disabled';
+    status.classList.toggle('is-disabled', !enabled);
+  }
+  const enabledInput = page.querySelector('[data-welcome-enabled]');
+  const channelInput = page.querySelector('input[name="welcomeChannelId"]');
+  const welcomeMessage = page.querySelector('[data-welcome-message]');
+  const leaveMessage = page.querySelector('[data-leave-message]');
+  if (enabledInput) enabledInput.checked = enabled;
+  if (channelInput && settings.welcomeChannelId) channelInput.value = settings.welcomeChannelId;
+  if (welcomeMessage && settings.welcomeMessage) welcomeMessage.value = settings.welcomeMessage;
+  if (leaveMessage && settings.leaveMessage) leaveMessage.value = settings.leaveMessage;
+  updateWelcomePreview();
+}
+
+async function initWelcomeControls(guildId) {
+  const page = document.querySelector('[data-welcome-page]');
+  if (!page) return;
+  const form = page.querySelector('[data-welcome-form]');
+  const feedback = page.querySelector('[data-welcome-feedback]');
+
+  try {
+    const data = await getWelcomeSettings(guildId);
+    setWelcomeFormState(data.settings || data);
+    if (feedback) feedback.textContent = '';
+  } catch (err) {
+    if (feedback) feedback.textContent = err.message || 'Could not load welcome settings.';
+    setWelcomeFormState({});
+  }
+
+  page.querySelectorAll('input, textarea, select').forEach((control) => {
+    control.addEventListener('input', updateWelcomePreview);
+    control.addEventListener('change', updateWelcomePreview);
+  });
+
+  page.querySelector('[data-welcome-variable]')?.addEventListener('change', (event) => {
+    const value = event.target.value;
+    const textarea = page.querySelector('[data-welcome-message]');
+    if (!value || !textarea) return;
+    const start = textarea.selectionStart ?? textarea.value.length;
+    const end = textarea.selectionEnd ?? textarea.value.length;
+    textarea.value = `${textarea.value.slice(0, start)}${value}${textarea.value.slice(end)}`;
+    textarea.focus();
+    textarea.selectionStart = textarea.selectionEnd = start + value.length;
+    event.target.value = '';
+    updateWelcomePreview();
+  });
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = page.querySelector('[data-welcome-save]');
+    const previous = button?.textContent || 'Save Changes';
+    const payload = {
+      welcomeEnabled: page.querySelector('[data-welcome-enabled]')?.checked !== false,
+      welcomeChannelId: page.querySelector('input[name="welcomeChannelId"]')?.value.trim() || null,
+      welcomeMessage: page.querySelector('[data-welcome-message]')?.value || '',
+      leaveMessage: page.querySelector('[data-leave-message]')?.value || '',
+      showMemberNumber: page.querySelector('[data-show-member]')?.checked !== false,
+      showAvatar: page.querySelector('[data-show-avatar]')?.checked !== false,
+    };
+
+    if (button) { button.disabled = true; button.textContent = 'Saving...'; }
+    if (feedback) feedback.textContent = '';
+    try {
+      const data = await saveWelcomeSettings(guildId, payload);
+      setWelcomeFormState(data.settings || payload);
+      if (feedback) feedback.textContent = 'Welcome settings saved.';
+    } catch (err) {
+      if (feedback) feedback.textContent = err.message || 'Could not save welcome settings.';
+    } finally {
+      if (button) { button.disabled = false; button.textContent = previous; }
+    }
+  });
+}
+
 function renderModerationPage(server) {
   return `
     <div class="settings-page-grid">
@@ -707,6 +821,7 @@ function renderServerDetail(data, section = 'overview') {
 
   els.detailContent.innerHTML = renderServerAppShell(server, activeSection, content);
   if (activeSection === 'ai') initAiAccessControls(server.id);
+  if (activeSection === 'welcome') initWelcomeControls(server.id);
 }
 
 function renderServerDetailError(message) {

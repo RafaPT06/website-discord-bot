@@ -63,3 +63,16 @@ export async function removeImageAccessUser(guildId, userId) {
   memoryCache.delete(`image-access:${guildId}`);
   return data;
 }
+
+export function getWelcomeSettings(guildId) {
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/welcome`, { cacheKey: `welcome-settings:${guildId}`, cacheMs: 10000 });
+}
+
+export async function saveWelcomeSettings(guildId, settings) {
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/welcome`, {
+    method: 'PUT',
+    body: JSON.stringify(settings),
+  });
+  memoryCache.delete(`welcome-settings:${guildId}`);
+  return data;
+}
