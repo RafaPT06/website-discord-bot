@@ -8,24 +8,14 @@ const MANAGE_GUILD = 0x20n;
 const ADMINISTRATOR = 0x8n;
 const USER_GUILDS_CACHE_MS = 45 * 1000;
 const userGuildCache = new Map();
-let botOwnerCache = null;
 
-async function getBotOwnerId() {
-  const envOwner = process.env.OWNER_ID || process.env.BOT_OWNER_ID || process.env.DISCORD_OWNER_ID;
-  if (envOwner) return envOwner;
-  if (botOwnerCache && Date.now() - botOwnerCache.at < 60 * 1000) return botOwnerCache.ownerId;
-  try {
-    const data = await requestBotApi('/api/owner');
-    botOwnerCache = { at: Date.now(), ownerId: data.ownerId || null };
-    return botOwnerCache.ownerId;
-  } catch {
-    return null;
-  }
+function getOwnerId() {
+  return process.env.OWNER_ID || process.env.BOT_OWNER_ID || process.env.DASHBOARD_OWNER_ID || '861228909851705366';
 }
 
-async function isBotOwner(session) {
-  const ownerId = await getBotOwnerId();
-  return Boolean(ownerId && session?.user?.id && String(ownerId) === String(session.user.id));
+function isBotOwner(session) {
+  const ownerId = getOwnerId();
+  return Boolean(ownerId && session?.user?.id === ownerId);
 }
 
 
@@ -105,90 +95,99 @@ async function getUserGuilds(session) {
 }
 
 async function getDashboardGuildData(session, options = {}) {
+  const ownerMode = options.ownerMode === true && isBotOwner(session);
   const [botData, userGuilds] = await Promise.all([
     requestBotApi('/api/guilds'),
     getUserGuilds(session),
   ]);
 
-  const botGuilds = new Map((botData.guilds || []).map((guild) => [guild.id, guild]));
+  const rawBotGuilds = Array.isArray(botData.guilds) ? botData.guilds : [];
+  const botGuilds = new Map(rawBotGuilds.map((guild) => [guild.id, guild]));
   const manageable = userGuilds.filter((guild) => hasManageGuild(guild.permissions));
-  const isOwner = await isBotOwner(session);
-  const wantsOwnerMode = options.mode === 'owner' && isOwner;
+  const manageableIds = new Set(manageable.map((guild) => guild.id));
 
   const installed = [];
   const available = [];
 
-  for (const guild of manageable) {
-    const botGuild = botGuilds.get(guild.id);
-    if (botGuild) {
+  if (ownerMode) {
+    for (const botGuild of rawBotGuilds) {
       installed.push({
-        id: guild.id,
-        name: botGuild.name || guild.name,
-        iconUrl: botGuildIcon(botGuild) || discordGuildIcon(guild),
+        id: botGuild.id,
+        name: botGuild.name,
+        iconUrl: botGuildIcon(botGuild),
         memberCount: botGuild.memberCount ?? null,
-        manageUrl: `/dashboard/server/${encodeURIComponent(guild.id)}`,
-        canManage: true,
-        ownerViewOnly: false,
+        manageUrl: `/dashboard/server/${encodeURIComponent(botGuild.id)}`,
+        accessLabel: manageableIds.has(botGuild.id) ? 'Manage Server' : 'Owner View',
+        ownerView: true,
+        manageable: manageableIds.has(botGuild.id),
       });
-    } else {
-      available.push({
-        id: guild.id,
-        name: guild.name,
-        iconUrl: discordGuildIcon(guild),
-        inviteUrl: getInviteUrl(guild.id),
-      });
+    }
+  } else {
+    for (const guild of manageable) {
+      const botGuild = botGuilds.get(guild.id);
+      if (botGuild) {
+        installed.push({
+          id: guild.id,
+          name: botGuild.name || guild.name,
+          iconUrl: botGuildIcon(botGuild) || discordGuildIcon(guild),
+          memberCount: botGuild.memberCount ?? null,
+          manageUrl: `/dashboard/server/${encodeURIComponent(guild.id)}`,
+          accessLabel: 'Manage Server',
+          ownerView: false,
+          manageable: true,
+        });
+      } else {
+        available.push({
+          id: guild.id,
+          name: guild.name,
+          iconUrl: discordGuildIcon(guild),
+          inviteUrl: getInviteUrl(guild.id),
+        });
+      }
     }
   }
 
   installed.sort((a, b) => a.name.localeCompare(b.name));
   available.sort((a, b) => a.name.localeCompare(b.name));
 
-  if (!wantsOwnerMode) {
-    return { installed, available, botGuilds, manageable, isOwner, mode: 'user' };
-  }
+  return { installed, available, botGuilds, manageable, isOwner: isBotOwner(session), ownerMode };
+}
 
-  const manageableIds = new Set(manageable.map((guild) => guild.id));
-  const allInstalled = Array.from(botGuilds.values()).map((guild) => ({
+function botGuildToDashboardServer(guild, session, manageableIds = new Set()) {
+  return {
     id: guild.id,
     name: guild.name,
     iconUrl: botGuildIcon(guild),
     memberCount: guild.memberCount ?? null,
     manageUrl: `/dashboard/server/${encodeURIComponent(guild.id)}`,
-    canManage: manageableIds.has(guild.id),
-    ownerViewOnly: !manageableIds.has(guild.id),
-  })).sort((a, b) => a.name.localeCompare(b.name));
-
-  return { installed: allInstalled, available: [], botGuilds, manageable, isOwner, mode: 'owner' };
+    accessLabel: manageableIds.has(guild.id) ? 'Manage Server' : (isBotOwner(session) ? 'Owner View' : 'Manage Server'),
+    ownerView: isBotOwner(session) && !manageableIds.has(guild.id),
+    manageable: manageableIds.has(guild.id),
+  };
 }
-
 
 async function requireManageableInstalledServer(req, res, next) {
   try {
-    let data = await getDashboardGuildData(req.sessionData, { mode: req.query.mode });
+    const ownerMode = isBotOwner(req.sessionData);
+    const data = await getDashboardGuildData(req.sessionData, { ownerMode });
     let server = data.installed.find((guild) => guild.id === req.params.guildId);
 
-    // The bot owner must be able to manage/view every server where Meowz is installed,
-    // even when they do not personally have Discord's Manage Server permission there.
-    // Some feature routes are opened without ?mode=owner, so retry in owner mode before
-    // rejecting access. Normal users still keep the Manage Server requirement.
-    if (!server && data.isOwner) {
-      data = await getDashboardGuildData(req.sessionData, { mode: 'owner' });
-      server = data.installed.find((guild) => guild.id === req.params.guildId);
+    if (!server && ownerMode) {
+      const botGuild = data.botGuilds.get(req.params.guildId);
+      if (botGuild) {
+        const manageableIds = new Set(data.manageable.map((guild) => guild.id));
+        server = botGuildToDashboardServer(botGuild, req.sessionData, manageableIds);
+      }
     }
 
-    if (!server) {
-      return res.status(403).json({ ok: false, error: 'You can only manage servers where you have Manage Server and Meowz is installed.' });
-    }
-
+    if (!server) return res.status(403).json({ ok: false, error: 'You can only manage servers where you have Manage Server and Meowz is installed.' });
     req.dashboardServer = server;
-    req.dashboardMode = data.mode;
-    req.isDashboardOwner = data.isOwner;
+    req.isDashboardOwner = ownerMode;
     return next();
   } catch (err) {
     return res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not verify server access.' });
   }
 }
-
 
 router.get('/status', (req, res) => {
   res.json({ ok: true, status: 'online', name: 'Meowz Website', updatedAt: new Date().toISOString() });
@@ -220,14 +219,14 @@ router.get('/bot-commands', async (req, res) => {
 
 router.get('/dashboard/guilds', requireAuth, async (req, res) => {
   try {
-    const requestedMode = req.query.mode === 'owner' ? 'owner' : 'user';
-    const data = await getDashboardGuildData(req.sessionData, { mode: requestedMode });
+    const requestedMode = String(req.query.mode || '').toLowerCase();
+    const data = await getDashboardGuildData(req.sessionData, { ownerMode: requestedMode === 'owner' });
     res.json({
       ok: true,
       installed: data.installed,
       available: data.available,
       isOwner: data.isOwner,
-      mode: data.mode,
+      ownerMode: data.ownerMode,
       updatedAt: new Date().toISOString(),
     });
   } catch (err) {
@@ -236,7 +235,7 @@ router.get('/dashboard/guilds', requireAuth, async (req, res) => {
 });
 
 router.get('/dashboard/servers/:guildId', requireAuth, requireManageableInstalledServer, (req, res) => {
-  res.json({ ok: true, server: req.dashboardServer, mode: req.dashboardMode, isOwner: req.isDashboardOwner, updatedAt: new Date().toISOString() });
+  res.json({ ok: true, server: req.dashboardServer, updatedAt: new Date().toISOString() });
 });
 
 router.get('/dashboard/servers/:guildId/image-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
@@ -268,116 +267,6 @@ router.delete('/dashboard/servers/:guildId/image-access/:userId', requireAuth, r
     res.json(data);
   } catch (err) {
     res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not remove user.' });
-  }
-});
-
-
-router.get('/dashboard/servers/:guildId/leveling', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/leveling`);
-    res.json(data);
-  } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load leveling settings.' });
-  }
-});
-
-router.put('/dashboard/servers/:guildId/leveling', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/leveling`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        enabled: typeof req.body?.enabled === 'boolean' ? req.body.enabled : undefined,
-        xpPerMessage: req.body?.xpPerMessage,
-        cooldownSeconds: req.body?.cooldownSeconds,
-        channelId: req.body?.channelId,
-      }),
-    });
-    res.json(data);
-  } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save leveling settings.' });
-  }
-});
-
-
-router.get('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/welcome`);
-    res.json(data);
-  } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load welcome settings.' });
-  }
-});
-
-router.put('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/welcome`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        welcomeEnabled: typeof req.body?.welcomeEnabled === 'boolean' ? req.body.welcomeEnabled : undefined,
-        goodbyeEnabled: typeof req.body?.goodbyeEnabled === 'boolean' ? req.body.goodbyeEnabled : undefined,
-        welcomeChannelId: req.body?.welcomeChannelId,
-        goodbyeChannelId: req.body?.goodbyeChannelId,
-        welcomeMessage: req.body?.welcomeMessage,
-        goodbyeMessage: req.body?.goodbyeMessage,
-      }),
-    });
-    res.json(data);
-  } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save welcome settings.' });
-  }
-});
-
-router.get('/dashboard/servers/:guildId/logs', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/logs`);
-    res.json(data);
-  } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load log settings.' });
-  }
-});
-
-router.put('/dashboard/servers/:guildId/logs', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/logs`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        enabled: typeof req.body?.enabled === 'boolean' ? req.body.enabled : undefined,
-        channelId: req.body?.channelId,
-        messageEvents: typeof req.body?.messageEvents === 'boolean' ? req.body.messageEvents : undefined,
-        memberEvents: typeof req.body?.memberEvents === 'boolean' ? req.body.memberEvents : undefined,
-        moderationEvents: typeof req.body?.moderationEvents === 'boolean' ? req.body.moderationEvents : undefined,
-      }),
-    });
-    res.json(data);
-  } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save log settings.' });
-  }
-});
-
-router.get('/dashboard/servers/:guildId/moderation', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation`);
-    res.json(data);
-  } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load moderation settings.' });
-  }
-});
-
-router.put('/dashboard/servers/:guildId/moderation', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        enabled: typeof req.body?.enabled === 'boolean' ? req.body.enabled : undefined,
-        warningsEnabled: typeof req.body?.warningsEnabled === 'boolean' ? req.body.warningsEnabled : undefined,
-        automodEnabled: typeof req.body?.automodEnabled === 'boolean' ? req.body.automodEnabled : undefined,
-        modLogChannelId: req.body?.modLogChannelId,
-        blockedWords: req.body?.blockedWords,
-      }),
-    });
-    res.json(data);
-  } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save moderation settings.' });
   }
 });
 

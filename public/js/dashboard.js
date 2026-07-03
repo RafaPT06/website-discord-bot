@@ -10,10 +10,15 @@ const els = {
   available: document.querySelector('[data-available-servers]'),
   installedCount: document.querySelector('[data-installed-count]'),
   availableCount: document.querySelector('[data-available-count]'),
+  ownerPanel: document.querySelector('[data-owner-view-panel]'),
+  ownerTitle: document.querySelector('[data-owner-view-title]'),
   heroManagedCount: document.querySelector('[data-dashboard-managed-count]'),
   heroAvailableCount: document.querySelector('[data-dashboard-available-count]'),
   detailContent: document.querySelector('[data-server-detail-content]'),
 };
+
+const OWNER_VIEW_STORAGE_KEY = 'meowzDashboardViewMode';
+let currentViewMode = localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner' ? 'owner' : 'user';
 
 function currentServerRoute() {
   const match = window.location.pathname.match(/^\/dashboard\/server\/([^/]+)(?:\/([^/]+))?\/?$/);
@@ -36,6 +41,19 @@ function serverSubtitle(server, fallback) {
   return fallback;
 }
 
+function updateOwnerToggle(isOwner, ownerMode) {
+  if (!els.ownerPanel) return;
+  els.ownerPanel.hidden = !isOwner;
+  if (!isOwner) return;
+
+  currentViewMode = ownerMode ? 'owner' : 'user';
+  localStorage.setItem(OWNER_VIEW_STORAGE_KEY, currentViewMode);
+  if (els.ownerTitle) els.ownerTitle.textContent = ownerMode ? 'Owner View' : 'User Preview';
+  els.ownerPanel.querySelectorAll('[data-view-mode]').forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.viewMode === currentViewMode);
+  });
+}
+
 function renderServerList(container, servers, type) {
   if (!container) return;
 
@@ -51,6 +69,7 @@ function renderServerList(container, servers, type) {
     const href = isInstalled ? server.manageUrl : server.inviteUrl;
     const label = isInstalled ? 'Open' : 'Invite';
     const subtitle = isInstalled ? serverSubtitle(server, 'Meowz installed') : 'You can invite Meowz here';
+    const access = isInstalled && server.accessLabel ? `<em>${escapeHtml(server.accessLabel)}</em>` : '';
     const target = isInstalled ? '' : ' target="_blank" rel="noopener noreferrer"';
 
     return `
@@ -59,6 +78,7 @@ function renderServerList(container, servers, type) {
         <span class="server-row-main">
           <strong>${escapeHtml(server.name)}</strong>
           <span>${escapeHtml(subtitle)}</span>
+          ${access}
         </span>
         <span class="server-row-action">${escapeHtml(label)}</span>
       </a>
@@ -67,6 +87,7 @@ function renderServerList(container, servers, type) {
 }
 
 function renderDashboard(data) {
+  updateOwnerToggle(Boolean(data.isOwner), Boolean(data.ownerMode));
   const installed = Array.isArray(data.installed) ? data.installed : [];
   const available = Array.isArray(data.available) ? data.available : [];
   setText(els.installedCount, `${installed.length} server${installed.length === 1 ? '' : 's'}`);
@@ -86,6 +107,55 @@ function renderDashboardError(message) {
 function serverManageUrl(server, section = 'overview') {
   const base = `/dashboard/server/${encodeURIComponent(server.id)}`;
   return section === 'overview' ? base : `${base}/${encodeURIComponent(section)}`;
+}
+
+function renderServerSidebar(server, activeSection = 'overview') {
+  const settings = [
+    ['overview', 'Overview'],
+    ['ai', 'AI Image Access'],
+    ['leveling', 'Leveling System'],
+    ['welcome', 'Welcome Messages'],
+    ['logs', 'Logs'],
+    ['moderation', 'Moderation'],
+  ];
+
+  return `
+    <aside class="server-app-sidebar" aria-label="Server settings navigation">
+      <a class="server-sidebar-brand" href="/dashboard">
+        <span class="brand-icon" data-bot-avatar-small>M</span>
+        <strong>Meowz</strong>
+      </a>
+      <div class="server-sidebar-current">
+        ${serverIcon(server, 'server-sidebar-icon')}
+        <span><strong>${escapeHtml(server.name)}</strong><small>Server Settings</small></span>
+      </div>
+      <nav class="server-sidebar-nav">
+        <span>Settings</span>
+        ${settings.map(([section, label]) => `<a href="${escapeHtml(serverManageUrl(server, section))}" class="${section === activeSection ? 'is-active' : ''}">${escapeHtml(label)}</a>`).join('')}
+      </nav>
+      <div class="server-sidebar-help">
+        <strong>Owner tools</strong>
+        <span>Owner/User view stays on the main dashboard for now.</span>
+        <a href="/dashboard">Back to dashboard</a>
+      </div>
+    </aside>
+  `;
+}
+
+function renderServerAppShell(server, activeSection, content) {
+  return `
+    <div class="server-app-shell">
+      ${renderServerSidebar(server, activeSection)}
+      <div class="server-app-main">
+        <div class="server-app-topbar">
+          <a class="server-breadcrumb" href="/dashboard">Servers / ${escapeHtml(server.name)}</a>
+          <span class="server-app-status">${activeSection === 'welcome' ? 'Welcome Messages' : activeSection === 'ai' ? 'AI Image Access' : activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}</span>
+        </div>
+        ${renderServerHeader(server, activeSection)}
+        ${content}
+      </div>
+    </div>
+  `;
 }
 
 function renderServerHeader(server, activeSection = 'overview') {
@@ -219,97 +289,83 @@ function comingSaveButton(label = 'Save changes coming soon') {
 
 function renderWelcomePage(server) {
   const sampleName = 'Rafa';
-  const template = 'WELCOME {user} ?????\nTO\n{server}';
-  const previewText = template.replace('{user}', sampleName).replace('{server}', server.name || 'Personal');
+  const sampleServer = server.name || 'Server';
   return `
-    <div class="settings-page-grid welcome-studio-grid">
-      <article class="dashboard-card compact settings-main-card welcome-builder-card">
-        <div class="settings-card-topline">
-          <div>
-            <span class="dashboard-card-label">Welcome messages</span>
-            <h3>Welcome Messages</h3>
-            <p class="muted">Customize how Meowz welcomes new members to ${escapeHtml(server.name)}.</p>
-          </div>
-          <span class="setting-status-pill">Enabled</span>
+    <div class="welcome-designer-grid">
+      <article class="dashboard-card compact welcome-designer-card">
+        <span class="dashboard-card-label">Welcome messages</span>
+        <div class="settings-card-title-row">
+          <h3>Welcome Messages</h3>
+          <span class="settings-status-pill">Enabled</span>
+        </div>
+        <p class="muted">Customize how Meowz welcomes new members to ${escapeHtml(server.name)}.</p>
+
+        <div class="welcome-setting-block switch-row">
+          <span>
+            <strong>Enable welcome messages</strong>
+            <small>Send a message when someone joins the server.</small>
+          </span>
+          <label class="ui-switch"><input type="checkbox" checked disabled /><span></span></label>
         </div>
 
-        <div class="welcome-setting-stack">
-          <label class="setting-toggle-row">
-            <span>
-              <strong>Enable welcome messages</strong>
-              <small>Send a message when someone joins the server.</small>
-            </span>
-            <input type="checkbox" checked disabled />
-          </label>
+        <label class="welcome-field-label">Welcome Channel</label>
+        <div class="fake-select"><span># hi</span><small>Channel selection coming soon</small></div>
 
-          <label class="dashboard-field">
-            <span>Welcome Channel</span>
-            <select disabled>
-              <option># hi</option>
-            </select>
-          </label>
+        <label class="welcome-field-label">Message Style</label>
+        <div class="fake-select"><span>Custom Card (Modern)</span><small>Discord-style card preview</small></div>
 
-          <label class="dashboard-field">
-            <span>Message Style</span>
-            <select disabled>
-              <option>Custom Card (Modern)</option>
-            </select>
-          </label>
-
-          <label class="dashboard-field">
-            <span>Welcome Message</span>
-            <textarea rows="5" maxlength="200" disabled>${escapeHtml(template)}</textarea>
-            <small>Variables: {user}, {server}, {memberCount}</small>
-          </label>
-
-          <label class="dashboard-field">
-            <span>Leave Message (Optional)</span>
-            <input value="Goodbye {user}. We hope to see you again soon." disabled />
-          </label>
-
-          <div class="welcome-options-grid">
-            <label><input type="checkbox" checked disabled /> <span>Show member number on the card</span></label>
-            <label><input type="checkbox" checked disabled /> <span>Show avatar on the card</span></label>
-          </div>
-
-          ${comingSaveButton('Save changes coming soon')}
+        <div class="message-label-row">
+          <label class="welcome-field-label" for="welcome-message-preview-input">Welcome Message</label>
+          <button type="button" class="mini-action" disabled>Insert Variable</button>
         </div>
+        <textarea id="welcome-message-preview-input" class="welcome-textarea" rows="5" disabled>WELCOME {user}
+TO
+{server}</textarea>
+        <div class="character-count">31/200</div>
+
+        <label class="welcome-field-label">Leave Message (Optional)</label>
+        <input class="welcome-input" disabled value="Goodbye {user}. We hope to see you again soon." />
+
+        <div class="welcome-options">
+          <span><input type="checkbox" checked disabled /> Show member number on the card</span>
+          <span><input type="checkbox" checked disabled /> Show avatar on the card</span>
+        </div>
+
+        <button class="btn btn-primary welcome-save-button" type="button" disabled>Save Changes</button>
       </article>
 
-      <article class="dashboard-card compact settings-side-card discord-preview-card">
+      <article class="dashboard-card compact welcome-preview-card">
         <span class="dashboard-card-label">Live preview</span>
         <h3>Discord preview</h3>
-        <p class="muted">This is how your welcome message will look in Discord.</p>
-        <div class="discord-preview-feed">
-          <div class="discord-date-row"><span>June 26, 2026</span></div>
-          <div class="discord-message-preview">
-            <span class="discord-bot-avatar" data-bot-avatar-small>M</span>
-            <div class="discord-message-body">
-              <div><strong>Meowz</strong><em>APP</em><time>12:11 AM</time></div>
-              <p>Welcome <mark>@${escapeHtml(sampleName)}</mark> to <strong>${escapeHtml(server.name)}!</strong></p>
-              <div class="welcome-card-preview">
-                <div class="member-badge">MEMBER #11</div>
-                <div class="preview-avatar">${escapeHtml(sampleName.charAt(0))}</div>
-                <pre>${escapeHtml(previewText)}</pre>
-              </div>
-            </div>
-          </div>
-          <div class="discord-date-row"><span>June 30, 2026</span></div>
-          <div class="discord-message-preview compact-preview">
-            <span class="discord-bot-avatar" data-bot-avatar-small>M</span>
-            <div class="discord-message-body">
-              <div><strong>Meowz</strong><em>APP</em><time>7:29 PM</time></div>
-              <p>Welcome <mark>@Owo</mark> to <strong>${escapeHtml(server.name)}!</strong></p>
-              <div class="welcome-card-preview small">
-                <div class="member-badge">MEMBER #12</div>
-                <div class="preview-avatar blue">O</div>
-                <pre>${escapeHtml(template.replace('{user}', 'Owo').replace('{server}', server.name || 'Personal'))}</pre>
-              </div>
-            </div>
+        <p class="muted">This is how the welcome message will look in Discord.</p>
+
+        ${renderDiscordWelcomePreview('June 26, 2026', 'C', sampleServer, 11)}
+        ${renderDiscordWelcomePreview('June 30, 2026', 'OwO', sampleServer, 11, true)}
+
+        <p class="muted tiny preview-note">This is a preview. The actual Discord message can look slightly different depending on device size.</p>
+      </article>
+    </div>
+  `;
+}
+
+function renderDiscordWelcomePreview(dateLabel, userName, serverName, memberNumber, blueAvatar = false) {
+  return `
+    <div class="discord-preview-post">
+      <div class="discord-preview-date"><span></span><strong>${escapeHtml(dateLabel)}</strong><span></span></div>
+      <div class="discord-preview-message">
+        <span class="discord-preview-bot-avatar" data-bot-avatar-small>M</span>
+        <div class="discord-preview-content">
+          <div class="discord-preview-author"><strong>Meowz</strong><em>APP</em><small>12:11 AM</small></div>
+          <p>Welcome <mark>@${escapeHtml(userName)}</mark> to <strong>${escapeHtml(serverName)}</strong>!</p>
+          <div class="welcome-card-image">
+            <div class="welcome-card-member">MEMBER #${formatNumber(memberNumber)}</div>
+            <span class="welcome-card-avatar ${blueAvatar ? 'blue' : ''}">${escapeHtml(userName.slice(0, 1).toUpperCase())}</span>
+            <strong>WELCOME ${escapeHtml(userName.toUpperCase())}</strong>
+            <small>TO</small>
+            <b>${escapeHtml(serverName.toUpperCase())}</b>
           </div>
         </div>
-        <small class="preview-note">Preview only. The actual Discord message may look slightly different.</small>
-      </article>
+      </div>
     </div>
   `;
 }
@@ -649,7 +705,7 @@ function renderServerDetail(data, section = 'overview') {
   if (activeSection === 'ai') content = renderAiPage(server);
   if (activeSection === 'moderation') content = renderModerationPage(server);
 
-  els.detailContent.innerHTML = `${renderServerHeader(server, activeSection)}${content}`;
+  els.detailContent.innerHTML = renderServerAppShell(server, activeSection, content);
   if (activeSection === 'ai') initAiAccessControls(server.id);
 }
 
@@ -681,7 +737,7 @@ async function loadDashboardHome() {
   if (els.detail) els.detail.hidden = true;
   els.home.hidden = false;
   try {
-    const data = await getDashboardGuilds();
+    const data = await getDashboardGuilds(currentViewMode);
     renderDashboard(data);
   } catch (err) {
     renderDashboardError(err.message);
@@ -690,6 +746,17 @@ async function loadDashboardHome() {
 
 export function initDashboard() {
   if (!els.home && !els.detail) return;
+  els.ownerPanel?.querySelectorAll('[data-view-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const nextMode = button.dataset.viewMode === 'owner' ? 'owner' : 'user';
+      if (nextMode === currentViewMode) return;
+      currentViewMode = nextMode;
+      localStorage.setItem(OWNER_VIEW_STORAGE_KEY, currentViewMode);
+      if (els.installed) els.installed.innerHTML = '<div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>';
+      if (els.available) els.available.innerHTML = '<div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>';
+      loadDashboardHome();
+    });
+  });
   const serverRoute = currentServerRoute();
   if (serverRoute) {
     loadServerDetail(serverRoute.id, serverRoute.section);

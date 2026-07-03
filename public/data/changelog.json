@@ -1,19 +1,19 @@
 [
   {
-    "version": "v1.13.0",
+    "version": "v1.24.5",
     "date": "2026-07-03",
     "changes": [
       {
         "type": "Improved",
-        "text": "Reworked the dashboard into a cleaner app-style interface with sidebar navigation on desktop."
+        "text": "Reworked server settings pages toward the app-style dashboard layout with a desktop sidebar and cleaner settings workspace."
+      },
+      {
+        "type": "Fixed",
+        "text": "Restored the Owner View/User Preview dashboard toggle and preserved owner access while keeping normal user filtering."
       },
       {
         "type": "Improved",
-        "text": "Added a Discord-style welcome message preview and richer welcome customization layout."
-      },
-      {
-        "type": "Improved",
-        "text": "Refined dashboard cards, server rows and settings forms for a more premium control-panel feel."
+        "text": "Rebuilt Welcome Messages with a richer customization layout and Discord-style live preview."
       }
     ]
   },
