@@ -238,28 +238,6 @@ router.get('/dashboard/servers/:guildId', requireAuth, requireManageableInstalle
   res.json({ ok: true, server: req.dashboardServer, updatedAt: new Date().toISOString() });
 });
 
-
-router.get('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/welcome`);
-    res.json(data);
-  } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load welcome settings.' });
-  }
-});
-
-router.put('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/welcome`, {
-      method: 'PUT',
-      body: JSON.stringify(req.body || {}),
-    });
-    res.json(data);
-  } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save welcome settings.' });
-  }
-});
-
 router.get('/dashboard/servers/:guildId/image-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
   try {
     const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/image-access`);

@@ -4,16 +4,16 @@
     "date": "2026-07-03",
     "changes": [
       {
-        "type": "Improved",
-        "text": "Refined the dashboard app UI to better match the reference layout with cleaner server settings structure and preserved Owner/User view."
-      },
-      {
-        "type": "Improved",
-        "text": "Reworked Welcome Messages into a proper settings-and-preview workspace with live Discord-style preview updates."
+        "type": "Fixed",
+        "text": "Stabilized the website dashboard after the experimental app UI pass so server tabs load cleanly again."
       },
       {
         "type": "Fixed",
-        "text": "Improved mobile spacing so server settings pages do not become oversized or stacked awkwardly."
+        "text": "Restored the Owner View/User Preview dashboard toggle and cleaned the server breadcrumb/header area."
+      },
+      {
+        "type": "Improved",
+        "text": "Simplified the Welcome Messages preview into one Discord-style card with safer mobile sizing and clearer save feedback."
       }
     ]
   },
