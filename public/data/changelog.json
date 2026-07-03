@@ -1,55 +1,19 @@
 [
   {
-    "version": "v1.13.1",
+    "version": "v1.24.5",
     "date": "2026-07-03",
     "changes": [
       {
         "type": "Improved",
-        "text": "Polished spacing across server settings pages so buttons, forms and tabs feel more consistent."
+        "text": "Welcome Messages now includes a Discord-style preview card showing how future messages will appear in Discord."
       },
       {
         "type": "New",
-        "text": "Added a Welcome Messages preview card that updates while editing message templates."
-      },
-      {
-        "type": "Improved",
-        "text": "Improved mobile layout for server settings cards and save actions."
-      }
-    ]
-  },
-  {
-    "version": "v1.13.0",
-    "date": "2026-07-02",
-    "changes": [
-      {
-        "type": "New",
-        "text": "Added functional Welcome Messages settings for server dashboards."
-      },
-      {
-        "type": "New",
-        "text": "Added functional Logs settings with event toggles and channel configuration."
-      },
-      {
-        "type": "New",
-        "text": "Added functional Moderation settings for warnings, automod and blocked words."
-      }
-    ]
-  },
-  {
-    "version": "v1.12.0",
-    "date": "2026-07-02",
-    "changes": [
-      {
-        "type": "New",
-        "text": "Added functional leveling settings for server dashboards."
-      },
-      {
-        "type": "New",
-        "text": "Added owner and user preview dashboard modes."
+        "text": "Added success and error status notifications for Discord login and dashboard actions."
       },
       {
         "type": "Improved",
-        "text": "Leveling settings now load and save through the bot API."
+        "text": "AI Image Access add and remove actions now show clear status feedback after each submit."
       }
     ]
   },

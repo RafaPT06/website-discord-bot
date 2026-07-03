@@ -2755,323 +2755,211 @@ body.sheet-open { overflow: hidden; }
   }
 }
 
-/* Owner dashboard mode + functional leveling settings */
-.owner-view-switch {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 18px 0 18px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  background: rgba(255,255,255,.045);
-}
-.owner-view-buttons {
-  display: inline-flex;
-  gap: 8px;
-  padding: 6px;
-  border-radius: 18px;
-  background: rgba(0,0,0,.18);
-  border: 1px solid var(--border);
-}
-.owner-view-buttons button {
-  border: 0;
-  border-radius: 14px;
-  padding: 10px 14px;
-  color: var(--muted);
-  background: transparent;
-  font-weight: 900;
-  cursor: pointer;
-}
-.owner-view-buttons button.is-active {
-  color: var(--text);
-  background: linear-gradient(135deg, rgba(139,92,246,.85), rgba(34,211,238,.75));
-  box-shadow: 0 10px 26px rgba(34,211,238,.15);
-}
-.leveling-settings-form {
-  display: grid;
+/* Discord-style preview + status feedback */
+.discord-preview-card {
   gap: 18px;
 }
-.leveling-settings-form label {
+
+.discord-message-preview {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 18px;
+  background: #313338;
+  color: #dbdee1;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, .22);
+}
+
+.discord-preview-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: white;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+}
+
+.discord-preview-body {
+  min-width: 0;
   display: grid;
   gap: 8px;
-  color: var(--muted);
-  font-weight: 800;
 }
-.leveling-settings-form input[type="text"],
-.leveling-settings-form input[type="number"] {
-  width: 100%;
-  min-height: 48px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  background: rgba(0,0,0,.18);
-  color: var(--text);
-  padding: 0 14px;
-  font: inherit;
-  font-weight: 850;
-  outline: none;
-}
-.leveling-settings-form input:focus {
-  border-color: rgba(34,211,238,.55);
-  box-shadow: 0 0 0 4px rgba(34,211,238,.1);
-}
-.setting-toggle-row {
-  display: flex !important;
+
+.discord-preview-meta {
+  display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  gap: 7px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.discord-preview-meta strong {
+  color: #f2f3f5;
+  font-size: .96rem;
+  font-weight: 850;
+}
+
+.discord-preview-meta span {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #5865f2;
+  color: white;
+  font-size: .58rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.discord-preview-meta small {
+  color: #949ba4;
+  font-size: .76rem;
+  font-weight: 650;
+}
+
+.discord-preview-text {
+  color: #dbdee1;
+  line-height: 1.45;
+  font-size: .95rem;
+  word-break: break-word;
+}
+
+.discord-preview-text strong {
+  color: #f2f3f5;
+  font-weight: 850;
+}
+
+.discord-preview-embed {
+  display: grid;
+  gap: 5px;
+  max-width: 520px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--primary);
+  border-radius: 4px 10px 10px 4px;
+  background: #2b2d31;
+}
+
+.discord-preview-embed strong {
+  color: #f2f3f5;
+  font-size: .9rem;
+}
+
+.discord-preview-embed span {
+  color: #b5bac1;
+  line-height: 1.4;
+  font-size: .85rem;
+}
+
+.toast-host {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 220;
+  display: grid;
+  gap: 10px;
+  width: min(390px, calc(100vw - 36px));
+  pointer-events: none;
+}
+
+.status-toast {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) 34px;
+  gap: 12px;
+  align-items: center;
   padding: 14px;
   border: 1px solid var(--border);
   border-radius: 18px;
-  background: rgba(255,255,255,.04);
-}
-.setting-toggle-row span { display: grid; gap: 4px; }
-.setting-toggle-row strong { color: var(--text); }
-.setting-toggle-row small { color: var(--muted); line-height: 1.45; }
-.setting-toggle-row input {
-  width: 24px;
-  height: 24px;
-  accent-color: #22d3ee;
-  flex: 0 0 auto;
-}
-.form-grid-two {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-.settings-form-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.settings-save-status {
-  color: var(--muted);
-  font-weight: 850;
-}
-@media (max-width: 720px) {
-  .owner-view-switch { align-items: stretch; flex-direction: column; }
-  .owner-view-buttons { width: 100%; }
-  .owner-view-buttons button { flex: 1; }
-  .form-grid-two { grid-template-columns: 1fr; }
-  .settings-form-actions .btn { width: 100%; }
+  background: rgba(12, 14, 29, .98);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events: auto;
 }
 
-.settings-form label {
-  display: grid;
-  gap: 8px;
+.status-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.status-toast.is-leaving {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.status-toast-indicator {
+  width: 8px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.status-toast-success .status-toast-indicator { background: #22c55e; }
+.status-toast-error .status-toast-indicator { background: #fb7185; }
+.status-toast-info .status-toast-indicator { background: #38bdf8; }
+
+.status-toast strong,
+.status-toast span {
+  display: block;
+}
+
+.status-toast strong {
   color: var(--text);
-  font-weight: 800;
+  font-size: .95rem;
+  font-weight: 900;
 }
 
-.settings-form label > span {
+.status-toast span {
   color: var(--muted);
-  font-size: .86rem;
-  font-weight: 850;
+  font-size: .84rem;
+  font-weight: 750;
+  line-height: 1.35;
+  margin-top: 3px;
 }
 
-.settings-form input[type="text"],
-.settings-form input[type="number"],
-.settings-form textarea {
-  width: 100%;
+.status-toast button {
+  width: 34px;
+  height: 34px;
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 13px 14px;
-  background: rgba(255,255,255,.055);
-  color: var(--text);
-  outline: none;
-  font: inherit;
-  resize: vertical;
-}
-
-.settings-form input:focus,
-.settings-form textarea:focus {
-  border-color: rgba(139,92,246,.58);
-  box-shadow: 0 0 0 4px rgba(139,92,246,.14);
-}
-
-.settings-toggle-stack {
-  display: grid;
-  gap: 12px;
-}
-
-.settings-save-status {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .055);
   color: var(--muted);
-  font-weight: 800;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
-/* Server settings polish */
-.settings-page-grid {
-  align-items: start;
-  gap: 18px;
-}
-
-.settings-main-card,
-.settings-side-card,
-.server-coming-card {
-  display: grid;
-  gap: 14px;
-}
-
-.settings-main-card h3,
-.settings-side-card h3,
-.server-coming-card h3 {
-  margin-bottom: 0;
-}
-
-.settings-main-card .muted,
-.settings-side-card .muted,
-.server-coming-card .muted {
-  margin: 0;
-}
-
-.settings-form,
-.leveling-settings-form,
-.ai-access-form {
-  display: grid;
-  gap: 16px;
-}
-
-.settings-form-actions,
-.ai-access-input-row {
-  gap: 12px;
-}
-
-.settings-form-actions .btn,
-.ai-access-input-row .btn {
-  min-height: 46px;
-}
-
-.form-grid-two {
-  gap: 16px;
-}
-
-.setting-toggle-row {
-  min-height: 70px;
-}
-
-.settings-toggle-stack {
-  gap: 12px;
-}
-
-.settings-list {
-  gap: 12px;
-}
-
-.settings-list div {
-  min-height: 54px;
-}
-
-.server-section-tabs {
-  gap: 10px;
-  margin-top: 4px;
-  padding-bottom: 6px;
-}
-
-.server-section-tabs a {
-  min-height: 40px;
-  padding: 0 15px;
-}
-
-.welcome-preview-card {
-  grid-column: span 1;
-}
-
-.welcome-preview-stack {
-  display: grid;
-  gap: 12px;
-}
-
-.welcome-preview-message {
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: rgba(0, 0, 0, .18);
-}
-
-.welcome-preview-message span {
-  color: var(--muted);
-  font-size: .8rem;
-  font-weight: 850;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-}
-
-.welcome-preview-message strong {
+.status-toast button:hover {
   color: var(--text);
-  line-height: 1.55;
-  font-weight: 850;
-  overflow-wrap: anywhere;
-}
-
-.welcome-preview-message.is-muted {
-  background: rgba(255, 255, 255, .04);
-}
-
-@media (max-width: 900px) {
-  .settings-page-grid {
-    gap: 14px;
-  }
-
-  .settings-main-card,
-  .settings-side-card,
-  .server-coming-card {
-    gap: 12px;
-  }
+  background: rgba(255, 255, 255, .09);
 }
 
 @media (max-width: 720px) {
-  .settings-page-grid {
-    gap: 12px;
-  }
-
-  .settings-main-card,
-  .settings-side-card,
-  .server-coming-card {
-    padding: 18px !important;
-    border-radius: 24px;
-  }
-
-  .settings-form,
-  .leveling-settings-form,
-  .ai-access-form {
-    gap: 14px;
-  }
-
-  .setting-toggle-row {
-    min-height: auto;
-    padding: 13px;
-  }
-
-  .settings-form-actions {
-    display: grid;
-    gap: 10px;
-  }
-
-  .settings-form-actions .btn,
-  .settings-form-actions .settings-save-status {
-    width: 100%;
-  }
-
-  .settings-save-status {
-    min-height: 20px;
-  }
-
-  .server-section-tabs {
-    gap: 8px;
-    margin-top: 0;
-  }
-
-  .server-section-tabs a {
-    min-height: 38px;
-    padding: 0 13px;
-  }
-
-  .welcome-preview-message {
+  .discord-message-preview {
+    grid-template-columns: 38px minmax(0, 1fr);
     padding: 14px;
+    border-radius: 16px;
+  }
+
+  .discord-preview-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .discord-preview-meta {
+    gap: 5px;
+  }
+
+  .toast-host {
+    right: 12px;
+    bottom: 12px;
+    width: calc(100vw - 24px);
+  }
+
+  .status-toast {
     border-radius: 16px;
   }
 }

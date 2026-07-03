@@ -1,5 +1,6 @@
 import { initAuth } from './auth.js';
 import { initNavigation } from './navigation.js';
+import { initStatusToasts } from './toast.js';
 
 function setFooterYear() {
   document.querySelectorAll('[data-footer-year]').forEach((el) => {
@@ -37,5 +38,6 @@ async function bootPageModules() {
 
 initNavigation();
 setFooterYear();
+initStatusToasts();
 initAuth();
 bootPageModules();
