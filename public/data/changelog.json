@@ -1,23 +1,5 @@
 [
   {
-    "version": "v1.24.6",
-    "date": "2026-07-03",
-    "changes": [
-      {
-        "type": "Fixed",
-        "text": "Stabilized the website dashboard after the experimental app UI pass so server tabs load cleanly again."
-      },
-      {
-        "type": "Fixed",
-        "text": "Restored the Owner View/User Preview dashboard toggle and cleaned the server breadcrumb/header area."
-      },
-      {
-        "type": "Improved",
-        "text": "Simplified the Welcome Messages preview into one Discord-style card with safer mobile sizing and clearer save feedback."
-      }
-    ]
-  },
-  {
     "version": "v1.24.5",
     "date": "2026-07-03",
     "changes": [

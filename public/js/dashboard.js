@@ -100,6 +100,7 @@ function renderDashboard(data) {
 }
 
 function renderDashboardError(message) {
+  showStatusToast('error', 'Dashboard failed to load', message || 'Try again later.');
   const html = `<div class="server-empty-state error"><strong>Could not load servers.</strong><span>${escapeHtml(message || 'Try logging out and logging in again.')}</span></div>`;
   if (els.installed) els.installed.innerHTML = html;
   if (els.available) els.available.innerHTML = html;
@@ -145,9 +146,16 @@ function renderServerSidebar(server, activeSection = 'overview') {
 
 function renderServerAppShell(server, activeSection, content) {
   return `
-    <div class="server-content-shell">
-      ${renderServerHeader(server, activeSection)}
-      ${content}
+    <div class="server-app-shell">
+      ${renderServerSidebar(server, activeSection)}
+      <div class="server-app-main">
+        <div class="server-app-topbar">
+          <a class="server-breadcrumb" href="/dashboard">Dashboard / ${escapeHtml(server.name)}</a>
+          <span class="server-app-status">${activeSection === 'overview' ? 'Overview' : activeSection === 'welcome' ? 'Welcome Messages' : activeSection === 'ai' ? 'AI Image Access' : activeSection === 'logs' ? 'Logs' : activeSection === 'moderation' ? 'Moderation' : 'Leveling'}</span>
+        </div>
+        ${renderServerHeader(server, activeSection)}
+        ${content}
+      </div>
     </div>
   `;
 }
@@ -165,7 +173,6 @@ function renderServerHeader(server, activeSection = 'overview') {
 
   return `
     <div class="server-detail-hero server-detail-hero-plain">
-      <a class="server-breadcrumb-pill" href="/dashboard">Dashboard / ${escapeHtml(server.name)}</a>
       <div class="server-detail-heading server-detail-heading-plain">
         ${serverIcon(server, 'server-detail-icon')}
         <div>
@@ -174,7 +181,7 @@ function renderServerHeader(server, activeSection = 'overview') {
           <p class="muted">Manage Meowz features for this server.</p>
           <div class="server-detail-pills">
             <span>${escapeHtml(memberText)}</span>
-            <span>${server.canManage === false ? 'Owner view' : 'Manage Server'}</span>
+            <span>Manage Server</span>
             <span>Bot Installed</span>
           </div>
         </div>
@@ -282,10 +289,9 @@ function comingSaveButton(label = 'Save changes coming soon') {
 }
 
 function renderWelcomePage(server) {
-  const sampleName = 'Rafa';
   const sampleServer = server.name || 'Server';
   return `
-    <div class="welcome-designer-grid stable-welcome-grid">
+    <div class="welcome-designer-grid phase-one-welcome-grid">
       <article class="dashboard-card compact welcome-designer-card">
         <div class="settings-card-title-row">
           <div>
@@ -312,29 +318,29 @@ function renderWelcomePage(server) {
 
         <div class="message-label-row">
           <label class="welcome-field-label" for="welcome-message-preview-input">Welcome Message</label>
-          <button type="button" class="mini-action" data-fake-submit="Inserted variable" data-success-message="Variable insert UI is coming later.">Insert Variable</button>
+          <button type="button" class="mini-action" disabled>Insert Variable</button>
         </div>
-        <textarea id="welcome-message-preview-input" class="welcome-textarea" rows="5">WELCOME {user}
+        <textarea id="welcome-message-preview-input" class="welcome-textarea" rows="5" disabled>WELCOME {user}
 TO
 {server}</textarea>
         <div class="character-count">26/200</div>
 
         <label class="welcome-field-label">Leave Message (Optional)</label>
-        <input class="welcome-input" value="Goodbye {user}. We hope to see you again soon." />
+        <input class="welcome-input" disabled value="Goodbye {user}. We hope to see you again soon." />
 
         <div class="welcome-options">
-          <label><input type="checkbox" checked /> Show member number on the card</label>
-          <label><input type="checkbox" checked /> Show avatar on the card</label>
+          <span><input type="checkbox" checked disabled /> Show member number on the card</span>
+          <span><input type="checkbox" checked disabled /> Show avatar on the card</span>
         </div>
 
-        <button class="btn btn-primary welcome-save-button" type="button" data-fake-submit="Welcome settings saved" data-success-message="Welcome message settings were saved locally for now.">Save Changes</button>
+        <button class="btn btn-primary welcome-save-button" type="button" disabled>Save Changes</button>
       </article>
 
       <article class="dashboard-card compact welcome-preview-card">
         <span class="dashboard-card-label">Live preview</span>
         <h3>Discord preview</h3>
         <p class="muted">This is how the welcome message will look in Discord.</p>
-        ${renderDiscordWelcomePreview(sampleName, sampleServer, 11)}
+        ${renderDiscordWelcomePreview('Rafa', sampleServer, 11)}
         <p class="muted tiny preview-note">This is a preview. The actual Discord message can look slightly different depending on device size.</p>
       </article>
     </div>
@@ -342,19 +348,20 @@ TO
 }
 
 function renderDiscordWelcomePreview(userName, serverName, memberNumber) {
+  const cleanServer = String(serverName || 'Server').replace(/^#/, '');
   return `
-    <div class="discord-preview-single">
+    <div class="discord-preview-post phase-one-discord-preview">
       <div class="discord-preview-message">
         <span class="discord-preview-bot-avatar" data-bot-avatar-small>M</span>
         <div class="discord-preview-content">
           <div class="discord-preview-author"><strong>Meowz</strong><em>APP</em><small>Today at 9:30 PM</small></div>
-          <p>Welcome <mark>@${escapeHtml(userName)}</mark> to <strong>${escapeHtml(serverName)}</strong>!</p>
-          <div class="welcome-card-image">
+          <p>Welcome <mark>@${escapeHtml(userName)}</mark> to <strong>#${escapeHtml(cleanServer)}</strong>!</p>
+          <div class="welcome-card-image phase-one-welcome-image">
             <div class="welcome-card-member">MEMBER #${formatNumber(memberNumber)}</div>
             <span class="welcome-card-avatar">${escapeHtml(userName.slice(0, 1).toUpperCase())}</span>
             <strong>WELCOME ${escapeHtml(userName.toUpperCase())}</strong>
             <small>TO</small>
-            <b>${escapeHtml(serverName.toUpperCase())}</b>
+            <b>#${escapeHtml(cleanServer.toUpperCase())}</b>
           </div>
         </div>
       </div>
@@ -603,13 +610,13 @@ function initAiAccessControls(guildId) {
 
     try {
       await addImageAccessUser(guildId, userId);
+      showStatusToast('success', 'Access updated', 'User was added to AI image access.');
       if (input) input.value = '';
       await refreshAiAccess(guildId);
-      showStatusToast('success', 'User added', 'AI Image Access was updated.');
     } catch (err) {
       const list = document.querySelector('[data-ai-access-list]');
-      if (list) list.innerHTML = `<div class="settings-empty-state error"><strong>Could not add user.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`;
       showStatusToast('error', 'Could not add user', err.message || 'Try again later.');
+      if (list) list.innerHTML = `<div class="settings-empty-state error"><strong>Could not add user.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`;
     } finally {
       if (button) {
         button.disabled = false;
@@ -632,14 +639,14 @@ function initAiAccessControls(guildId) {
     button.textContent = 'Removing...';
     try {
       await removeImageAccessUser(guildId, userId);
+      showStatusToast('success', 'Access updated', 'User was removed from manual AI image access.');
       await refreshAiAccess(guildId);
-      showStatusToast('success', 'User removed', 'AI Image Access was updated.');
     } catch (err) {
+      showStatusToast('error', 'Could not remove user', err.message || 'Try again later.');
       button.disabled = false;
       button.textContent = 'Remove';
       const list = document.querySelector('[data-ai-access-list]');
       if (list) list.insertAdjacentHTML('afterbegin', `<div class="settings-empty-state error"><strong>Could not remove user.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`);
-      showStatusToast('error', 'Could not remove user', err.message || 'Try again later.');
     }
   });
 }
@@ -685,19 +692,6 @@ function renderModerationPage(server) {
   `;
 }
 
-
-function initFakeSubmitControls() {
-  document.querySelectorAll('[data-fake-submit]').forEach((button) => {
-    if (button.dataset.toastBound === 'true') return;
-    button.dataset.toastBound = 'true';
-    button.addEventListener('click', () => {
-      const title = button.dataset.fakeSubmit || 'Saved';
-      const message = button.dataset.successMessage || 'Changes saved.';
-      showStatusToast('success', title, message);
-    });
-  });
-}
-
 function renderServerDetail(data, section = 'overview') {
   if (!els.home || !els.detail || !els.detailContent) return;
   const server = data.server;
@@ -716,7 +710,6 @@ function renderServerDetail(data, section = 'overview') {
 
   els.detailContent.innerHTML = renderServerAppShell(server, activeSection, content);
   if (activeSection === 'ai') initAiAccessControls(server.id);
-  initFakeSubmitControls();
 }
 
 function renderServerDetailError(message) {
