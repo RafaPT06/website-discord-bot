@@ -1,6 +1,5 @@
 import { getDashboardGuilds, getDashboardServer, getImageAccess, addImageAccessUser, removeImageAccessUser } from './api.js';
 import { escapeHtml, formatNumber, setText } from './utils.js';
-import { showStatusToast } from './toast.js';
 
 const els = {
   home: document.querySelector('[data-dashboard-home]'),
@@ -219,63 +218,97 @@ function comingSaveButton(label = 'Save changes coming soon') {
 }
 
 function renderWelcomePage(server) {
-  const serverName = escapeHtml(server.name);
+  const sampleName = 'Rafa';
+  const template = 'WELCOME {user} ?????\nTO\n{server}';
+  const previewText = template.replace('{user}', sampleName).replace('{server}', server.name || 'Personal');
   return `
-    <div class="settings-page-grid">
-      <article class="dashboard-card compact settings-main-card">
-        <span class="dashboard-card-label">Welcome messages</span>
-        <h3>Member greetings</h3>
-        <p class="muted">Configure join and leave messages for ${serverName}. Editing is coming soon.</p>
-        <div class="settings-list">
-          ${disabledOption('Status', 'Coming soon')}
-          ${disabledOption('Welcome channel', 'Not configured')}
-          ${disabledOption('Join message', 'Not configured')}
-          ${disabledOption('Leave message', 'Not configured')}
-          ${disabledOption('Test message', 'Unavailable')}
+    <div class="settings-page-grid welcome-studio-grid">
+      <article class="dashboard-card compact settings-main-card welcome-builder-card">
+        <div class="settings-card-topline">
+          <div>
+            <span class="dashboard-card-label">Welcome messages</span>
+            <h3>Welcome Messages</h3>
+            <p class="muted">Customize how Meowz welcomes new members to ${escapeHtml(server.name)}.</p>
+          </div>
+          <span class="setting-status-pill">Enabled</span>
+        </div>
+
+        <div class="welcome-setting-stack">
+          <label class="setting-toggle-row">
+            <span>
+              <strong>Enable welcome messages</strong>
+              <small>Send a message when someone joins the server.</small>
+            </span>
+            <input type="checkbox" checked disabled />
+          </label>
+
+          <label class="dashboard-field">
+            <span>Welcome Channel</span>
+            <select disabled>
+              <option># hi</option>
+            </select>
+          </label>
+
+          <label class="dashboard-field">
+            <span>Message Style</span>
+            <select disabled>
+              <option>Custom Card (Modern)</option>
+            </select>
+          </label>
+
+          <label class="dashboard-field">
+            <span>Welcome Message</span>
+            <textarea rows="5" maxlength="200" disabled>${escapeHtml(template)}</textarea>
+            <small>Variables: {user}, {server}, {memberCount}</small>
+          </label>
+
+          <label class="dashboard-field">
+            <span>Leave Message (Optional)</span>
+            <input value="Goodbye {user}. We hope to see you again soon." disabled />
+          </label>
+
+          <div class="welcome-options-grid">
+            <label><input type="checkbox" checked disabled /> <span>Show member number on the card</span></label>
+            <label><input type="checkbox" checked disabled /> <span>Show avatar on the card</span></label>
+          </div>
+
+          ${comingSaveButton('Save changes coming soon')}
         </div>
       </article>
 
-      <article class="dashboard-card compact settings-side-card">
-        <span class="dashboard-card-label">Templates</span>
-        <h3>Message variables</h3>
-        <p class="muted">Templates will support common placeholders when this section is enabled.</p>
-        <div class="settings-empty-state">
-          <strong>No templates configured yet.</strong>
-          <span>You will be able to use variables like user, server and member count later.</span>
-        </div>
-      </article>
-
-      <article class="dashboard-card compact discord-preview-card">
-        <span class="dashboard-card-label">Discord preview</span>
-        <h3>Welcome message preview</h3>
-        <p class="muted">This is how a future welcome message can appear inside Discord.</p>
-        <div class="discord-message-preview">
-          <div class="discord-preview-avatar">M</div>
-          <div class="discord-preview-body">
-            <div class="discord-preview-meta">
-              <strong>Meowz</strong>
-              <span>BOT</span>
-              <small>Today at 21:30</small>
+      <article class="dashboard-card compact settings-side-card discord-preview-card">
+        <span class="dashboard-card-label">Live preview</span>
+        <h3>Discord preview</h3>
+        <p class="muted">This is how your welcome message will look in Discord.</p>
+        <div class="discord-preview-feed">
+          <div class="discord-date-row"><span>June 26, 2026</span></div>
+          <div class="discord-message-preview">
+            <span class="discord-bot-avatar" data-bot-avatar-small>M</span>
+            <div class="discord-message-body">
+              <div><strong>Meowz</strong><em>APP</em><time>12:11 AM</time></div>
+              <p>Welcome <mark>@${escapeHtml(sampleName)}</mark> to <strong>${escapeHtml(server.name)}!</strong></p>
+              <div class="welcome-card-preview">
+                <div class="member-badge">MEMBER #11</div>
+                <div class="preview-avatar">${escapeHtml(sampleName.charAt(0))}</div>
+                <pre>${escapeHtml(previewText)}</pre>
+              </div>
             </div>
-            <div class="discord-preview-text">Welcome <strong>@Rafa</strong> to <strong>${serverName}</strong>. You are member <strong>#42</strong>.</div>
-            <div class="discord-preview-embed">
-              <strong>Welcome to ${serverName}</strong>
-              <span>Read the rules, choose your roles and enjoy the server.</span>
+          </div>
+          <div class="discord-date-row"><span>June 30, 2026</span></div>
+          <div class="discord-message-preview compact-preview">
+            <span class="discord-bot-avatar" data-bot-avatar-small>M</span>
+            <div class="discord-message-body">
+              <div><strong>Meowz</strong><em>APP</em><time>7:29 PM</time></div>
+              <p>Welcome <mark>@Owo</mark> to <strong>${escapeHtml(server.name)}!</strong></p>
+              <div class="welcome-card-preview small">
+                <div class="member-badge">MEMBER #12</div>
+                <div class="preview-avatar blue">O</div>
+                <pre>${escapeHtml(template.replace('{user}', 'Owo').replace('{server}', server.name || 'Personal'))}</pre>
+              </div>
             </div>
           </div>
         </div>
-      </article>
-
-      <article class="dashboard-card compact server-coming-card">
-        <span class="dashboard-card-label">Preview</span>
-        <h3>What this page will manage</h3>
-        <div class="coming-grid coming-grid-two">
-          ${previewCard('Welcome channel', 'Choose where join messages are sent.')}
-          ${previewCard('Join messages', 'Customize the message sent when someone joins.')}
-          ${previewCard('Leave messages', 'Customize the message sent when someone leaves.')}
-          ${previewCard('Message preview', 'Test how messages look before saving.')}
-        </div>
-        ${comingSaveButton()}
+        <small class="preview-note">Preview only. The actual Discord message may look slightly different.</small>
       </article>
     </div>
   `;
@@ -524,11 +557,9 @@ function initAiAccessControls(guildId) {
       await addImageAccessUser(guildId, userId);
       if (input) input.value = '';
       await refreshAiAccess(guildId);
-      showStatusToast('success', 'User added', 'AI image access was updated successfully.');
     } catch (err) {
       const list = document.querySelector('[data-ai-access-list]');
       if (list) list.innerHTML = `<div class="settings-empty-state error"><strong>Could not add user.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`;
-      showStatusToast('error', 'Could not add user', err.message || 'Try again later.');
     } finally {
       if (button) {
         button.disabled = false;
@@ -552,13 +583,11 @@ function initAiAccessControls(guildId) {
     try {
       await removeImageAccessUser(guildId, userId);
       await refreshAiAccess(guildId);
-      showStatusToast('success', 'User removed', 'Manual AI image access was removed.');
     } catch (err) {
       button.disabled = false;
       button.textContent = 'Remove';
       const list = document.querySelector('[data-ai-access-list]');
       if (list) list.insertAdjacentHTML('afterbegin', `<div class="settings-empty-state error"><strong>Could not remove user.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`);
-      showStatusToast('error', 'Could not remove user', err.message || 'Try again later.');
     }
   });
 }

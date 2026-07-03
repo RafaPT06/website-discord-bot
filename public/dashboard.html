@@ -43,25 +43,41 @@
   </header>
 
   <main id="top" class="page-main dashboard-page">
-    <section class="section dashboard-section" data-dashboard hidden>
+    <section class="section dashboard-section dashboard-app-section" data-dashboard hidden>
+      <div class="dashboard-app-shell">
+        <aside class="dashboard-sidebar" aria-label="Dashboard sidebar">
+          <a class="sidebar-server-card" href="/dashboard">
+            <span class="sidebar-server-icon" data-bot-avatar-small>M</span>
+            <span><strong>Meowz</strong><small>Dashboard</small></span>
+          </a>
+          <div class="sidebar-group">
+            <span>Settings</span>
+            <a href="/dashboard" class="is-active">Overview</a>
+            <a href="/dashboard#servers-with-meowz">Servers</a>
+            <a href="/docs">Documentation</a>
+            <a href="/changelog">Changelog</a>
+          </div>
+          <div class="sidebar-group">
+            <span>Server tools</span>
+            <a href="#" aria-disabled="true">Leveling System</a>
+            <a href="#" aria-disabled="true">Welcome Messages</a>
+            <a href="#" aria-disabled="true">AI Image Access</a>
+            <a href="#" aria-disabled="true">Logs</a>
+            <a href="#" aria-disabled="true">Moderation</a>
+          </div>
+          <div class="sidebar-help-card">
+            <strong>Need help?</strong>
+            <small>Open the documentation or join support later.</small>
+            <a href="/docs">View docs</a>
+          </div>
+        </aside>
+        <div class="dashboard-content-shell">
       <div data-dashboard-home>
         <div class="dashboard-welcome-card dashboard-welcome-plain">
           <div class="dashboard-hero-copy">
             <span class="dashboard-eyebrow">Dashboard</span>
             <h2 data-dashboard-title>Welcome back.</h2>
             <p class="muted" data-dashboard-intro>Manage your servers, configure Meowz and access dashboard features.</p>
-          </div>
-        </div>
-
-
-        <div class="owner-view-switch" data-owner-mode-switch hidden>
-          <div>
-            <span class="dashboard-card-label">View mode</span>
-            <p class="muted compact-muted">Preview the dashboard as the bot owner or as a normal user.</p>
-          </div>
-          <div class="owner-view-buttons" role="group" aria-label="Dashboard view mode">
-            <button type="button" data-owner-mode-button="owner">Owner View</button>
-            <button type="button" data-owner-mode-button="user">User Preview</button>
           </div>
         </div>
 
@@ -106,6 +122,8 @@
             <h2>Loading server...</h2>
             <p class="muted">Fetching the selected server information.</p>
           </div>
+        </div>
+      </div>
         </div>
       </div>
     </section>

@@ -1,19 +1,19 @@
 [
   {
-    "version": "v1.24.5",
+    "version": "v1.13.0",
     "date": "2026-07-03",
     "changes": [
       {
         "type": "Improved",
-        "text": "Welcome Messages now includes a Discord-style preview card showing how future messages will appear in Discord."
-      },
-      {
-        "type": "New",
-        "text": "Added success and error status notifications for Discord login and dashboard actions."
+        "text": "Reworked the dashboard into a cleaner app-style interface with sidebar navigation on desktop."
       },
       {
         "type": "Improved",
-        "text": "AI Image Access add and remove actions now show clear status feedback after each submit."
+        "text": "Added a Discord-style welcome message preview and richer welcome customization layout."
+      },
+      {
+        "type": "Improved",
+        "text": "Refined dashboard cards, server rows and settings forms for a more premium control-panel feel."
       }
     ]
   },
