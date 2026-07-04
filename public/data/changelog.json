@@ -1,5 +1,27 @@
 [
   {
+    "version": "v1.25.0",
+    "date": "2026-07-04",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Rebuilt the dashboard as a full app-style UI with a desktop sidebar, top bar, cleaner cards and stable mobile navigation."
+      },
+      {
+        "type": "Fixed",
+        "text": "Restored the Owner View/User View toggle and kept it inside the dashboard experience."
+      },
+      {
+        "type": "Improved",
+        "text": "Reworked server tabs to share the same layout foundation across overview, welcome, leveling, logs, AI access and moderation."
+      },
+      {
+        "type": "Fixed",
+        "text": "Cleaned the Welcome Messages preview so it no longer renders oversized chat-log sections on mobile."
+      }
+    ]
+  },
+  {
     "version": "v1.24.5",
     "date": "2026-07-03",
     "changes": [

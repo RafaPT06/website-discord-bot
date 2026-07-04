@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Meowz</title>
   <meta name="description" content="Manage your Meowz servers after signing in with Discord." />
-
   <meta property="og:title" content="Meowz | Discord Bot" />
   <meta property="og:description" content="A modern Discord bot with live stats, slash command docs, AI image editing, leveling and utilities." />
   <meta property="og:image" content="https://meowz.up.railway.app/preview.png" />
@@ -13,26 +12,21 @@
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#8b5cf6" />
   <meta name="twitter:card" content="summary_large_image" />
-
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="stylesheet" href="/css/main.css" />
 </head>
-<body>
+<body class="dashboard-app-body">
   <div class="bg-glow bg-glow-one"></div>
   <div class="bg-glow bg-glow-two"></div>
 
-  <header class="nav">
+  <header class="nav dashboard-auth-nav" aria-label="Dashboard auth shell">
     <a class="brand" href="/" aria-label="Meowz home">
       <span class="brand-icon" data-bot-avatar-small>M</span>
       <span data-bot-name-short>Meowz</span>
     </a>
-
     <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
-      <span></span>
-      <span></span>
-      <span></span>
+      <span></span><span></span><span></span>
     </button>
-
     <nav class="nav-links" data-nav-links aria-label="Main navigation">
       <a href="/" data-nav-link data-route="/">Home</a>
       <a class="auth-only-nav" href="/dashboard" data-nav-link data-route="/dashboard" data-auth-only hidden>Dashboard</a>
@@ -42,118 +36,23 @@
     </nav>
   </header>
 
-  <main id="top" class="page-main dashboard-page">
-    <section class="section dashboard-section dashboard-app-section" data-dashboard hidden>
-      <div class="dashboard-app-shell">
-        <aside class="dashboard-sidebar" aria-label="Dashboard sidebar">
-          <a class="sidebar-server-card" href="/dashboard">
-            <span class="sidebar-server-icon" data-bot-avatar-small>M</span>
-            <span><strong>Meowz</strong><small>Dashboard</small></span>
-          </a>
-          <div class="sidebar-group">
-            <span>Settings</span>
-            <a href="/dashboard" class="is-active">Overview</a>
-            <a href="/dashboard#servers-with-meowz">Servers</a>
-            <a href="/docs">Documentation</a>
-            <a href="/changelog">Changelog</a>
-          </div>
-          <div class="sidebar-group">
-            <span>Server tools</span>
-            <a href="#" aria-disabled="true">Leveling System</a>
-            <a href="#" aria-disabled="true">Welcome Messages</a>
-            <a href="#" aria-disabled="true">AI Image Access</a>
-            <a href="#" aria-disabled="true">Logs</a>
-            <a href="#" aria-disabled="true">Moderation</a>
-          </div>
-          <div class="sidebar-help-card">
-            <strong>Need help?</strong>
-            <small>Open the documentation or join support later.</small>
-            <a href="/docs">View docs</a>
-          </div>
-        </aside>
-        <div class="dashboard-content-shell">
-      <div data-dashboard-home>
-        <div class="dashboard-welcome-card dashboard-welcome-plain">
-          <div class="dashboard-hero-copy">
-            <span class="dashboard-eyebrow">Dashboard</span>
-            <h2 data-dashboard-title>Welcome back.</h2>
-            <p class="muted" data-dashboard-intro>Manage your servers, configure Meowz and access dashboard features.</p>
-            <div class="owner-view-panel" data-owner-view-panel hidden>
-              <div>
-                <span class="dashboard-card-label">View mode</span>
-                <strong data-owner-view-title>User Preview</strong>
-              </div>
-              <div class="owner-view-toggle" role="group" aria-label="Dashboard view mode">
-                <button type="button" data-view-mode="user" class="is-active">User Preview</button>
-                <button type="button" data-view-mode="owner">Owner View</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="server-dashboard-grid">
-          <article id="servers-with-meowz" class="dashboard-card server-list-card">
-            <div class="server-card-heading">
-              <div>
-                <span class="dashboard-card-label">Servers with Meowz</span>
-                <h3>Manage installed servers</h3>
-                <p class="muted compact-muted">Choose a server to open its overview.</p>
-              </div>
-              <span class="server-card-note" data-installed-count>Loading</span>
-            </div>
-            <div class="server-list" data-installed-servers>
-              <div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>
-              <div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>
-            </div>
-          </article>
-
-          <article class="dashboard-card server-list-card">
-            <div class="server-card-heading">
-              <div>
-                <span class="dashboard-card-label">Available Servers</span>
-                <h3>Invite Meowz</h3>
-                <p class="muted compact-muted">Servers where you can add Meowz will appear here.</p>
-              </div>
-              <span class="server-card-note" data-available-count>Loading</span>
-            </div>
-            <div class="server-list" data-available-servers>
-              <div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>
-              <div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>
-            </div>
-          </article>
-        </div>
-
-      </div>
-
+  <main id="top" class="dashboard-app-root">
+    <section class="dashboard-app" data-dashboard hidden>
+      <div data-dashboard-home></div>
       <div data-server-detail hidden>
-        <div data-server-detail-content>
-          <div class="dashboard-card server-detail-loading">
-            <span class="dashboard-card-label">Server overview</span>
-            <h2>Loading server...</h2>
-            <p class="muted">Fetching the selected server information.</p>
-          </div>
-        </div>
-      </div>
-        </div>
+        <div data-server-detail-content></div>
       </div>
     </section>
 
-    <section class="section dashboard-guest" data-dashboard-guest hidden>
-      <div class="dashboard-hero">
-        <div>
-          <span class="dashboard-eyebrow">Dashboard</span>
-          <h2>Login required</h2>
-          <p class="muted">Connect your Discord account to open the Meowz dashboard.</p>
-        </div>
+    <section class="dashboard-login-screen" data-dashboard-guest hidden>
+      <div class="dashboard-login-card">
+        <span class="dashboard-card-label">Dashboard</span>
+        <h1>Login required</h1>
+        <p>Connect your Discord account to manage Meowz servers.</p>
         <a class="btn btn-primary" href="/auth/discord">Login with Discord</a>
       </div>
     </section>
   </main>
-
-  <footer class="footer-card">
-    <p>© <span data-footer-year></span> <span data-footer-bot-name>Meowz</span>. All rights reserved.</p>
-    <p>Made by Rafa (@atuaprima_)</p>
-  </footer>
 
   <script type="module" src="/js/main.js"></script>
 </body>

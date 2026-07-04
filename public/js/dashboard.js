@@ -1,769 +1,750 @@
-import { getDashboardGuilds, getDashboardServer, getImageAccess, addImageAccessUser, removeImageAccessUser } from './api.js';
-import { escapeHtml, formatNumber, setText } from './utils.js';
+import {
+  getDashboardGuilds,
+  getDashboardServer,
+  getImageAccess,
+  addImageAccessUser,
+  removeImageAccessUser,
+} from './api.js';
+import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
+import { getActiveUser } from './auth.js';
 
 const els = {
   home: document.querySelector('[data-dashboard-home]'),
   detail: document.querySelector('[data-server-detail]'),
-  title: document.querySelector('[data-dashboard-title]'),
-  intro: document.querySelector('[data-dashboard-intro]'),
-  installed: document.querySelector('[data-installed-servers]'),
-  available: document.querySelector('[data-available-servers]'),
-  installedCount: document.querySelector('[data-installed-count]'),
-  availableCount: document.querySelector('[data-available-count]'),
-  ownerPanel: document.querySelector('[data-owner-view-panel]'),
-  ownerTitle: document.querySelector('[data-owner-view-title]'),
-  heroManagedCount: document.querySelector('[data-dashboard-managed-count]'),
-  heroAvailableCount: document.querySelector('[data-dashboard-available-count]'),
   detailContent: document.querySelector('[data-server-detail-content]'),
 };
 
 const OWNER_VIEW_STORAGE_KEY = 'meowzDashboardViewMode';
+const SETTINGS_STORAGE_KEY = 'meowzServerSettings';
 let currentViewMode = localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner' ? 'owner' : 'user';
+let lastDashboardData = null;
 
-function currentServerRoute() {
+function routeInfo() {
   const match = window.location.pathname.match(/^\/dashboard\/server\/([^/]+)(?:\/([^/]+))?\/?$/);
-  return match ? { id: decodeURIComponent(match[1]), section: match[2] ? decodeURIComponent(match[2]) : 'overview' } : null;
+  return match ? { id: decodeURIComponent(match[1]), section: decodeURIComponent(match[2] || 'overview') } : null;
+}
+
+function avatarUrl(user, size = 96) {
+  if (!user?.id || !user?.avatar) return null;
+  const ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
+  return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}?size=${size}`;
+}
+
+function activeName() {
+  const user = getActiveUser?.();
+  return user?.globalName || user?.username || 'Rafa';
+}
+
+function activeUsername() {
+  const user = getActiveUser?.();
+  return user?.username ? `@${user.username}` : '@atuaprima_';
+}
+
+function activeAvatarHtml(className = 'app-user-avatar') {
+  const user = getActiveUser?.();
+  const img = avatarUrl(user, 128);
+  const name = activeName();
+  if (img) return `<span class="${className}"><img src="${escapeHtml(img)}" alt="" /></span>`;
+  return `<span class="${className}">${escapeHtml(name.slice(0, 1).toUpperCase() || 'U')}</span>`;
 }
 
 function serverInitial(name = 'S') {
-  return escapeHtml((name.trim().charAt(0) || 'S').toUpperCase());
+  return escapeHtml((String(name).trim().charAt(0) || 'S').toUpperCase());
 }
 
-function serverIcon(server, className = 'server-icon') {
-  if (server.iconUrl) {
-    return `<span class="${className}"><img src="${escapeHtml(server.iconUrl)}" alt="" loading="lazy" /></span>`;
-  }
-  return `<span class="${className} ${className}-fallback">${serverInitial(server.name)}</span>`;
+function serverIcon(server, className = 'app-server-icon') {
+  if (server?.iconUrl) return `<span class="${className}"><img src="${escapeHtml(server.iconUrl)}" alt="" loading="lazy" /></span>`;
+  return `<span class="${className} ${className}-fallback">${serverInitial(server?.name || 'S')}</span>`;
 }
 
-function serverSubtitle(server, fallback) {
-  if (typeof server.memberCount === 'number') return `${formatNumber(server.memberCount)} members`;
-  return fallback;
+function sectionTitle(section) {
+  return ({
+    overview: 'Overview',
+    welcome: 'Welcome Messages',
+    leveling: 'Leveling System',
+    logs: 'Logs',
+    ai: 'AI Image Access',
+    moderation: 'Moderation',
+  })[section] || 'Overview';
 }
 
-function updateOwnerToggle(isOwner, ownerMode) {
-  if (!els.ownerPanel) return;
-  els.ownerPanel.hidden = !isOwner;
-  if (!isOwner) return;
-
-  currentViewMode = ownerMode ? 'owner' : 'user';
-  localStorage.setItem(OWNER_VIEW_STORAGE_KEY, currentViewMode);
-  if (els.ownerTitle) els.ownerTitle.textContent = ownerMode ? 'Owner View' : 'User Preview';
-  els.ownerPanel.querySelectorAll('[data-view-mode]').forEach((button) => {
-    button.classList.toggle('is-active', button.dataset.viewMode === currentViewMode);
-  });
-}
-
-function renderServerList(container, servers, type) {
-  if (!container) return;
-
-  if (!servers.length) {
-    container.innerHTML = type === 'installed'
-      ? `<div class="server-empty-state"><strong>No manageable servers with Meowz yet.</strong><span>Invite Meowz to a server where you have Manage Server permissions to start managing it here.</span></div>`
-      : `<div class="server-empty-state"><strong>Meowz is already installed in all your manageable servers.</strong><span>If you get access to another server later, it will appear here.</span></div>`;
-    return;
-  }
-
-  container.innerHTML = servers.map((server) => {
-    const isInstalled = type === 'installed';
-    const href = isInstalled ? server.manageUrl : server.inviteUrl;
-    const label = isInstalled ? 'Open' : 'Invite';
-    const subtitle = isInstalled ? serverSubtitle(server, 'Meowz installed') : 'You can invite Meowz here';
-    const access = isInstalled && server.accessLabel ? `<em>${escapeHtml(server.accessLabel)}</em>` : '';
-    const target = isInstalled ? '' : ' target="_blank" rel="noopener noreferrer"';
-
-    return `
-      <a class="server-row" href="${escapeHtml(href || '#')}"${target}>
-        ${serverIcon(server)}
-        <span class="server-row-main">
-          <strong>${escapeHtml(server.name)}</strong>
-          <span>${escapeHtml(subtitle)}</span>
-          ${access}
-        </span>
-        <span class="server-row-action">${escapeHtml(label)}</span>
-      </a>
-    `;
-  }).join('');
-}
-
-function renderDashboard(data) {
-  updateOwnerToggle(Boolean(data.isOwner), Boolean(data.ownerMode));
-  const installed = Array.isArray(data.installed) ? data.installed : [];
-  const available = Array.isArray(data.available) ? data.available : [];
-  setText(els.installedCount, `${installed.length} server${installed.length === 1 ? '' : 's'}`);
-  setText(els.availableCount, `${available.length} server${available.length === 1 ? '' : 's'}`);
-  setText(els.heroManagedCount, formatNumber(installed.length));
-  setText(els.heroAvailableCount, formatNumber(available.length));
-  renderServerList(els.installed, installed, 'installed');
-  renderServerList(els.available, available, 'available');
-}
-
-function renderDashboardError(message) {
-  showStatusToast('error', 'Dashboard failed to load', message || 'Try again later.');
-  const html = `<div class="server-empty-state error"><strong>Could not load servers.</strong><span>${escapeHtml(message || 'Try logging out and logging in again.')}</span></div>`;
-  if (els.installed) els.installed.innerHTML = html;
-  if (els.available) els.available.innerHTML = html;
-}
-
-function serverManageUrl(server, section = 'overview') {
+function serverUrl(server, section = 'overview') {
   const base = `/dashboard/server/${encodeURIComponent(server.id)}`;
   return section === 'overview' ? base : `${base}/${encodeURIComponent(section)}`;
 }
 
-function renderServerSidebar(server, activeSection = 'overview') {
-  const settings = [
+function getSettings(guildId, section, defaults = {}) {
+  try {
+    const all = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}');
+    return { ...defaults, ...(all[guildId]?.[section] || {}) };
+  } catch {
+    return { ...defaults };
+  }
+}
+
+function saveSettings(guildId, section, values) {
+  const all = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}');
+  all[guildId] = all[guildId] || {};
+  all[guildId][section] = { ...(all[guildId][section] || {}), ...values };
+  localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(all));
+}
+
+function appSidebar(server = null, active = 'dashboard') {
+  const items = server ? [
     ['overview', 'Overview'],
     ['ai', 'AI Image Access'],
     ['leveling', 'Leveling System'],
     ['welcome', 'Welcome Messages'],
     ['logs', 'Logs'],
     ['moderation', 'Moderation'],
+  ] : [
+    ['dashboard', 'Overview'],
+    ['servers', 'Servers'],
+    ['docs', 'Documentation'],
+    ['changelog', 'Changelog'],
   ];
 
+  const itemLink = ([key, label]) => {
+    let href = '#';
+    if (!server) {
+      href = key === 'dashboard' ? '/dashboard' : key === 'servers' ? '/dashboard#servers' : key === 'docs' ? '/docs' : '/changelog';
+    } else {
+      href = serverUrl(server, key);
+    }
+    return `<a href="${escapeHtml(href)}" class="${key === active ? 'is-active' : ''}"><span class="nav-dot"></span>${escapeHtml(label)}</a>`;
+  };
+
   return `
-    <aside class="server-app-sidebar" aria-label="Server settings navigation">
-      <a class="server-sidebar-brand" href="/dashboard">
-        <span class="brand-icon" data-bot-avatar-small>M</span>
-        <strong>Meowz</strong>
-      </a>
-      <div class="server-sidebar-current">
-        ${serverIcon(server, 'server-sidebar-icon')}
-        <span><strong>${escapeHtml(server.name)}</strong><small>Server Settings</small></span>
+    <aside class="app-sidebar">
+      <div class="app-sidebar-brand">
+        <a href="/dashboard" class="app-logo"><span class="app-logo-mark">M</span><strong>Meowz</strong></a>
+        <a class="app-sidebar-add" href="/">+</a>
       </div>
-      <nav class="server-sidebar-nav">
-        <span>Settings</span>
-        ${settings.map(([section, label]) => `<a href="${escapeHtml(serverManageUrl(server, section))}" class="${section === activeSection ? 'is-active' : ''}">${escapeHtml(label)}</a>`).join('')}
+
+      ${server ? `
+        <a class="app-current-server" href="${escapeHtml(serverUrl(server))}">
+          ${serverIcon(server, 'app-current-server-icon')}
+          <span><strong>${escapeHtml(server.name)}</strong><small>Server Settings</small></span>
+          <span class="app-current-chevron">⌄</span>
+        </a>
+      ` : `
+        <a class="app-current-server" href="/dashboard">
+          <span class="app-current-server-icon app-current-server-icon-fallback">M</span>
+          <span><strong>Meowz</strong><small>Dashboard</small></span>
+        </a>
+      `}
+
+      <nav class="app-sidebar-nav">
+        <span>${server ? 'Settings' : 'Dashboard'}</span>
+        ${items.map(itemLink).join('')}
       </nav>
-      <div class="server-sidebar-help">
-        <strong>Owner tools</strong>
-        <span>Owner/User view stays on the main dashboard for now.</span>
-        <a href="/dashboard">Back to dashboard</a>
+
+      ${server ? `
+        <nav class="app-sidebar-nav app-sidebar-nav-muted">
+          <span>Tools</span>
+          <a href="${escapeHtml(serverUrl(server, 'leveling'))}"><span class="nav-dot"></span>Roles</a>
+          <a href="${escapeHtml(serverUrl(server, 'moderation'))}"><span class="nav-dot"></span>Auto Moderation</a>
+        </nav>
+      ` : ''}
+
+      <div class="app-help-card">
+        <strong>Need help?</strong>
+        <small>Open the docs while the support server is being prepared.</small>
+        <a href="/docs">View docs</a>
       </div>
     </aside>
   `;
 }
 
-function renderServerAppShell(server, activeSection, content) {
+function appTopbar(server = null, active = 'Dashboard', showOwnerToggle = false, isOwner = false) {
   return `
-    <div class="server-app-shell">
-      ${renderServerSidebar(server, activeSection)}
-      <div class="server-app-main">
-        <div class="server-app-topbar">
-          <a class="server-breadcrumb" href="/dashboard">Dashboard / ${escapeHtml(server.name)}</a>
-          <span class="server-app-status">${activeSection === 'overview' ? 'Overview' : activeSection === 'welcome' ? 'Welcome Messages' : activeSection === 'ai' ? 'AI Image Access' : activeSection === 'logs' ? 'Logs' : activeSection === 'moderation' ? 'Moderation' : 'Leveling'}</span>
-        </div>
-        ${renderServerHeader(server, activeSection)}
-        ${content}
+    <header class="app-topbar">
+      <div class="app-breadcrumb">
+        <a href="/dashboard">Servers</a>
+        ${server ? `<span>›</span><a href="${escapeHtml(serverUrl(server))}">${escapeHtml(server.name)}</a><span>›</span><strong>${escapeHtml(active)}</strong>` : `<span>›</span><strong>Dashboard</strong>`}
+      </div>
+      <div class="app-topbar-actions">
+        ${showOwnerToggle && isOwner ? `
+          <div class="owner-view-switch" role="group" aria-label="View mode">
+            <button type="button" data-owner-mode="user" class="${currentViewMode === 'user' ? 'is-active' : ''}">User View</button>
+            <button type="button" data-owner-mode="owner" class="${currentViewMode === 'owner' ? 'is-active' : ''}">Owner View</button>
+          </div>
+        ` : ''}
+        ${server ? `<a class="app-action-button" href="/">View Bot</a>` : ''}
+        <a class="app-user-button" href="#settings">${activeAvatarHtml()}<span><strong>${escapeHtml(activeName())}</strong><small>${escapeHtml(activeUsername())}</small></span><em>OWNER</em></a>
+      </div>
+    </header>
+  `;
+}
+
+function mobileHeader(server = null, active = 'Dashboard') {
+  return `
+    <header class="app-mobile-header">
+      <a class="app-logo" href="/dashboard"><span class="app-logo-mark">M</span><strong>Meowz</strong></a>
+      <button class="app-mobile-menu-btn" type="button" data-app-mobile-menu aria-label="Open dashboard menu"><span></span><span></span><span></span></button>
+      <div class="app-mobile-panel" data-app-mobile-panel hidden>
+        <a href="/dashboard">Dashboard</a>
+        ${server ? `
+          <a href="${escapeHtml(serverUrl(server))}">Overview</a>
+          <a href="${escapeHtml(serverUrl(server, 'welcome'))}">Welcome Messages</a>
+          <a href="${escapeHtml(serverUrl(server, 'leveling'))}">Leveling</a>
+          <a href="${escapeHtml(serverUrl(server, 'ai'))}">AI Image Access</a>
+          <a href="${escapeHtml(serverUrl(server, 'logs'))}">Logs</a>
+          <a href="${escapeHtml(serverUrl(server, 'moderation'))}">Moderation</a>
+        ` : `
+          <a href="/docs">Documentation</a>
+          <a href="/changelog">Changelog</a>
+        `}
+        <a class="logout-link" href="/auth/logout">Logout</a>
+      </div>
+    </header>
+  `;
+}
+
+function appShell({ server = null, active = 'Dashboard', activeKey = 'dashboard', content, showOwnerToggle = false, isOwner = false }) {
+  return `
+    <div class="app-layout">
+      ${appSidebar(server, activeKey)}
+      <div class="app-main">
+        ${appTopbar(server, active, showOwnerToggle, isOwner)}
+        ${mobileHeader(server, active)}
+        <div class="app-content">${content}</div>
       </div>
     </div>
   `;
 }
 
-function renderServerHeader(server, activeSection = 'overview') {
-  const memberText = typeof server.memberCount === 'number' ? `${formatNumber(server.memberCount)} member${server.memberCount === 1 ? '' : 's'}` : 'Members unavailable';
-  const tabs = [
-    ['overview', 'Overview'],
-    ['leveling', 'Leveling'],
-    ['welcome', 'Welcome messages'],
-    ['logs', 'Logs'],
-    ['ai', 'AI image access'],
-    ['moderation', 'Moderation tools'],
-  ];
+function wireMobileMenus(root = document) {
+  root.querySelectorAll('[data-app-mobile-menu]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const panel = button.parentElement.querySelector('[data-app-mobile-panel]');
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+      button.classList.toggle('is-open', !panel.hidden);
+    });
+  });
+}
+
+function renderServerRow(server, type = 'installed') {
+  const isInstalled = type === 'installed';
+  const href = isInstalled ? (server.manageUrl || `/dashboard/server/${encodeURIComponent(server.id)}`) : server.inviteUrl || '#';
+  const members = typeof server.memberCount === 'number' ? `${formatNumber(server.memberCount)} members` : (isInstalled ? 'Meowz installed' : 'Invite ready');
+  const access = server.accessLabel ? `<em>${escapeHtml(server.accessLabel)}</em>` : '';
+  return `
+    <a class="app-server-row" href="${escapeHtml(href)}" ${isInstalled ? '' : 'target="_blank" rel="noopener noreferrer"'}>
+      ${serverIcon(server, 'app-list-server-icon')}
+      <span><strong>${escapeHtml(server.name)}</strong><small>${escapeHtml(members)}</small>${access}</span>
+      <b>${isInstalled ? 'Open' : 'Invite'}</b>
+    </a>
+  `;
+}
+
+function renderDashboardLists(data) {
+  const installed = Array.isArray(data.installed) ? data.installed : [];
+  const available = Array.isArray(data.available) ? data.available : [];
+  const installedHtml = installed.length ? installed.map((s) => renderServerRow(s, 'installed')).join('') : `<div class="app-empty"><strong>No installed servers found.</strong><span>Servers where Meowz is installed and visible to this mode will appear here.</span></div>`;
+  const availableHtml = available.length ? available.map((s) => renderServerRow(s, 'available')).join('') : `<div class="app-empty"><strong>No available servers found.</strong><span>Meowz is already installed in all servers available to this view.</span></div>`;
 
   return `
-    <div class="server-detail-hero server-detail-hero-plain">
-      <div class="server-detail-heading server-detail-heading-plain">
-        ${serverIcon(server, 'server-detail-icon')}
-        <div>
-          <span class="dashboard-eyebrow">Server dashboard</span>
-          <h2>${escapeHtml(server.name)}</h2>
-          <p class="muted">Manage Meowz features for this server.</p>
-          <div class="server-detail-pills">
-            <span>${escapeHtml(memberText)}</span>
-            <span>Manage Server</span>
-            <span>Bot Installed</span>
-          </div>
+    <section class="app-page-header">
+      <span class="app-eyebrow">Dashboard</span>
+      <h1>Welcome back, ${escapeHtml(activeName())}</h1>
+      <p>Manage your servers, configure Meowz and access dashboard features.</p>
+    </section>
+
+    <section id="servers" class="app-dashboard-grid">
+      <article class="app-card">
+        <div class="app-card-head">
+          <div><span class="app-eyebrow">Servers with Meowz</span><h2>${currentViewMode === 'owner' ? 'All installed servers' : 'Manage installed servers'}</h2><p>Choose a server to open its overview.</p></div>
+          <strong class="app-count-pill">${installed.length} server${installed.length === 1 ? '' : 's'}</strong>
         </div>
+        <div class="app-list">${installedHtml}</div>
+      </article>
+
+      <article class="app-card">
+        <div class="app-card-head">
+          <div><span class="app-eyebrow">Available servers</span><h2>Invite Meowz</h2><p>Servers where you can add Meowz will appear here.</p></div>
+          <strong class="app-count-pill">${available.length} server${available.length === 1 ? '' : 's'}</strong>
+        </div>
+        <div class="app-list">${availableHtml}</div>
+      </article>
+    </section>
+  `;
+}
+
+async function renderDashboardHome() {
+  if (!els.home) return;
+  els.home.hidden = false;
+  if (els.detail) els.detail.hidden = true;
+  document.title = 'Dashboard — Meowz';
+  els.home.innerHTML = appShell({
+    active: 'Dashboard',
+    activeKey: 'dashboard',
+    content: '<div class="app-loading-card">Loading dashboard...</div>',
+  });
+
+  try {
+    const data = await getDashboardGuilds(currentViewMode);
+    lastDashboardData = data;
+    els.home.innerHTML = appShell({
+      active: 'Dashboard',
+      activeKey: 'dashboard',
+      showOwnerToggle: true,
+      isOwner: Boolean(data.isOwner),
+      content: renderDashboardLists(data),
+    });
+    wireOwnerToggle();
+    wireMobileMenus(els.home);
+  } catch (error) {
+    showStatusToast('error', 'Dashboard failed to load', error.message || 'Could not load servers.');
+    els.home.innerHTML = appShell({
+      active: 'Dashboard',
+      activeKey: 'dashboard',
+      content: `<div class="app-empty app-empty-error"><strong>Could not load dashboard.</strong><span>${escapeHtml(error.message || 'Try again later.')}</span></div>`,
+    });
+    wireMobileMenus(els.home);
+  }
+}
+
+function wireOwnerToggle() {
+  document.querySelectorAll('[data-owner-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const next = button.dataset.ownerMode === 'owner' ? 'owner' : 'user';
+      if (next === currentViewMode) return;
+      currentViewMode = next;
+      localStorage.setItem(OWNER_VIEW_STORAGE_KEY, currentViewMode);
+      showStatusToast('success', 'View mode changed', next === 'owner' ? 'Showing all Meowz servers.' : 'Showing normal user permissions.');
+      renderDashboardHome();
+    });
+  });
+}
+
+function serverHeader(server, activeKey) {
+  const memberText = typeof server.memberCount === 'number' ? `${formatNumber(server.memberCount)} members` : 'Members unavailable';
+  return `
+    <section class="app-page-header app-server-header">
+      ${serverIcon(server, 'app-page-server-icon')}
+      <div>
+        <span class="app-eyebrow">Server Dashboard</span>
+        <h1>${escapeHtml(server.name)}</h1>
+        <p>Manage Meowz features for this server.</p>
+        <div class="app-pill-row"><span>${escapeHtml(memberText)}</span><span>${escapeHtml(server.accessLabel || 'Manage Server')}</span><span>Bot Installed</span></div>
       </div>
-      <nav class="server-section-tabs" aria-label="Server dashboard sections">
-        ${tabs.map(([section, label]) => `<a href="${escapeHtml(serverManageUrl(server, section))}" class="${section === activeSection ? 'is-active' : ''}">${escapeHtml(label)}</a>`).join('')}
-      </nav>
+    </section>
+    <nav class="app-section-tabs" aria-label="Server sections">
+      ${[
+        ['overview', 'Overview'], ['leveling', 'Leveling'], ['welcome', 'Welcome Messages'], ['logs', 'Logs'], ['ai', 'AI Image Access'], ['moderation', 'Moderation']
+      ].map(([key, label]) => `<a class="${key === activeKey ? 'is-active' : ''}" href="${escapeHtml(serverUrl(server, key))}">${escapeHtml(label)}</a>`).join('')}
+    </nav>
+  `;
+}
+
+function fieldRow(label, value) {
+  return `<div class="app-info-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`;
+}
+
+function overviewPage(server) {
+  return `
+    ${serverHeader(server, 'overview')}
+    <section class="app-dashboard-grid app-dashboard-grid-wide">
+      <article class="app-card">
+        <span class="app-eyebrow">Information</span>
+        <h2>Server information</h2>
+        <div class="app-info-list">
+          ${fieldRow('Name', server.name)}
+          ${fieldRow('Server ID', server.id)}
+          ${fieldRow('Members', typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}
+          ${fieldRow('Status', 'Meowz installed')}
+        </div>
+      </article>
+      <article class="app-card">
+        <span class="app-eyebrow">Permissions</span>
+        <h2>Dashboard access</h2>
+        <div class="app-info-list">
+          ${fieldRow('Your access', server.accessLabel || 'Manage Server')}
+          ${fieldRow('Dashboard access', 'Allowed')}
+          ${fieldRow('Owner view', server.ownerView ? 'Active' : 'Normal')}
+        </div>
+      </article>
+    </section>
+    <section class="app-card">
+      <span class="app-eyebrow">Server tools</span>
+      <h2>Configure Meowz</h2>
+      <div class="app-feature-grid">
+        ${[
+          ['leveling', 'Leveling System', 'XP, cooldowns and level-up messages.'],
+          ['welcome', 'Welcome Messages', 'Member join and leave messages.'],
+          ['logs', 'Logs', 'Server activity and audit events.'],
+          ['ai', 'AI Image Access', 'Control who can use image editing.'],
+          ['moderation', 'Moderation', 'Warnings and automod presets.'],
+        ].map(([key, title, desc]) => `<a class="app-feature-card" href="${escapeHtml(serverUrl(server, key))}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function switchControl(name, checked, label, description) {
+  return `
+    <label class="app-switch-row">
+      <input type="checkbox" name="${escapeHtml(name)}" ${checked ? 'checked' : ''} />
+      <span class="app-switch-ui"></span>
+      <span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span>
+    </label>
+  `;
+}
+
+function textInput(name, label, value = '', placeholder = '') {
+  return `
+    <label class="app-field">
+      <span>${escapeHtml(label)}</span>
+      <input name="${escapeHtml(name)}" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" />
+    </label>
+  `;
+}
+
+function numberInput(name, label, value = '', min = 0) {
+  return `
+    <label class="app-field">
+      <span>${escapeHtml(label)}</span>
+      <input type="number" min="${Number(min)}" name="${escapeHtml(name)}" value="${escapeHtml(String(value))}" />
+    </label>
+  `;
+}
+
+function textareaInput(name, label, value = '', max = 200) {
+  return `
+    <label class="app-field">
+      <span>${escapeHtml(label)}</span>
+      <textarea name="${escapeHtml(name)}" maxlength="${Number(max)}">${escapeHtml(value)}</textarea>
+      <small><b data-count-for="${escapeHtml(name)}">${String(value).length}</b>/${Number(max)}</small>
+    </label>
+  `;
+}
+
+function saveButton() {
+  return `<button class="app-save-button" type="submit">Save Changes</button>`;
+}
+
+function variableButton(variable) {
+  return `<button class="app-mini-button" type="button" data-insert-variable="${escapeHtml(variable)}">${escapeHtml(variable)}</button>`;
+}
+
+function renderWelcomeCard(userName, serverName, showAvatar = true, showMember = true) {
+  const initial = userName.slice(0, 1).toUpperCase() || 'U';
+  return `
+    <div class="discord-welcome-card">
+      <div class="discord-welcome-bg"></div>
+      ${showMember ? '<div class="discord-member-badge">MEMBER #11</div>' : ''}
+      ${showAvatar ? `<div class="discord-preview-avatar-large">${escapeHtml(initial)}</div>` : ''}
+      <div class="discord-card-text"><strong>WELCOME ${escapeHtml(userName.toUpperCase())}</strong><span>TO</span><b>${escapeHtml(serverName.toUpperCase())}</b></div>
     </div>
   `;
 }
 
-function renderServerOverview(server) {
-  const tools = [
-    ['Leveling settings', 'XP system, level roles and leaderboards.', 'leveling'],
-    ['Welcome messages', 'Member join and leave messages.', 'welcome'],
-    ['Logs', 'Server activity and audit events.', 'logs'],
-    ['AI image access', 'Control who can use image editing.', 'ai'],
-    ['Moderation tools', 'Warnings, automod and actions.', 'moderation'],
-  ];
-
+function discordPreview(server, settings) {
+  const userName = 'Rafa';
+  const serverName = server.name;
   return `
-    <div class="server-detail-grid">
-      <article class="dashboard-card compact">
-        <span class="dashboard-card-label">Information</span>
-        <div class="server-info-list">
-          <div><span>Name</span><strong>${escapeHtml(server.name)}</strong></div>
-          <div><span>Server ID</span><strong>${escapeHtml(server.id)}</strong></div>
-          <div><span>Members</span><strong>${typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable'}</strong></div>
-          <div><span>Status</span><strong>Meowz installed</strong></div>
-        </div>
-      </article>
-
-      <article class="dashboard-card compact">
-        <span class="dashboard-card-label">Permissions</span>
-        <div class="server-info-list">
-          <div><span>Your access</span><strong>Manage Server</strong></div>
-          <div><span>Dashboard access</span><strong>Allowed</strong></div>
-          <div><span>Customization</span><strong>Coming soon</strong></div>
-        </div>
-      </article>
-
-      <article class="dashboard-card compact server-coming-card">
-        <span class="dashboard-card-label">Customization coming soon</span>
-        <h3>Server tools</h3>
-        <p class="muted">These sections will become configurable from the website later.</p>
-        <div class="coming-grid">
-          ${tools.map(([title, description, section]) => `<a href="${escapeHtml(serverManageUrl(server, section))}"><strong>${escapeHtml(title)}</strong><small>${escapeHtml(description)}</small><em>Coming soon</em></a>`).join('')}
-        </div>
-      </article>
-    </div>
-  `;
-}
-
-function renderLevelingPage(server) {
-  return `
-    <div class="settings-page-grid">
-      <article class="dashboard-card compact settings-main-card">
-        <span class="dashboard-card-label">Leveling settings</span>
-        <h3>Leveling</h3>
-        <p class="muted">Configure XP, level-up messages and level rewards from the website. Editing is coming soon.</p>
-        <div class="settings-list">
-          <div><span>Status</span><strong>Coming soon</strong></div>
-          <div><span>Level-up channel</span><strong>Not configured</strong></div>
-          <div><span>XP per message</span><strong>15 XP</strong></div>
-          <div><span>Cooldown</span><strong>60 seconds</strong></div>
-          <div><span>Leaderboard</span><strong>Available in Discord</strong></div>
-        </div>
-      </article>
-
-      <article class="dashboard-card compact settings-side-card">
-        <span class="dashboard-card-label">Level roles</span>
-        <h3>Rewards</h3>
-        <p class="muted">Level role management will be added here later.</p>
-        <div class="settings-empty-state">
-          <strong>No roles configured yet.</strong>
-          <span>When this section is enabled, you will be able to add level rewards from the dashboard.</span>
-        </div>
-      </article>
-
-      <article class="dashboard-card compact server-coming-card">
-        <span class="dashboard-card-label">Preview</span>
-        <h3>What this page will manage</h3>
-        <div class="coming-grid coming-grid-two">
-          <span><strong>XP settings</strong><small>Adjust message XP and cooldowns.</small><em>Coming soon</em></span>
-          <span><strong>Level-up messages</strong><small>Choose where level-up messages are sent.</small><em>Coming soon</em></span>
-          <span><strong>Level roles</strong><small>Create rewards for reaching specific levels.</small><em>Coming soon</em></span>
-          <span><strong>Leaderboard</strong><small>View server ranking tools from the dashboard.</small><em>Coming soon</em></span>
-        </div>
-        <button class="btn btn-secondary disabled-button" type="button" disabled>Save changes coming soon</button>
-      </article>
-    </div>
-  `;
-}
-
-function disabledOption(label, value) {
-  return `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
-}
-
-function previewCard(title, description) {
-  return `<span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(description)}</small><em>Coming soon</em></span>`;
-}
-
-function comingSaveButton(label = 'Save changes coming soon') {
-  return `<button class="btn btn-secondary disabled-button" type="button" disabled>${escapeHtml(label)}</button>`;
-}
-
-function renderWelcomePage(server) {
-  const sampleServer = server.name || 'Server';
-  return `
-    <div class="welcome-designer-grid phase-one-welcome-grid">
-      <article class="dashboard-card compact welcome-designer-card">
-        <div class="settings-card-title-row">
-          <div>
-            <span class="dashboard-card-label">Welcome messages</span>
-            <h3>Welcome Messages</h3>
-          </div>
-          <span class="settings-status-pill">Enabled</span>
-        </div>
-        <p class="muted">Customize how Meowz welcomes new members to ${escapeHtml(server.name)}.</p>
-
-        <div class="welcome-setting-block switch-row">
-          <span>
-            <strong>Enable welcome messages</strong>
-            <small>Send a message when someone joins the server.</small>
-          </span>
-          <label class="ui-switch"><input type="checkbox" checked disabled /><span></span></label>
-        </div>
-
-        <label class="welcome-field-label">Welcome Channel</label>
-        <div class="fake-select"><span># welcome</span><small>Channel picker coming later</small></div>
-
-        <label class="welcome-field-label">Message Style</label>
-        <div class="fake-select"><span>Custom Card (Modern)</span><small>Live preview</small></div>
-
-        <div class="message-label-row">
-          <label class="welcome-field-label" for="welcome-message-preview-input">Welcome Message</label>
-          <button type="button" class="mini-action" disabled>Insert Variable</button>
-        </div>
-        <textarea id="welcome-message-preview-input" class="welcome-textarea" rows="5" disabled>WELCOME {user}
-TO
-{server}</textarea>
-        <div class="character-count">26/200</div>
-
-        <label class="welcome-field-label">Leave Message (Optional)</label>
-        <input class="welcome-input" disabled value="Goodbye {user}. We hope to see you again soon." />
-
-        <div class="welcome-options">
-          <span><input type="checkbox" checked disabled /> Show member number on the card</span>
-          <span><input type="checkbox" checked disabled /> Show avatar on the card</span>
-        </div>
-
-        <button class="btn btn-primary welcome-save-button" type="button" disabled>Save Changes</button>
-      </article>
-
-      <article class="dashboard-card compact welcome-preview-card">
-        <span class="dashboard-card-label">Live preview</span>
-        <h3>Discord preview</h3>
-        <p class="muted">This is how the welcome message will look in Discord.</p>
-        ${renderDiscordWelcomePreview('Rafa', sampleServer, 11)}
-        <p class="muted tiny preview-note">This is a preview. The actual Discord message can look slightly different depending on device size.</p>
-      </article>
-    </div>
-  `;
-}
-
-function renderDiscordWelcomePreview(userName, serverName, memberNumber) {
-  const cleanServer = String(serverName || 'Server').replace(/^#/, '');
-  return `
-    <div class="discord-preview-post phase-one-discord-preview">
+    <article class="app-card preview-card" data-welcome-preview>
+      <span class="app-eyebrow">Live Preview</span>
+      <h2>Discord preview</h2>
+      <p>This is how the welcome message will look in Discord.</p>
       <div class="discord-preview-message">
-        <span class="discord-preview-bot-avatar" data-bot-avatar-small>M</span>
-        <div class="discord-preview-content">
-          <div class="discord-preview-author"><strong>Meowz</strong><em>APP</em><small>Today at 9:30 PM</small></div>
-          <p>Welcome <mark>@${escapeHtml(userName)}</mark> to <strong>#${escapeHtml(cleanServer)}</strong>!</p>
-          <div class="welcome-card-image phase-one-welcome-image">
-            <div class="welcome-card-member">MEMBER #${formatNumber(memberNumber)}</div>
-            <span class="welcome-card-avatar">${escapeHtml(userName.slice(0, 1).toUpperCase())}</span>
-            <strong>WELCOME ${escapeHtml(userName.toUpperCase())}</strong>
-            <small>TO</small>
-            <b>#${escapeHtml(cleanServer.toUpperCase())}</b>
-          </div>
+        <span class="discord-avatar-small">M</span>
+        <div class="discord-message-body">
+          <div class="discord-message-head"><strong>Meowz</strong><em>APP</em><span>Today at 9:30 PM</span></div>
+          <p>Welcome <mark>@${escapeHtml(userName)}</mark> to <strong>${escapeHtml(serverName)}</strong>!</p>
+          ${renderWelcomeCard(userName, serverName, settings.showAvatar, settings.showMember)}
         </div>
       </div>
-    </div>
+      <small class="preview-note">This is a preview. The actual Discord message can look slightly different depending on device size.</small>
+    </article>
   `;
 }
 
-function renderLogsPage(server) {
+function welcomePage(server) {
+  const settings = getSettings(server.id, 'welcome', {
+    enabled: true,
+    channel: '# welcome',
+    style: 'Custom Card (Modern)',
+    welcomeMessage: 'WELCOME {user}\nTO\n{server}',
+    leaveMessage: 'Goodbye {user}. We hope to see you again soon.',
+    showMember: true,
+    showAvatar: true,
+  });
+
   return `
-    <div class="settings-page-grid">
-      <article class="dashboard-card compact settings-main-card">
-        <span class="dashboard-card-label">Logs</span>
-        <h3>Server activity</h3>
-        <p class="muted">Configure log channels and event tracking for ${escapeHtml(server.name)}. Editing is coming soon.</p>
-        <div class="settings-list">
-          ${disabledOption('Status', 'Coming soon')}
-          ${disabledOption('Log channel', 'Not configured')}
-          ${disabledOption('Message logs', 'Disabled')}
-          ${disabledOption('Member logs', 'Disabled')}
-          ${disabledOption('Moderation logs', 'Disabled')}
-        </div>
+    ${serverHeader(server, 'welcome')}
+    <form class="app-settings-grid" data-settings-form="welcome" data-guild-id="${escapeHtml(server.id)}">
+      <article class="app-card app-settings-card">
+        <div class="app-card-head"><div><span class="app-eyebrow">Welcome Messages</span><h2>Welcome Messages</h2><p>Customize how Meowz welcomes new members to ${escapeHtml(server.name)}.</p></div><strong class="app-status-pill success">${settings.enabled ? 'Enabled' : 'Disabled'}</strong></div>
+        ${switchControl('enabled', settings.enabled, 'Enable welcome messages', 'Send a message when someone joins the server.')}
+        ${textInput('channel', 'Welcome Channel', settings.channel, '# welcome')}
+        <label class="app-field"><span>Message Style</span><select name="style"><option ${settings.style.includes('Custom') ? 'selected' : ''}>Custom Card (Modern)</option><option>Text only</option></select></label>
+        <div class="app-variable-row"><span>Insert Variable</span><div>${variableButton('{user}')}${variableButton('{server}')}${variableButton('{memberCount}')}</div></div>
+        ${textareaInput('welcomeMessage', 'Welcome Message', settings.welcomeMessage, 200)}
+        ${textInput('leaveMessage', 'Leave Message (Optional)', settings.leaveMessage, 'Goodbye {user}.')}
+        ${switchControl('showMember', settings.showMember, 'Show member number on the card', 'Display the member position in the server.')}
+        ${switchControl('showAvatar', settings.showAvatar, 'Show avatar on the card', 'Display the member avatar on the welcome card.')}
+        ${saveButton()}
       </article>
-
-      <article class="dashboard-card compact settings-side-card">
-        <span class="dashboard-card-label">Events</span>
-        <h3>Tracked activity</h3>
-        <p class="muted">Event toggles will appear here once logging settings are connected to the bot.</p>
-        <div class="settings-empty-state">
-          <strong>No log events configured yet.</strong>
-          <span>You will be able to enable message edits, deletes, joins, leaves and moderation actions.</span>
-        </div>
-      </article>
-
-      <article class="dashboard-card compact server-coming-card">
-        <span class="dashboard-card-label">Preview</span>
-        <h3>What this page will manage</h3>
-        <div class="coming-grid coming-grid-two">
-          ${previewCard('Log channels', 'Choose where server logs are sent.')}
-          ${previewCard('Message events', 'Track edits, deletes and message actions.')}
-          ${previewCard('Member events', 'Track joins, leaves and profile changes.')}
-          ${previewCard('Moderation events', 'Track warns, bans, kicks and admin actions.')}
-        </div>
-        ${comingSaveButton()}
-      </article>
-    </div>
+      ${discordPreview(server, settings)}
+    </form>
   `;
 }
 
-function renderAiPage(server) {
+function levelingPage(server) {
+  const settings = getSettings(server.id, 'leveling', { enabled: true, channel: '# level-up', xp: 15, cooldown: 60, leaderboard: true });
   return `
-    <div class="settings-page-grid ai-access-page" data-ai-access-page data-guild-id="${escapeHtml(server.id)}">
-      <article class="dashboard-card compact settings-main-card ai-access-main">
-        <span class="dashboard-card-label">AI image access</span>
-        <h3>Allowed users</h3>
-        <p class="muted">Control who can use the image editing command in ${escapeHtml(server.name)}.</p>
-
-        <form class="ai-access-form" data-ai-access-form>
-          <label for="ai-access-user-id">Discord user ID</label>
-          <div class="ai-access-input-row">
-            <input id="ai-access-user-id" name="userId" inputmode="numeric" autocomplete="off" placeholder="123456789012345678" />
-            <button class="btn btn-primary" type="submit">Add user</button>
-          </div>
-          <p class="muted tiny">Paste a Discord user ID. User search by username can be added later.</p>
-        </form>
+    ${serverHeader(server, 'leveling')}
+    <form class="app-settings-grid" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}">
+      <article class="app-card app-settings-card">
+        <div class="app-card-head"><div><span class="app-eyebrow">Leveling Settings</span><h2>Leveling System</h2><p>Configure XP, cooldowns and level-up messages for ${escapeHtml(server.name)}.</p></div><strong class="app-status-pill success">${settings.enabled ? 'Enabled' : 'Disabled'}</strong></div>
+        ${switchControl('enabled', settings.enabled, 'Enable leveling', 'Award XP when members chat.')}
+        ${textInput('channel', 'Level-up channel', settings.channel, '# level-up')}
+        ${numberInput('xp', 'XP per message', settings.xp, 1)}
+        ${numberInput('cooldown', 'Cooldown seconds', settings.cooldown, 5)}
+        ${switchControl('leaderboard', settings.leaderboard, 'Enable leaderboard', 'Allow users to view rankings in Discord.')}
+        ${saveButton()}
       </article>
-
-      <article class="dashboard-card compact settings-side-card">
-        <span class="dashboard-card-label">Current access</span>
-        <h3>People allowed</h3>
-        <div class="ai-access-list" data-ai-access-list>
-          <div class="settings-empty-state"><strong>Loading allowed users...</strong><span>Please wait.</span></div>
-        </div>
-      </article>
-
-      <article class="dashboard-card compact server-coming-card">
-        <span class="dashboard-card-label">Command behavior</span>
-        <h3>How access works</h3>
-        <div class="coming-grid coming-grid-two">
-          <span><strong>Server only</strong><small>The image editing command stays disabled in DMs.</small><em>Active</em></span>
-          <span><strong>Allowed users</strong><small>Only users listed here can run the command.</small><em>Active</em></span>
-          <span><strong>Manage Server</strong><small>Server managers can update this list from the dashboard.</small><em>Active</em></span>
-          <span><strong>Roles</strong><small>Role-based access can be added later.</small><em>Coming soon</em></span>
-        </div>
-      </article>
-    </div>
+      <article class="app-card preview-card"><span class="app-eyebrow">Preview</span><h2>Level card preview</h2><div class="level-preview"><strong>Rafa</strong><span>Level 12</span><div><i style="width:72%"></i></div><small>720 / 1000 XP</small></div><div class="app-feature-grid compact-grid"><span class="app-feature-card"><strong>Level roles</strong><span>Rewards can be added later.</span></span><span class="app-feature-card"><strong>Level-up messages</strong><span>Sent in the configured channel.</span></span></div></article>
+    </form>
   `;
 }
 
-function formatAccessSource(entry) {
+function logsPage(server) {
+  const settings = getSettings(server.id, 'logs', { enabled: false, channel: '# logs', messageLogs: false, memberLogs: false, modLogs: false, voiceLogs: false });
+  return `
+    ${serverHeader(server, 'logs')}
+    <form class="app-settings-grid" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}">
+      <article class="app-card app-settings-card">
+        <div class="app-card-head"><div><span class="app-eyebrow">Logs</span><h2>Event Logs</h2><p>Configure log channels and event tracking for ${escapeHtml(server.name)}.</p></div><strong class="app-status-pill ${settings.enabled ? 'success' : ''}">${settings.enabled ? 'Enabled' : 'Disabled'}</strong></div>
+        ${switchControl('enabled', settings.enabled, 'Enable logs', 'Send server events to a channel.')}
+        ${textInput('channel', 'Log channel', settings.channel, '# logs')}
+        ${switchControl('messageLogs', settings.messageLogs, 'Message logs', 'Track deleted and edited messages.')}
+        ${switchControl('memberLogs', settings.memberLogs, 'Member logs', 'Track joins and leaves.')}
+        ${switchControl('modLogs', settings.modLogs, 'Moderation logs', 'Track warns, kicks, bans and admin actions.')}
+        ${switchControl('voiceLogs', settings.voiceLogs, 'Voice logs', 'Track voice channel moves.')}
+        ${saveButton()}
+      </article>
+      <article class="app-card preview-card"><span class="app-eyebrow">Preview</span><h2>Log examples</h2><div class="log-preview"><span>Member joined</span><strong>Rafa joined ${escapeHtml(server.name)}</strong></div><div class="log-preview warn"><span>Message deleted</span><strong>#general · deleted by moderator</strong></div><div class="log-preview mod"><span>Moderation action</span><strong>Warning issued to user</strong></div></article>
+    </form>
+  `;
+}
+
+function moderationPage(server) {
+  const settings = getSettings(server.id, 'moderation', { enabled: false, channel: '# mod-logs', antiSpam: false, antiLinks: false, antiInvites: false, capsFilter: false });
+  return `
+    ${serverHeader(server, 'moderation')}
+    <form class="app-settings-grid" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}">
+      <article class="app-card app-settings-card">
+        <div class="app-card-head"><div><span class="app-eyebrow">Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, automod and moderation controls for ${escapeHtml(server.name)}.</p></div><strong class="app-status-pill ${settings.enabled ? 'success' : ''}">${settings.enabled ? 'Enabled' : 'Disabled'}</strong></div>
+        ${switchControl('enabled', settings.enabled, 'Enable moderation tools', 'Turn on moderation modules for this server.')}
+        ${textInput('channel', 'Mod log channel', settings.channel, '# mod-logs')}
+        ${switchControl('antiSpam', settings.antiSpam, 'Anti-spam', 'Detect repeated messages and spam behavior.')}
+        ${switchControl('antiLinks', settings.antiLinks, 'Link filter', 'Block unwanted links.')}
+        ${switchControl('antiInvites', settings.antiInvites, 'Invite filter', 'Block Discord invite links.')}
+        ${switchControl('capsFilter', settings.capsFilter, 'Caps filter', 'Detect excessive uppercase messages.')}
+        ${saveButton()}
+      </article>
+      <article class="app-card preview-card"><span class="app-eyebrow">Rules</span><h2>Automation presets</h2><div class="app-feature-grid compact-grid"><span class="app-feature-card"><strong>Warnings</strong><span>Track and count user warnings.</span></span><span class="app-feature-card"><strong>Auto actions</strong><span>Mute, kick or ban later.</span></span><span class="app-feature-card"><strong>Permission checks</strong><span>Discord roles remain respected.</span></span></div></article>
+    </form>
+  `;
+}
+
+function renderAccessAvatar(entry, label) {
+  if (entry.avatarUrl) return `<span class="access-avatar"><img src="${escapeHtml(entry.avatarUrl)}" alt="" /></span>`;
+  return `<span class="access-avatar">${escapeHtml((label || 'U').slice(0, 1).toUpperCase())}</span>`;
+}
+
+function accessSource(entry) {
   if (entry.source === 'bot_owner') return 'Bot owner · default access';
   if (entry.source === 'manage_server') return 'Manage Server · default access';
   return 'Manually allowed';
 }
 
-function renderAccessAvatar(entry, label) {
-  if (entry.avatarUrl) {
-    return `<span class="ai-access-user-avatar"><img src="${escapeHtml(entry.avatarUrl)}" alt="" /></span>`;
-  }
-  return `<span class="ai-access-user-avatar">${escapeHtml((label || 'U').slice(0, 1).toUpperCase())}</span>`;
-}
-
-function renderAccessRow(entry, isDefault = false) {
+function accessRow(entry, isDefault = false) {
   const label = entry.displayName || entry.username || entry.userId;
-  const sub = entry.username && entry.username !== label ? entry.username : entry.userId;
-  const source = formatAccessSource(entry);
-  const safeUserId = escapeHtml(entry.userId || '');
-  const button = isDefault
-    ? `<button class="server-row-action danger is-disabled" type="button" disabled aria-disabled="true" title="This user has default access from Discord permissions.">Remove</button>`
-    : `<button class="server-row-action danger" type="button" data-remove-ai-user="${safeUserId}" data-remove-ai-label="${escapeHtml(label)}">Remove</button>`;
-
   return `
-    <div class="ai-access-user-row${isDefault ? ' is-default-access' : ''}" data-user-id="${safeUserId}">
+    <div class="access-row">
       ${renderAccessAvatar(entry, label)}
-      <span class="ai-access-user-main">
-        <strong>${escapeHtml(label)}</strong>
-        <small>${escapeHtml(sub || 'Discord user')}</small>
-        <em>${escapeHtml(source)}</em>
-      </span>
-      ${button}
+      <span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(entry.userId || entry.username || 'Discord user')}</small><em>${escapeHtml(accessSource(entry))}</em></span>
+      <button type="button" ${isDefault ? 'disabled title="Default access cannot be removed here."' : `data-remove-ai-user="${escapeHtml(entry.userId)}" data-remove-ai-label="${escapeHtml(label)}"`} class="access-remove">Remove</button>
     </div>
   `;
 }
 
-function renderAiAccessList(container, payload = {}) {
-  if (!container) return;
-
+function renderAiList(container, payload = {}) {
   const defaultUsers = Array.isArray(payload.defaultUsers) ? payload.defaultUsers : [];
   const users = Array.isArray(payload.users) ? payload.users : (Array.isArray(payload) ? payload : []);
-
-  const defaultHtml = defaultUsers.length
-    ? `<div class="ai-access-section"><div class="ai-access-section-heading"><strong class="ai-access-section-title">Default access</strong><span>${defaultUsers.length} user${defaultUsers.length === 1 ? '' : 's'}</span></div>${defaultUsers.map((entry) => renderAccessRow(entry, true)).join('')}</div>`
-    : `<div class="settings-empty-state"><strong>No default-access users found.</strong><span>Default access appears here when the bot can read the server owner and Manage Server members.</span></div>`;
-
-  const manualHtml = users.length
-    ? `<div class="ai-access-section"><div class="ai-access-section-heading"><strong class="ai-access-section-title">Manually allowed</strong><span>${users.length} user${users.length === 1 ? '' : 's'}</span></div>${users.map((entry) => renderAccessRow(entry, false)).join('')}</div>`
-    : `<div class="settings-empty-state"><strong>No manually added users yet.</strong><span>Add a trusted user ID if they do not already have default access.</span></div>`;
-
   container.innerHTML = `
-    <div class="ai-access-note">
-      <strong>Default access cannot be removed here</strong>
-      <span>The bot owner and users with Manage Server permission can use /edit_image by default. Their Remove buttons stay disabled because that access comes from Discord permissions.</span>
-    </div>
-    ${defaultHtml}
-    ${manualHtml}
+    <div class="app-note"><strong>Default access</strong><span>The bot owner and users with Manage Server permission can use /edit_image by default. Their Remove buttons stay disabled.</span></div>
+    <div class="access-section"><h3>Default access</h3>${defaultUsers.length ? defaultUsers.map((u) => accessRow(u, true)).join('') : '<div class="app-empty"><strong>No default users found.</strong><span>The bot may need permissions to list server members.</span></div>'}</div>
+    <div class="access-section"><h3>Manually allowed</h3>${users.length ? users.map((u) => accessRow(u, false)).join('') : '<div class="app-empty"><strong>No manually added users.</strong><span>Paste a Discord user ID to add access.</span></div>'}</div>
   `;
 }
 
-function ensureAiConfirmModal() {
-  let modal = document.querySelector('[data-ai-confirm-modal]');
-  if (modal) return modal;
-
-  modal = document.createElement('div');
-  modal.className = 'ai-confirm-backdrop';
-  modal.hidden = true;
-  modal.setAttribute('data-ai-confirm-modal', '');
-  modal.innerHTML = `
-    <div class="ai-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="ai-confirm-title">
-      <span class="dashboard-card-label">Confirm removal</span>
-      <h3 id="ai-confirm-title">Remove manual access?</h3>
-      <p data-ai-confirm-text>This user will no longer be manually allowed to use /edit_image.</p>
-      <div class="ai-confirm-actions">
-        <button class="btn btn-secondary" type="button" data-ai-confirm-cancel>Cancel</button>
-        <button class="btn btn-danger" type="button" data-ai-confirm-accept>Remove access</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  return modal;
+async function loadAiAccess(guildId) {
+  const list = document.querySelector('[data-ai-access-list]');
+  if (!list) return;
+  try {
+    const payload = await getImageAccess(guildId);
+    renderAiList(list, payload);
+  } catch (error) {
+    list.innerHTML = `<div class="app-empty app-empty-error"><strong>Could not load access list.</strong><span>${escapeHtml(error.message || 'Try again later.')}</span></div>`;
+  }
 }
 
-function confirmAiAccessRemoval(label) {
-  const modal = ensureAiConfirmModal();
-  const text = modal.querySelector('[data-ai-confirm-text]');
-  if (text) text.textContent = `Remove manual AI image access from ${label}?`;
-  modal.hidden = false;
-  document.body.classList.add('modal-open');
+function aiPage(server) {
+  return `
+    ${serverHeader(server, 'ai')}
+    <section class="app-settings-grid" data-ai-page data-guild-id="${escapeHtml(server.id)}">
+      <article class="app-card app-settings-card">
+        <span class="app-eyebrow">AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>
+        <form class="ai-form" data-ai-form>
+          ${textInput('userId', 'Discord user ID', '', '123456789012345678')}
+          <button class="app-save-button" type="submit">Add user</button>
+        </form>
+        <p class="app-small-muted">Paste a Discord user ID. Username autocomplete can be connected later.</p>
+      </article>
+      <article class="app-card preview-card"><span class="app-eyebrow">Current Access</span><h2>People allowed</h2><div class="access-list" data-ai-access-list><div class="app-empty"><strong>Loading...</strong><span>Please wait.</span></div></div></article>
+    </section>
+  `;
+}
 
-  return new Promise((resolve) => {
-    const cleanup = (answer) => {
-      modal.hidden = true;
-      document.body.classList.remove('modal-open');
-      modal.querySelector('[data-ai-confirm-cancel]')?.removeEventListener('click', onCancel);
-      modal.querySelector('[data-ai-confirm-accept]')?.removeEventListener('click', onAccept);
-      modal.removeEventListener('click', onBackdrop);
-      window.removeEventListener('keydown', onKeydown);
-      resolve(answer);
-    };
-    const onCancel = () => cleanup(false);
-    const onAccept = () => cleanup(true);
-    const onBackdrop = (event) => { if (event.target === modal) cleanup(false); };
-    const onKeydown = (event) => { if (event.key === 'Escape') cleanup(false); };
+function attachSettingsForm(server, section) {
+  const form = document.querySelector('[data-settings-form]');
+  if (!form) return;
 
-    modal.querySelector('[data-ai-confirm-cancel]')?.addEventListener('click', onCancel);
-    modal.querySelector('[data-ai-confirm-accept]')?.addEventListener('click', onAccept);
-    modal.addEventListener('click', onBackdrop);
-    window.addEventListener('keydown', onKeydown);
-    setTimeout(() => modal.querySelector('[data-ai-confirm-cancel]')?.focus(), 0);
+  form.addEventListener('input', () => {
+    form.querySelectorAll('textarea[maxlength]').forEach((textarea) => {
+      const counter = form.querySelector(`[data-count-for="${textarea.name}"]`);
+      if (counter) counter.textContent = textarea.value.length;
+    });
+    if (section === 'welcome') updateWelcomePreview(server, form);
+  });
+
+  form.querySelectorAll('[data-insert-variable]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const textarea = form.querySelector('textarea[name="welcomeMessage"]');
+      if (!textarea) return;
+      const variable = button.dataset.insertVariable || '';
+      const start = textarea.selectionStart || textarea.value.length;
+      const end = textarea.selectionEnd || textarea.value.length;
+      textarea.value = `${textarea.value.slice(0, start)}${variable}${textarea.value.slice(end)}`;
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  });
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const values = {};
+    new FormData(form).forEach((value, key) => { values[key] = value; });
+    form.querySelectorAll('input[type="checkbox"]').forEach((input) => { values[input.name] = input.checked; });
+    saveSettings(server.id, section, values);
+    showStatusToast('success', `${sectionTitle(section)} saved`, 'Your changes were saved locally and are ready for API sync.');
   });
 }
 
-let aiAccessRefreshPromise = null;
-
-async function refreshAiAccess(guildId) {
-  const list = document.querySelector('[data-ai-access-list]');
-  if (!list) return;
-  if (aiAccessRefreshPromise) return aiAccessRefreshPromise;
-
-  aiAccessRefreshPromise = (async () => {
-    try {
-      const data = await getImageAccess(guildId);
-      renderAiAccessList(list, data);
-    } catch (err) {
-      list.innerHTML = `<div class="settings-empty-state error"><strong>Could not load access list.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`;
-    } finally {
-      aiAccessRefreshPromise = null;
-    }
-  })();
-
-  return aiAccessRefreshPromise;
+function updateWelcomePreview(server, form) {
+  const preview = document.querySelector('[data-welcome-preview]');
+  if (!preview) return;
+  const showAvatar = form.querySelector('input[name="showAvatar"]')?.checked ?? true;
+  const showMember = form.querySelector('input[name="showMember"]')?.checked ?? true;
+  const holder = preview.querySelector('.discord-welcome-card');
+  if (holder) holder.outerHTML = renderWelcomeCard('Rafa', server.name, showAvatar, showMember);
 }
 
-
-function initAiAccessControls(guildId) {
-  const page = document.querySelector('[data-ai-access-page]');
+function attachAiForm(server) {
+  const page = document.querySelector('[data-ai-page]');
   if (!page) return;
+  loadAiAccess(server.id);
 
-  refreshAiAccess(guildId);
-
-  const form = page.querySelector('[data-ai-access-form]');
-  form?.addEventListener('submit', async (event) => {
+  page.querySelector('[data-ai-form]')?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const input = form.querySelector('input[name="userId"]');
+    const input = event.currentTarget.querySelector('input[name="userId"]');
     const userId = String(input?.value || '').trim();
     if (!/^\d{15,25}$/.test(userId)) {
-      input?.focus();
-      input?.classList.add('is-invalid');
+      showStatusToast('error', 'Invalid user ID', 'Paste a valid Discord user ID.');
       return;
     }
-
-    const button = form.querySelector('button[type="submit"]');
-    const previous = button?.textContent;
-    if (button) {
-      button.disabled = true;
-      button.textContent = 'Adding...';
-    }
-
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+    button.disabled = true;
+    button.textContent = 'Adding...';
     try {
-      await addImageAccessUser(guildId, userId);
+      await addImageAccessUser(server.id, userId);
+      input.value = '';
       showStatusToast('success', 'Access updated', 'User was added to AI image access.');
-      if (input) input.value = '';
-      await refreshAiAccess(guildId);
-    } catch (err) {
-      const list = document.querySelector('[data-ai-access-list]');
-      showStatusToast('error', 'Could not add user', err.message || 'Try again later.');
-      if (list) list.innerHTML = `<div class="settings-empty-state error"><strong>Could not add user.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`;
+      await loadAiAccess(server.id);
+    } catch (error) {
+      showStatusToast('error', 'Could not add user', error.message || 'Try again later.');
     } finally {
-      if (button) {
-        button.disabled = false;
-        button.textContent = previous || 'Add user';
-      }
+      button.disabled = false;
+      button.textContent = 'Add user';
     }
   });
 
   page.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-remove-ai-user]');
-    if (!button || button.disabled) return;
-    const userId = button.getAttribute('data-remove-ai-user');
-    if (!userId) return;
-
-    const label = button.getAttribute('data-remove-ai-label') || userId;
-    const confirmed = await confirmAiAccessRemoval(label);
-    if (!confirmed) return;
-
+    if (!button) return;
+    const userId = button.dataset.removeAiUser;
+    const label = button.dataset.removeAiLabel || userId;
+    if (!window.confirm(`Remove manual AI image access from ${label}?`)) return;
     button.disabled = true;
     button.textContent = 'Removing...';
     try {
-      await removeImageAccessUser(guildId, userId);
-      showStatusToast('success', 'Access updated', 'User was removed from manual AI image access.');
-      await refreshAiAccess(guildId);
-    } catch (err) {
-      showStatusToast('error', 'Could not remove user', err.message || 'Try again later.');
+      await removeImageAccessUser(server.id, userId);
+      showStatusToast('success', 'Access updated', 'User was removed.');
+      await loadAiAccess(server.id);
+    } catch (error) {
+      showStatusToast('error', 'Could not remove user', error.message || 'Try again later.');
       button.disabled = false;
       button.textContent = 'Remove';
-      const list = document.querySelector('[data-ai-access-list]');
-      if (list) list.insertAdjacentHTML('afterbegin', `<div class="settings-empty-state error"><strong>Could not remove user.</strong><span>${escapeHtml(err.message || 'Try again later.')}</span></div>`);
     }
   });
 }
 
-function renderModerationPage(server) {
-  return `
-    <div class="settings-page-grid">
-      <article class="dashboard-card compact settings-main-card">
-        <span class="dashboard-card-label">Moderation tools</span>
-        <h3>Server moderation</h3>
-        <p class="muted">Configure warnings, automod and moderation controls for ${escapeHtml(server.name)}. Editing is coming soon.</p>
-        <div class="settings-list">
-          ${disabledOption('Status', 'Coming soon')}
-          ${disabledOption('Warnings', 'Not configured')}
-          ${disabledOption('Auto moderation', 'Disabled')}
-          ${disabledOption('Mod log channel', 'Not configured')}
-          ${disabledOption('Permission checks', 'Discord only')}
-        </div>
-      </article>
-
-      <article class="dashboard-card compact settings-side-card">
-        <span class="dashboard-card-label">Rules</span>
-        <h3>Automation</h3>
-        <p class="muted">Automod rules and moderation presets will be configured here later.</p>
-        <div class="settings-empty-state">
-          <strong>No moderation rules yet.</strong>
-          <span>You will be able to manage warning thresholds, blocked words and automated actions.</span>
-        </div>
-      </article>
-
-      <article class="dashboard-card compact server-coming-card">
-        <span class="dashboard-card-label">Preview</span>
-        <h3>What this page will manage</h3>
-        <div class="coming-grid coming-grid-two">
-          ${previewCard('Warnings', 'Configure warning rules and thresholds.')}
-          ${previewCard('Automod', 'Set automatic filters and actions.')}
-          ${previewCard('Moderation logs', 'Choose where actions are reported.')}
-          ${previewCard('Permissions', 'Control who can use moderation tools.')}
-        </div>
-        ${comingSaveButton()}
-      </article>
-    </div>
-  `;
+function serverPageContent(server, section) {
+  const active = new Set(['overview', 'leveling', 'welcome', 'logs', 'ai', 'moderation']).has(section) ? section : 'overview';
+  if (active === 'welcome') return welcomePage(server);
+  if (active === 'leveling') return levelingPage(server);
+  if (active === 'logs') return logsPage(server);
+  if (active === 'ai') return aiPage(server);
+  if (active === 'moderation') return moderationPage(server);
+  return overviewPage(server);
 }
 
-function renderServerDetail(data, section = 'overview') {
-  if (!els.home || !els.detail || !els.detailContent) return;
-  const server = data.server;
-  const allowedSections = new Set(['overview', 'leveling', 'welcome', 'logs', 'ai', 'moderation']);
-  const activeSection = allowedSections.has(section) ? section : 'overview';
-  els.home.hidden = true;
+async function renderServerPage(id, section = 'overview') {
+  if (!els.detailContent || !els.detail) return;
+  if (els.home) els.home.hidden = true;
   els.detail.hidden = false;
-  document.title = `${server.name} — Meowz Dashboard`;
+  els.detailContent.innerHTML = appShell({ active: sectionTitle(section), activeKey: section, content: '<div class="app-loading-card">Loading server...</div>' });
 
-  let content = renderServerOverview(server);
-  if (activeSection === 'leveling') content = renderLevelingPage(server);
-  if (activeSection === 'welcome') content = renderWelcomePage(server);
-  if (activeSection === 'logs') content = renderLogsPage(server);
-  if (activeSection === 'ai') content = renderAiPage(server);
-  if (activeSection === 'moderation') content = renderModerationPage(server);
-
-  els.detailContent.innerHTML = renderServerAppShell(server, activeSection, content);
-  if (activeSection === 'ai') initAiAccessControls(server.id);
-}
-
-function renderServerDetailError(message) {
-  if (!els.home || !els.detail || !els.detailContent) return;
-  els.home.hidden = true;
-  els.detail.hidden = false;
-  els.detailContent.innerHTML = `
-    <div class="dashboard-card server-detail-error">
-      <span class="dashboard-card-label">Server unavailable</span>
-      <h2>Could not open this server.</h2>
-      <p class="muted">${escapeHtml(message || 'You may not have permission to manage this server, or Meowz is not installed there.')}</p>
-      <a class="btn btn-secondary" href="/dashboard">Back to dashboard</a>
-    </div>
-  `;
-}
-
-async function loadServerDetail(id, section = 'overview') {
   try {
-    const data = await getDashboardServer(id);
-    renderServerDetail(data, section);
-  } catch (err) {
-    renderServerDetailError(err.message);
-  }
-}
-
-async function loadDashboardHome() {
-  if (!els.home) return;
-  if (els.detail) els.detail.hidden = true;
-  els.home.hidden = false;
-  try {
-    const data = await getDashboardGuilds(currentViewMode);
-    renderDashboard(data);
-  } catch (err) {
-    renderDashboardError(err.message);
+    const payload = await getDashboardServer(id);
+    const server = payload.server;
+    document.title = `${server.name} — ${sectionTitle(section)} — Meowz`;
+    const active = new Set(['overview', 'leveling', 'welcome', 'logs', 'ai', 'moderation']).has(section) ? section : 'overview';
+    els.detailContent.innerHTML = appShell({ server, active: sectionTitle(active), activeKey: active, content: serverPageContent(server, active) });
+    wireMobileMenus(els.detailContent);
+    attachSettingsForm(server, active);
+    if (active === 'ai') attachAiForm(server);
+  } catch (error) {
+    showStatusToast('error', 'Server failed to load', error.message || 'Could not open server.');
+    els.detailContent.innerHTML = appShell({
+      active: 'Server unavailable',
+      content: `<div class="app-empty app-empty-error"><strong>Could not open this server.</strong><span>${escapeHtml(error.message || 'Try again later.')}</span><a class="btn btn-secondary" href="/dashboard">Back to dashboard</a></div>`,
+    });
+    wireMobileMenus(els.detailContent);
   }
 }
 
 export function initDashboard() {
   if (!els.home && !els.detail) return;
-  els.ownerPanel?.querySelectorAll('[data-view-mode]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const nextMode = button.dataset.viewMode === 'owner' ? 'owner' : 'user';
-      if (nextMode === currentViewMode) return;
-      currentViewMode = nextMode;
-      localStorage.setItem(OWNER_VIEW_STORAGE_KEY, currentViewMode);
-      if (els.installed) els.installed.innerHTML = '<div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>';
-      if (els.available) els.available.innerHTML = '<div class="skeleton-server"><span></span><div><strong></strong><small></small></div></div>';
-      loadDashboardHome();
-    });
-  });
-  const serverRoute = currentServerRoute();
-  if (serverRoute) {
-    loadServerDetail(serverRoute.id, serverRoute.section);
-  } else {
-    loadDashboardHome();
-  }
+  const route = routeInfo();
+  if (route) renderServerPage(route.id, route.section);
+  else renderDashboardHome();
 }
