@@ -73,10 +73,10 @@ export async function loadBotStats() {
       statEls.inviteLink.target = '_blank';
       statEls.inviteLink.rel = 'noopener noreferrer';
     }
-  } catch {
+  } catch (err) {
     setText(statEls.status, 'Offline');
     setText(statEls.statusPill, 'Bot API offline');
-    setText(statEls.updated, 'Connect BOT_API_URL in Railway to show live stats');
+    setText(statEls.updated, err?.message ? `Stats unavailable: ${err.message}` : 'Connect BOT_API_URL in Railway to show live stats');
     setBotName('Meowz');
     setAvatar(null, 'Meowz');
     clearSkeletons();

@@ -4110,3 +4110,129 @@ body.menu-open { overflow: hidden !important; }
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Dashboard navigation/settings fixes 2026-07-04 ===== */
+:root[data-theme="light"] body.dashboard-app-body {
+  color-scheme: light;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(124, 58, 237, .14), transparent 32%),
+    radial-gradient(circle at 10% 92%, rgba(34, 211, 238, .16), transparent 34%),
+    #f5f7fb !important;
+  color: #111827;
+}
+:root[data-theme="light"] .dash-card,
+:root[data-theme="light"] .dashboard-login-card,
+:root[data-theme="light"] .dash-sidebar,
+:root[data-theme="light"] .dash-topbar,
+:root[data-theme="light"] .dash-mobile-bar {
+  background: rgba(255,255,255,.82) !important;
+  color: #111827 !important;
+  border-color: rgba(15,23,42,.1) !important;
+}
+:root[data-theme="light"] .dash-card h2,
+:root[data-theme="light"] .dash-page-title h1,
+:root[data-theme="light"] .dash-server-title h1,
+:root[data-theme="light"] .dash-brand,
+:root[data-theme="light"] .dash-side-nav a,
+:root[data-theme="light"] .dash-field > span,
+:root[data-theme="light"] .dash-switch strong,
+:root[data-theme="light"] .dash-setting-block strong,
+:root[data-theme="light"] .dash-mobile-breadcrumb strong {
+  color: #111827 !important;
+}
+:root[data-theme="light"] .dash-card p,
+:root[data-theme="light"] .dash-page-title p,
+:root[data-theme="light"] .dash-server-title p,
+:root[data-theme="light"] .dash-switch small,
+:root[data-theme="light"] .dash-field small,
+:root[data-theme="light"] .dash-mobile-breadcrumb,
+:root[data-theme="light"] .dash-mobile-breadcrumb a {
+  color: rgba(15,23,42,.68) !important;
+}
+:root[data-theme="light"] .dash-field input,
+:root[data-theme="light"] .dash-field textarea,
+:root[data-theme="light"] .dash-field select,
+:root[data-theme="light"] .dash-info-row,
+:root[data-theme="light"] .dash-feature-card,
+:root[data-theme="light"] .dash-empty,
+:root[data-theme="light"] .dash-server-row,
+:root[data-theme="light"] .dash-access-row,
+:root[data-theme="light"] .dash-note {
+  background: rgba(255,255,255,.74) !important;
+  color: #111827 !important;
+  border-color: rgba(15,23,42,.1) !important;
+}
+.dash-mobile-breadcrumb { display: none; }
+.dash-drawer-group { display: grid; gap: 8px; }
+.dash-drawer-group + .dash-drawer-group { padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); }
+.dash-drawer-group small { color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .14em; font-weight: 900; font-size: .72rem; padding: 0 4px; }
+.dash-settings-page { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; align-items: start; }
+.dash-setting-block { display: grid; gap: 10px; padding: 16px; border: 1px solid rgba(255,255,255,.09); border-radius: 16px; background: rgba(5,7,14,.22); }
+.dash-setting-block strong { color: #fff; font-size: 1.05rem; }
+.dash-setting-block p { margin: 0; color: rgba(255,255,255,.62); line-height: 1.55; }
+.dash-segmented { display: inline-flex; width: fit-content; max-width: 100%; padding: 5px; border-radius: 999px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04); }
+.dash-segmented button { min-height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: rgba(255,255,255,.68); font-weight: 900; cursor: pointer; }
+.dash-segmented button.is-active { color: #fff; background: linear-gradient(135deg,#7c3aed,#22d3ee); }
+.dash-log-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin: 0 0 14px; }
+.dash-log-status { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 11px 12px; border-radius: 13px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.035); }
+.dash-log-status span { color: rgba(255,255,255,.68); font-weight: 800; }
+.dash-log-status strong { font-size: .84rem; padding: 4px 8px; border-radius: 999px; }
+.dash-log-status.on strong { color: #86efac; background: rgba(57,229,140,.12); }
+.dash-log-status.off strong { color: #fb7185; background: rgba(255,92,122,.1); }
+.dash-role-table { display: grid; gap: 9px; }
+.dash-role-table-head,
+.dash-role-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 12px; border-radius: 13px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.035); }
+.dash-role-table-head button { min-height: 34px; border: 0; border-radius: 10px; padding: 0 12px; color: rgba(255,255,255,.45); background: rgba(255,255,255,.06); font-weight: 900; }
+
+@media (max-width: 980px) {
+  .dash-mobile-backdrop:not([hidden]) {
+    display: block !important;
+    background: rgba(2, 3, 10, .68) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+  }
+  .dash-mobile-drawer {
+    background: #080913 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 30px 90px rgba(0,0,0,.72) !important;
+  }
+  body.dash-drawer-open .dash-content {
+    filter: none !important;
+    opacity: 1 !important;
+  }
+  .dash-mobile-breadcrumb {
+    width: min(100% - 24px, 760px);
+    margin: 12px auto 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 0 4px;
+    color: rgba(255,255,255,.58);
+    font-weight: 850;
+    overflow: hidden;
+  }
+  .dash-mobile-breadcrumb a,
+  .dash-mobile-breadcrumb strong {
+    min-width: 0;
+    color: rgba(255,255,255,.78);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dash-content { padding-top: 18px !important; }
+  .dash-settings-page { grid-template-columns: 1fr; gap: 16px; }
+  .dash-segmented { width: 100%; }
+  .dash-segmented button { flex: 1; }
+  .dash-log-status-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .dash-card { padding: 18px !important; }
+  .dash-mobile-bar { min-height: 72px !important; max-height: 72px !important; }
+  .dash-mobile-bar .dash-brand-mark { width: 42px !important; height: 42px !important; }
+  .dash-menu-btn { width: 42px !important; height: 42px !important; }
+  .dash-mobile-drawer { top: 86px !important; }
+  .dash-discord-card { aspect-ratio: 1.82 / 1 !important; }
+}

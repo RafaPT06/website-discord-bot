@@ -1,5 +1,31 @@
 [
   {
+    "version": "Dashboard settings and diagnostics",
+    "date": "2026-07-04",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Fixed the mobile dashboard drawer so the background blurs while the menu remains sharp."
+      },
+      {
+        "type": "Fixed",
+        "text": "Restored dashboard breadcrumbs on mobile and desktop dashboard pages."
+      },
+      {
+        "type": "Added",
+        "text": "Added a Settings page for Owner/User view, theme preferences and future language selection."
+      },
+      {
+        "type": "Improved",
+        "text": "Reorganized dashboard navigation into Dashboard, Resources and Account sections."
+      },
+      {
+        "type": "Improved",
+        "text": "Added bot stats diagnostics to make Railway BOT_API_URL issues easier to identify."
+      }
+    ]
+  },
+  {
     "version": "Dashboard polish",
     "date": "2026-07-04",
     "changes": [

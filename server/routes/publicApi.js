@@ -1,5 +1,5 @@
 const express = require('express');
-const { requestBotApi } = require('../api/botApi');
+const { requestBotApi, getBotApiDiagnostics } = require('../api/botApi');
 const { readSession } = require('../authSession');
 
 const router = express.Router();
@@ -204,8 +204,25 @@ router.get('/bot-stats', async (req, res) => {
     const data = await requestBotApi('/api/stats');
     res.json(data);
   } catch (err) {
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not reach the bot API.' });
+    res.status(err.statusCode || 502).json({
+      ok: false,
+      error: err.message || 'Could not reach the bot API.',
+      diagnostics: getBotApiDiagnostics(),
+    });
   }
+});
+
+router.get('/bot-stats/diagnostics', async (req, res) => {
+  const diagnostics = getBotApiDiagnostics();
+  let statsOk = false;
+  let error = null;
+  try {
+    await requestBotApi('/api/stats');
+    statsOk = true;
+  } catch (err) {
+    error = err.message || 'Could not reach the bot API.';
+  }
+  res.status(statsOk ? 200 : 502).json({ ok: statsOk, diagnostics, error, checkedAt: new Date().toISOString() });
 });
 
 router.get('/bot-commands', async (req, res) => {

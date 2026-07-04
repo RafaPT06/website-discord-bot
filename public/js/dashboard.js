@@ -17,10 +17,39 @@ const els = {
 
 const OWNER_VIEW_STORAGE_KEY = 'meowzDashboardViewMode';
 const SETTINGS_STORAGE_KEY = 'meowzServerSettings';
+const DASHBOARD_PREFS_KEY = 'meowzDashboardPreferences';
+const VALID_THEMES = new Set(['dark', 'light']);
+const VALID_LANGUAGES = new Set(['en', 'pt', 'es', 'de', 'fr']);
 const VALID_SECTIONS = new Set(['overview', 'welcome', 'leveling', 'ai', 'logs', 'moderation']);
 let viewMode = localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner' ? 'owner' : 'user';
 
+function readDashboardPrefs() {
+  try {
+    const prefs = JSON.parse(localStorage.getItem(DASHBOARD_PREFS_KEY) || '{}');
+    return {
+      theme: VALID_THEMES.has(prefs.theme) ? prefs.theme : (localStorage.getItem('meowzTheme') || 'dark'),
+      language: VALID_LANGUAGES.has(prefs.language) ? prefs.language : 'en',
+      compactCards: Boolean(prefs.compactCards),
+    };
+  } catch {
+    return { theme: localStorage.getItem('meowzTheme') || 'dark', language: 'en', compactCards: false };
+  }
+}
+function writeDashboardPrefs(next) {
+  const prefs = { ...readDashboardPrefs(), ...next };
+  localStorage.setItem(DASHBOARD_PREFS_KEY, JSON.stringify(prefs));
+  localStorage.setItem('meowzTheme', prefs.theme);
+  applyTheme(prefs.theme);
+  return prefs;
+}
+function applyTheme(theme = readDashboardPrefs().theme) {
+  const normalized = VALID_THEMES.has(theme) ? theme : 'dark';
+  document.documentElement.dataset.theme = normalized;
+}
+applyTheme();
+
 function routeInfo() {
+  if (/^\/dashboard\/settings\/?$/.test(window.location.pathname)) return { settings: true };
   const match = window.location.pathname.match(/^\/dashboard\/server\/([^/]+)(?:\/([^/]+))?\/?$/);
   return match ? { id: decodeURIComponent(match[1]), section: decodeURIComponent(match[2] || 'overview') } : null;
 }
@@ -45,7 +74,7 @@ function serverIcon(server, className = 'dash-server-icon') {
   return `<span class="${className} ${className}-fallback">${initial(server?.name || 'M')}</span>`;
 }
 function sectionTitle(section) {
-  return ({ overview: 'Overview', welcome: 'Welcome Messages', leveling: 'Leveling System', ai: 'AI Image Access', logs: 'Logs', moderation: 'Moderation' })[section] || 'Overview';
+  return ({ overview: 'Overview', welcome: 'Welcome Messages', leveling: 'Leveling System', ai: 'AI Image Access', logs: 'Logs', moderation: 'Moderation', settings: 'Settings' })[section] || 'Overview';
 }
 function sectionPath(server, section = 'overview') {
   const base = `/dashboard/server/${encodeURIComponent(server.id)}`;
@@ -79,6 +108,7 @@ function shell({ server = null, active = 'Dashboard', section = 'dashboard', con
       <div class="dash-main">
         ${topbar(server, active, showOwnerToggle, isOwner)}
         ${mobileBar(server, active, showOwnerToggle, isOwner)}
+        ${mobileBreadcrumb(server, active)}
         <div class="dash-content">${content}</div>
       </div>
     </div>
@@ -91,17 +121,21 @@ function dashboardCard() {
 function currentServerCard(server) {
   return `<a class="dash-current-server" href="${escapeHtml(sectionPath(server))}">${serverIcon(server, 'dash-current-icon')}<span><strong>${escapeHtml(server.name)}</strong><small>Server Settings</small></span><em>⌄</em></a>`;
 }
+function navLink(href, key, active, label) {
+  return `<a class="${key === active ? 'is-active' : ''}" href="${escapeHtml(href)}"><span></span>${escapeHtml(label)}</a>`;
+}
 function sidebarNav(server, active) {
-  const main = server ? [
-    ['overview', 'Overview'], ['ai', 'AI Image Access'], ['leveling', 'Leveling System'], ['welcome', 'Welcome Messages'], ['logs', 'Logs'], ['moderation', 'Moderation'],
-  ] : [
-    ['dashboard', 'Overview'], ['docs', 'Documentation'], ['changelog', 'Changelog'],
-  ];
-  const links = main.map(([key, label]) => {
-    const href = server ? sectionPath(server, key) : (key === 'dashboard' ? '/dashboard' : key === 'docs' ? '/docs' : '/changelog');
-    return `<a class="${key === active ? 'is-active' : ''}" href="${escapeHtml(href)}"><span></span>${escapeHtml(label)}</a>`;
-  }).join('');
-  return `<nav class="dash-side-nav"><small>${server ? 'Settings' : 'Dashboard'}</small>${links}</nav>${server ? `<nav class="dash-side-nav muted"><small>Tools</small><a href="${escapeHtml(sectionPath(server, 'leveling'))}"><span></span>Roles</a><a href="${escapeHtml(sectionPath(server, 'moderation'))}"><span></span>Auto Moderation</a></nav>` : ''}`;
+  if (server) {
+    const settings = [
+      ['overview', 'Overview'], ['welcome', 'Welcome Messages'], ['leveling', 'Leveling System'], ['ai', 'AI Image Access'], ['logs', 'Logs'], ['moderation', 'Moderation'],
+    ].map(([key, label]) => navLink(sectionPath(server, key), key, active, label)).join('');
+    const resources = `${navLink('/docs', 'docs', active, 'Documentation')}${navLink('/changelog', 'changelog', active, 'Changelog')}`;
+    const account = navLink('/dashboard/settings', 'settings', active, 'Settings');
+    return `<nav class="dash-side-nav"><small>Dashboard</small>${settings}</nav><nav class="dash-side-nav muted"><small>Resources</small>${resources}</nav><nav class="dash-side-nav muted"><small>Account</small>${account}</nav>`;
+  }
+  const dashboard = `${navLink('/dashboard', 'dashboard', active, 'Overview')}${navLink('/dashboard/settings', 'settings', active, 'Settings')}`;
+  const resources = `${navLink('/docs', 'docs', active, 'Documentation')}${navLink('/changelog', 'changelog', active, 'Changelog')}`;
+  return `<nav class="dash-side-nav"><small>Dashboard</small>${dashboard}</nav><nav class="dash-side-nav muted"><small>Resources</small>${resources}</nav>`;
 }
 function topbar(server, active, showOwnerToggle, isOwner) {
   return `
@@ -110,7 +144,7 @@ function topbar(server, active, showOwnerToggle, isOwner) {
       <div class="dash-top-actions">
         ${showOwnerToggle && isOwner ? ownerToggle() : ''}
         ${server ? `<a class="dash-primary-small" href="/">View Bot</a>` : ''}
-        <a class="dash-user-pill" href="#settings">${avatarHtml()}<span><strong>${escapeHtml(activeName())}</strong><small>${escapeHtml(activeUsername())}</small></span><em>OWNER</em></a>
+        <a class="dash-user-pill" href="/dashboard/settings">${avatarHtml()}<span><strong>${escapeHtml(activeName())}</strong><small>${escapeHtml(activeUsername())}</small></span><em>OWNER</em></a>
       </div>
     </header>`;
 }
@@ -118,11 +152,22 @@ function ownerToggle() {
   return `<div class="dash-owner-toggle" role="group" aria-label="Dashboard view mode"><button type="button" data-owner-mode="user" class="${viewMode === 'user' ? 'is-active' : ''}">User View</button><button type="button" data-owner-mode="owner" class="${viewMode === 'owner' ? 'is-active' : ''}">Owner View</button></div>`;
 }
 function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwner = false) {
-  const links = server ? [
-    ['Overview', sectionPath(server)], ['Welcome Messages', sectionPath(server, 'welcome')], ['Leveling', sectionPath(server, 'leveling')], ['AI Image Access', sectionPath(server, 'ai')], ['Logs', sectionPath(server, 'logs')], ['Moderation', sectionPath(server, 'moderation')],
-  ] : [['Dashboard', '/dashboard'], ['Documentation', '/docs'], ['Changelog', '/changelog']];
+  const dashboardLinks = server ? [
+    ['Overview', sectionPath(server)],
+    ['Welcome Messages', sectionPath(server, 'welcome')],
+    ['Leveling', sectionPath(server, 'leveling')],
+    ['AI Image Access', sectionPath(server, 'ai')],
+    ['Logs', sectionPath(server, 'logs')],
+    ['Moderation', sectionPath(server, 'moderation')],
+  ] : [['Overview', '/dashboard']];
+  const resourceLinks = [['Documentation', '/docs'], ['Changelog', '/changelog']];
+  const accountLinks = [['Settings', '/dashboard/settings']];
   const activeLabel = server ? server.name : 'Dashboard';
-  return `<header class="dash-mobile-bar"><a class="dash-brand" href="/dashboard"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><div class="dash-mobile-backdrop" data-dash-backdrop hidden></div><aside class="dash-mobile-drawer" data-dash-drawer hidden><div class="dash-drawer-head"><span>${server ? serverIcon(server, 'dash-current-icon') : '<span class="dash-current-icon">M</span>'}</span><div><strong>${escapeHtml(activeLabel)}</strong><small>${escapeHtml(active)}</small></div></div>${showOwnerToggle && isOwner ? `<div class="dash-drawer-toggle">${ownerToggle()}</div>` : ''}<nav>${links.map(([label, href]) => `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`).join('')}<a href="/auth/logout" class="danger">Logout</a></nav></aside></header>`;
+  const renderGroup = (title, links) => `<div class="dash-drawer-group"><small>${escapeHtml(title)}</small>${links.map(([label, href]) => `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`).join('')}</div>`;
+  return `<header class="dash-mobile-bar"><a class="dash-brand" href="/dashboard"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><div class="dash-mobile-backdrop" data-dash-backdrop hidden></div><aside class="dash-mobile-drawer" data-dash-drawer hidden><div class="dash-drawer-head"><span>${server ? serverIcon(server, 'dash-current-icon') : '<span class="dash-current-icon">M</span>'}</span><div><strong>${escapeHtml(activeLabel)}</strong><small>${escapeHtml(active)}</small></div></div>${showOwnerToggle && isOwner ? `<div class="dash-drawer-toggle">${ownerToggle()}</div>` : ''}<nav>${renderGroup('Dashboard', dashboardLinks)}${renderGroup('Resources', resourceLinks)}${renderGroup('Account', accountLinks)}<div class="dash-drawer-group"><a href="/auth/logout" class="danger">Logout</a></div></nav></aside></header>`;
+}
+function mobileBreadcrumb(server, active = 'Dashboard') {
+  return `<div class="dash-mobile-breadcrumb"><a href="/dashboard">Dashboard</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a><span>›</span><strong>${escapeHtml(active)}</strong>` : `<span>›</span><strong>${escapeHtml(active)}</strong>`}</div>`;
 }
 function closeDashDrawer(bar = document) {
   const scope = bar?.querySelector ? bar : document;
@@ -196,7 +241,10 @@ function wireShell(root = document) {
       localStorage.setItem(OWNER_VIEW_STORAGE_KEY, viewMode);
       closeDashDrawer(document);
       showStatusToast('success', 'View mode changed', mode === 'owner' ? 'Owner view enabled.' : 'User preview enabled.');
-      renderDashboardHome();
+      const route = routeInfo();
+      if (route?.settings) renderSettingsPage();
+      else if (route?.id) renderServerPage(route.id, route.section);
+      else renderDashboardHome();
     });
   });
 }
@@ -392,6 +440,50 @@ function attachSettingsForm(server, section) {
     finally { setTimeout(() => { btn.disabled = false; btn.textContent = 'Save Changes'; }, 500); }
   });
 }
+
+function settingsPage(data = {}) {
+  const prefs = readDashboardPrefs();
+  const isOwner = Boolean(data.isOwner);
+  const languageOptions = [
+    ['en', 'English'], ['pt', 'Português'], ['es', 'Español'], ['de', 'Deutsch'], ['fr', 'Français'],
+  ].map(([value, label]) => `<option value="${value}" ${prefs.language === value ? 'selected' : ''}>${label}</option>`).join('');
+  return `<section class="dash-page-title"><span>Account</span><h1>Settings</h1><p>Control dashboard preferences. More account and language options will be added later.</p></section><form class="dash-settings-page" data-dashboard-settings><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Dashboard Preferences</span><h2>View mode</h2><p>Choose how the dashboard lists servers.</p></div></div>${isOwner ? `<div class="dash-setting-block"><strong>Owner/User view</strong><p>Owner View shows every server Meowz is installed in. User View shows the same list a normal manager sees.</p>${ownerToggle()}</div>` : `<div class="dash-note"><strong>User View</strong><span>Owner View is only available to the bot owner.</span></div>`}</article><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Appearance</span><h2>Theme</h2><p>Dark mode is optimized for Meowz. Light mode is available as a preview.</p></div></div><div class="dash-segmented" data-theme-toggle><button type="button" data-theme-choice="dark" class="${prefs.theme === 'dark' ? 'is-active' : ''}">Dark</button><button type="button" data-theme-choice="light" class="${prefs.theme === 'light' ? 'is-active' : ''}">Light</button></div></article><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Language</span><h2>Language</h2><p>The selector is ready for future translations. English remains the active dashboard copy for now.</p></div></div><label class="dash-field"><span>Dashboard language</span><select name="language">${languageOptions}</select></label></article><article class="dash-card"><span>Coming soon</span><h2>Future settings</h2><div class="dash-feature-grid compact"><div class="dash-feature-card"><strong>Notifications</strong><span>Control dashboard alerts and reminders.</span></div><div class="dash-feature-card"><strong>Privacy</strong><span>Manage account visibility and saved preferences.</span></div><div class="dash-feature-card"><strong>Experiments</strong><span>Try new dashboard features early.</span></div></div></article></form>`;
+}
+function attachDashboardSettings() {
+  const form = document.querySelector('[data-dashboard-settings]');
+  if (!form) return;
+  form.querySelectorAll('[data-theme-choice]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const theme = VALID_THEMES.has(btn.dataset.themeChoice) ? btn.dataset.themeChoice : 'dark';
+      writeDashboardPrefs({ theme });
+      form.querySelectorAll('[data-theme-choice]').forEach((item) => item.classList.toggle('is-active', item === btn));
+      showStatusToast('success', 'Theme updated', `${theme === 'dark' ? 'Dark' : 'Light'} mode selected.`);
+    });
+  });
+  form.querySelector('select[name="language"]')?.addEventListener('change', (event) => {
+    const language = VALID_LANGUAGES.has(event.target.value) ? event.target.value : 'en';
+    writeDashboardPrefs({ language });
+    showStatusToast('success', 'Language saved', 'Translations can be connected later.');
+  });
+}
+async function renderSettingsPage() {
+  if (!els.home) return;
+  els.home.hidden = false;
+  if (els.detail) els.detail.hidden = true;
+  document.title = 'Settings — Meowz';
+  els.home.innerHTML = shell({ active: 'Settings', section: 'settings', content: loadingCard('Loading settings...') });
+  try {
+    const data = await getDashboardGuilds(viewMode);
+    els.home.innerHTML = shell({ active: 'Settings', section: 'settings', showOwnerToggle: false, isOwner: Boolean(data.isOwner), content: settingsPage(data) });
+    wireShell(els.home);
+    attachDashboardSettings();
+  } catch (err) {
+    els.home.innerHTML = shell({ active: 'Settings', section: 'settings', content: settingsPage({ isOwner: false }) });
+    wireShell(els.home);
+    attachDashboardSettings();
+    showStatusToast('error', 'Settings loaded with limited access', err.message || 'Could not verify owner mode.');
+  }
+}
 function serverContent(server, section) {
   const active = VALID_SECTIONS.has(section) ? section : 'overview';
   if (active === 'welcome') return welcomePage(server);
@@ -424,6 +516,7 @@ async function renderServerPage(id, section = 'overview') {
 export function initDashboard() {
   if (!els.home && !els.detail) return;
   const route = routeInfo();
-  if (route) renderServerPage(route.id, route.section);
+  if (route?.settings) renderSettingsPage();
+  else if (route?.id) renderServerPage(route.id, route.section);
   else renderDashboardHome();
 }
