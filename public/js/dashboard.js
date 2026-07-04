@@ -124,39 +124,62 @@ function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwne
   const activeLabel = server ? server.name : 'Dashboard';
   return `<header class="dash-mobile-bar"><a class="dash-brand" href="/dashboard"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><div class="dash-mobile-backdrop" data-dash-backdrop hidden></div><aside class="dash-mobile-drawer" data-dash-drawer hidden><div class="dash-drawer-head"><span>${server ? serverIcon(server, 'dash-current-icon') : '<span class="dash-current-icon">M</span>'}</span><div><strong>${escapeHtml(activeLabel)}</strong><small>${escapeHtml(active)}</small></div></div>${showOwnerToggle && isOwner ? `<div class="dash-drawer-toggle">${ownerToggle()}</div>` : ''}<nav>${links.map(([label, href]) => `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`).join('')}<a href="/auth/logout" class="danger">Logout</a></nav></aside></header>`;
 }
+function closeDashDrawer(bar = document) {
+  const scope = bar?.querySelector ? bar : document;
+  scope.querySelectorAll('[data-dash-drawer]').forEach((drawer) => { drawer.hidden = true; });
+  scope.querySelectorAll('[data-dash-backdrop]').forEach((backdrop) => { backdrop.hidden = true; });
+  scope.querySelectorAll('[data-dash-menu]').forEach((btn) => {
+    btn.classList.remove('is-open');
+    btn.setAttribute('aria-expanded', 'false');
+  });
+  document.body.classList.remove('dash-drawer-open');
+}
+
+function openDashDrawer(bar, btn) {
+  const drawer = bar?.querySelector('[data-dash-drawer]');
+  const backdrop = bar?.querySelector('[data-dash-backdrop]');
+  if (!drawer) return;
+  drawer.hidden = false;
+  if (backdrop) backdrop.hidden = false;
+  btn?.classList.add('is-open');
+  btn?.setAttribute('aria-expanded', 'true');
+  document.body.classList.add('dash-drawer-open');
+}
+
 function wireShell(root = document) {
+  closeDashDrawer(root);
+
   root.querySelectorAll('[data-dash-menu]').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       const bar = btn.closest('.dash-mobile-bar');
       const drawer = bar?.querySelector('[data-dash-drawer]');
-      const backdrop = bar?.querySelector('[data-dash-backdrop]');
       if (!drawer) return;
-      const open = drawer.hidden;
-      drawer.hidden = !open;
-      if (backdrop) backdrop.hidden = !open;
-      btn.classList.toggle('is-open', open);
-      btn.setAttribute('aria-expanded', String(open));
-      document.body.classList.toggle('dash-drawer-open', open);
+      if (drawer.hidden) openDashDrawer(bar, btn);
+      else closeDashDrawer(bar);
     });
   });
+
   root.querySelectorAll('[data-dash-backdrop]').forEach((backdrop) => {
-    backdrop.addEventListener('click', () => {
-      const bar = backdrop.closest('.dash-mobile-bar');
-      const btn = bar?.querySelector('[data-dash-menu]');
-      const drawer = bar?.querySelector('[data-dash-drawer]');
-      if (drawer) drawer.hidden = true;
-      backdrop.hidden = true;
-      btn?.classList.remove('is-open');
-      btn?.setAttribute('aria-expanded', 'false');
-      document.body.classList.remove('dash-drawer-open');
-    });
+    backdrop.addEventListener('click', () => closeDashDrawer(backdrop.closest('.dash-mobile-bar')));
   });
+
+  root.querySelectorAll('.dash-mobile-drawer a').forEach((link) => {
+    link.addEventListener('click', () => closeDashDrawer(link.closest('.dash-mobile-bar')));
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeDashDrawer(document);
+  }, { once: true });
+
   root.querySelectorAll('[data-owner-mode]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const mode = btn.dataset.ownerMode === 'owner' ? 'owner' : 'user';
       if (mode === viewMode) return;
       viewMode = mode;
       localStorage.setItem(OWNER_VIEW_STORAGE_KEY, viewMode);
+      closeDashDrawer(document);
       showStatusToast('success', 'View mode changed', mode === 'owner' ? 'Owner view enabled.' : 'User preview enabled.');
       renderDashboardHome();
     });

@@ -33,6 +33,9 @@ function renderAvatar(user, className = 'nav-user-avatar', size = 96) {
 }
 
 function setAuthOnlyVisible(isVisible) {
+  document.body.classList.toggle('dashboard-signed-in', Boolean(isVisible));
+  document.body.classList.toggle('dashboard-signed-out', !isVisible);
+  document.body.classList.remove('menu-open', 'dash-drawer-open');
   authOnlyEls.forEach((el) => {
     el.hidden = !isVisible;
   });

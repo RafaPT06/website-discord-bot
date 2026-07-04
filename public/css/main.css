@@ -3839,3 +3839,49 @@ body.dash-drawer-open { overflow: hidden; }
   .dash-discord-card .card-text span { font-size: .76rem; }
   .dash-discord-card .card-text b { font-size: clamp(.9rem, 4.6vw, 1.18rem); }
 }
+
+
+/* Dashboard auth/mobile stability fixes */
+[hidden] { display: none !important; }
+body.dashboard-signed-in .dashboard-auth-nav { display: none !important; }
+body.dashboard-signed-in .dashboard-app-root { padding-top: 0 !important; }
+body.dash-drawer-open,
+body.menu-open { overflow: hidden !important; }
+
+@media (max-width: 980px) {
+  .dash-mobile-bar {
+    position: sticky !important;
+    top: 10px !important;
+    z-index: 900 !important;
+  }
+  .dash-mobile-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 880 !important;
+    background: rgba(0,0,0,.64) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+  .dash-mobile-drawer {
+    position: fixed !important;
+    z-index: 920 !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: 92px !important;
+    max-height: calc(100dvh - 112px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
+  body.dash-drawer-open .dash-content,
+  body.dash-drawer-open .dashboard-login-screen {
+    pointer-events: none !important;
+  }
+  body.dashboard-signed-in .nav-links,
+  body.dashboard-signed-in .mobile-menu-button {
+    display: none !important;
+  }
+  .dashboard-login-screen[hidden],
+  .dashboard-app[hidden],
+  [data-server-detail][hidden] {
+    display: none !important;
+  }
+}
