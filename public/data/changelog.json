@@ -1,5 +1,23 @@
 [
   {
+    "version": "Dashboard polish",
+    "date": "2026-07-04",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Improved the mobile dashboard drawer so it closes cleanly and blocks background scrolling."
+      },
+      {
+        "type": "Improved",
+        "text": "Compacted AI Image Access rows and improved mobile spacing."
+      },
+      {
+        "type": "Improved",
+        "text": "Added log status pills and a starter level reward table preview."
+      }
+    ]
+  },
+  {
     "version": "v1.25.0",
     "date": "2026-07-04",
     "changes": [

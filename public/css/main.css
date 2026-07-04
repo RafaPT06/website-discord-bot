@@ -3885,3 +3885,228 @@ body.menu-open { overflow: hidden !important; }
     display: none !important;
   }
 }
+
+/* ===== Dashboard mobile + tab polish 2026-07-04 ===== */
+@media (max-width: 980px) {
+  body.dash-drawer-open {
+    overflow: hidden !important;
+    touch-action: none;
+  }
+
+  .dash-mobile-bar {
+    min-height: 78px !important;
+    max-height: 78px !important;
+    align-items: center !important;
+    background: rgba(7, 8, 18, .985) !important;
+  }
+
+  .dash-mobile-backdrop:not([hidden]) {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .dash-mobile-drawer:not([hidden]) {
+    display: grid !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .dash-mobile-drawer[hidden],
+  .dash-mobile-backdrop[hidden] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .dash-mobile-drawer {
+    background: linear-gradient(180deg, rgba(8, 9, 19, .995), rgba(8, 9, 19, .985)) !important;
+    backdrop-filter: blur(26px) !important;
+    -webkit-backdrop-filter: blur(26px) !important;
+  }
+
+  body.dash-drawer-open .dash-content {
+    filter: blur(2px);
+    opacity: .28;
+    user-select: none;
+  }
+
+  .dash-page-title,
+  .dash-server-title {
+    padding-top: 6px;
+  }
+
+  .dash-designer,
+  .dash-grid.two {
+    gap: 18px !important;
+  }
+
+  .dash-card {
+    padding: 22px !important;
+  }
+
+  .dash-preview .dash-discord-card {
+    max-height: 320px;
+  }
+
+  .dash-access-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .dash-access-row {
+    min-height: 72px;
+    border-radius: 18px;
+    padding: 10px 12px !important;
+  }
+
+  .dash-access-row span:nth-child(2) {
+    min-width: 0;
+  }
+
+  .dash-access-row strong {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1rem;
+  }
+
+  .dash-access-row small {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: .8rem;
+  }
+
+  .dash-access-row button {
+    min-width: 74px;
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 520px) {
+  .dash-mobile-bar {
+    width: min(100% - 22px, 760px) !important;
+    margin-top: 12px !important;
+    padding: 11px 12px !important;
+    border-radius: 23px !important;
+  }
+
+  .dash-menu-btn {
+    width: 48px !important;
+    height: 48px !important;
+    flex: 0 0 auto;
+  }
+
+  .dash-mobile-drawer {
+    top: 102px !important;
+    max-height: calc(100dvh - 124px) !important;
+  }
+
+  .dash-card {
+    padding: 20px !important;
+  }
+
+  .dash-save-btn {
+    min-height: 58px;
+  }
+
+  .dash-discord-message {
+    grid-template-columns: 40px minmax(0, 1fr) !important;
+  }
+
+  .dash-preview .dash-discord-card {
+    aspect-ratio: 1.78 / 1 !important;
+    max-height: 270px;
+  }
+}
+
+.dash-role-table {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.dash-role-table-head,
+.dash-role-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  background: rgba(255,255,255,.045);
+}
+
+.dash-role-table-head button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.58);
+  font-weight: 900;
+}
+
+.dash-role-row span {
+  color: rgba(255,255,255,.62);
+  font-weight: 800;
+}
+
+.dash-role-row strong {
+  color: #fff;
+}
+
+.dash-log-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 16px;
+}
+
+.dash-log-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.045);
+}
+
+.dash-log-status span {
+  color: rgba(255,255,255,.72);
+  font-weight: 800;
+}
+
+.dash-log-status strong {
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: .78rem;
+  font-weight: 950;
+}
+
+.dash-log-status.on strong {
+  color: #bbf7d0;
+  background: rgba(34,197,94,.16);
+  border: 1px solid rgba(34,197,94,.22);
+}
+
+.dash-log-status.off strong {
+  color: #fecdd3;
+  background: rgba(244,63,94,.12);
+  border: 1px solid rgba(244,63,94,.18);
+}
+
+@media (max-width: 520px) {
+  .dash-log-status-grid {
+    grid-template-columns: 1fr;
+  }
+}

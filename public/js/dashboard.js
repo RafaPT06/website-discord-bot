@@ -126,8 +126,14 @@ function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwne
 }
 function closeDashDrawer(bar = document) {
   const scope = bar?.querySelector ? bar : document;
-  scope.querySelectorAll('[data-dash-drawer]').forEach((drawer) => { drawer.hidden = true; });
-  scope.querySelectorAll('[data-dash-backdrop]').forEach((backdrop) => { backdrop.hidden = true; });
+  scope.querySelectorAll('[data-dash-drawer]').forEach((drawer) => {
+    drawer.hidden = true;
+    drawer.setAttribute('aria-hidden', 'true');
+  });
+  scope.querySelectorAll('[data-dash-backdrop]').forEach((backdrop) => {
+    backdrop.hidden = true;
+    backdrop.setAttribute('aria-hidden', 'true');
+  });
   scope.querySelectorAll('[data-dash-menu]').forEach((btn) => {
     btn.classList.remove('is-open');
     btn.setAttribute('aria-expanded', 'false');
@@ -136,18 +142,23 @@ function closeDashDrawer(bar = document) {
 }
 
 function openDashDrawer(bar, btn) {
+  closeDashDrawer(document);
   const drawer = bar?.querySelector('[data-dash-drawer]');
   const backdrop = bar?.querySelector('[data-dash-backdrop]');
   if (!drawer) return;
   drawer.hidden = false;
-  if (backdrop) backdrop.hidden = false;
+  drawer.setAttribute('aria-hidden', 'false');
+  if (backdrop) {
+    backdrop.hidden = false;
+    backdrop.setAttribute('aria-hidden', 'false');
+  }
   btn?.classList.add('is-open');
   btn?.setAttribute('aria-expanded', 'true');
   document.body.classList.add('dash-drawer-open');
 }
 
 function wireShell(root = document) {
-  closeDashDrawer(root);
+  closeDashDrawer(document);
 
   root.querySelectorAll('[data-dash-menu]').forEach((btn) => {
     btn.addEventListener('click', (event) => {
@@ -162,12 +173,16 @@ function wireShell(root = document) {
   });
 
   root.querySelectorAll('[data-dash-backdrop]').forEach((backdrop) => {
-    backdrop.addEventListener('click', () => closeDashDrawer(backdrop.closest('.dash-mobile-bar')));
+    backdrop.addEventListener('click', () => closeDashDrawer(document));
   });
 
-  root.querySelectorAll('.dash-mobile-drawer a').forEach((link) => {
-    link.addEventListener('click', () => closeDashDrawer(link.closest('.dash-mobile-bar')));
+  root.querySelectorAll('.dash-mobile-drawer a, .dash-mobile-drawer button[data-owner-mode]').forEach((el) => {
+    el.addEventListener('click', () => setTimeout(() => closeDashDrawer(document), 80));
   });
+
+  window.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeDashDrawer(document); }, { once: true });
+  window.addEventListener('resize', () => closeDashDrawer(document), { once: true });
+  window.addEventListener('pagehide', () => closeDashDrawer(document), { once: true });
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeDashDrawer(document);
@@ -275,12 +290,18 @@ function updateWelcomePreview(server, form) {
 
 function levelingPage(server) {
   const s = readSettings(server.id, 'leveling', { enabled:true, xp:15, cooldown:60, channel:'# level-up', stackRoles:true });
-  return `${serverHeader(server,'leveling')}<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xp','XP per message',s.xp,1)}${numberField('cooldown','Cooldown seconds',s.cooldown,5)}${textField('channel','Level-up channel',s.channel,'# level-up')}${switchField('stackRoles',s.stackRoles,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><div class="dash-level-preview"><strong>Rafa reached Level 12</strong><span>1,240 / 1,500 XP</span><div><i style="width:82%"></i></div></div><div class="dash-empty"><strong>No level roles configured yet.</strong><span>Reward role management can be added here later.</span></div></article></form>`;
+  const roles = [
+    { level: 5, role: 'Lv5' },
+    { level: 10, role: 'Lv10' },
+    { level: 20, role: 'Lv20' },
+  ];
+  return `${serverHeader(server,'leveling')}<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xp','XP per message',s.xp,1)}${numberField('cooldown','Cooldown seconds',s.cooldown,5)}${textField('channel','Level-up channel',s.channel,'# level-up')}${switchField('stackRoles',s.stackRoles,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><div class="dash-level-preview"><strong>Rafa reached Level 12</strong><span>1,240 / 1,500 XP</span><div><i style="width:82%"></i></div></div><div class="dash-role-table"><div class="dash-role-table-head"><strong>Reward roles</strong><button type="button" disabled>Add Role</button></div>${roles.map((r) => `<div class="dash-role-row"><span>Level ${r.level}</span><strong>${escapeHtml(r.role)}</strong></div>`).join('')}</div><small class="preview-note">Role editing can be connected to the API later. The layout is ready.</small></article></form>`;
 }
 function logsPage(server) {
   const s = readSettings(server.id, 'logs', { enabled:true, channel:'# logs', messages:false, members:true, moderation:true, voice:false });
-  return `${serverHeader(server,'logs')}<form class="dash-designer" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Logs</span><h2>Logs</h2><p>Configure log channels and event tracking for ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable logs','Send selected events to a log channel.')}<hr/>${textField('channel','Log channel',s.channel,'# logs')}${switchField('messages',s.messages,'Message logs','Track message delete and edit events.')}${switchField('members',s.members,'Member logs','Track joins and leaves.')}${switchField('moderation',s.moderation,'Moderation logs','Track warnings, bans and mutes.')}${switchField('voice',s.voice,'Voice logs','Track voice channel joins and leaves.')}${saveBtn()}</article><article class="dash-card"><span>Live examples</span><h2>Tracked activity</h2>${logExample('Member joined','Rafa joined the server.','success')}${logExample('Message deleted','A message was removed in #general.','warn')}${logExample('Moderation action','Zen warned a member.','mod')}</article></form>`;
+  return `${serverHeader(server,'logs')}<form class="dash-designer" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Logs</span><h2>Logs</h2><p>Configure log channels and event tracking for ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable logs','Send selected events to a log channel.')}<hr/>${textField('channel','Log channel',s.channel,'# logs')}${switchField('messages',s.messages,'Message logs','Track message delete and edit events.')}${switchField('members',s.members,'Member logs','Track joins and leaves.')}${switchField('moderation',s.moderation,'Moderation logs','Track warnings, bans and mutes.')}${switchField('voice',s.voice,'Voice logs','Track voice channel joins and leaves.')}${saveBtn()}</article><article class="dash-card"><span>Live examples</span><h2>Tracked activity</h2><div class="dash-log-status-grid">${logStatus('Message Logs', s.messages)}${logStatus('Member Logs', s.members)}${logStatus('Voice Logs', s.voice)}${logStatus('Moderation Logs', s.moderation)}</div>${logExample('Member joined','Rafa joined the server.','success')}${logExample('Message deleted','A message was removed in #general.','warn')}${logExample('Moderation action','Zen warned a member.','mod')}</article></form>`;
 }
+function logStatus(label, enabled) { return `<div class="dash-log-status ${enabled ? 'on' : 'off'}"><span>${escapeHtml(label)}</span><strong>${enabled ? 'Enabled' : 'Disabled'}</strong></div>`; }
 function logExample(title, text, type) { return `<div class="dash-log-example ${type}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
 function moderationPage(server) {
   const s = readSettings(server.id, 'moderation', { enabled:false, warnings:true, antiSpam:false, antiLinks:false, antiInvites:false, channel:'# mod-logs' });
