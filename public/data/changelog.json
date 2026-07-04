@@ -1,19 +1,27 @@
 [
   {
-    "version": "Dashboard mobile spacing fix",
+    "version": "Dashboard mobile and settings fixes",
     "date": "2026-07-04",
     "changes": [
       {
         "type": "Fixed",
-        "text": "Tightened the mobile dashboard menu so it stays inside the viewport, scrolls cleanly and no longer leaves broken spacing around the drawer."
+        "text": "Fixed the dashboard homepage breadcrumb so it no longer shows Dashboard \u203a Dashboard on mobile."
       },
       {
         "type": "Fixed",
-        "text": "Improved the Settings page spacing on phones, including cards, segmented buttons and future settings blocks."
+        "text": "Added consistent spacing between the Permissions cards and Server Tools on the server overview page."
+      },
+      {
+        "type": "Fixed",
+        "text": "Made the mobile dashboard menu fully opaque and sharp while keeping the page behind it visible but not blurred."
+      },
+      {
+        "type": "Fixed",
+        "text": "Improved light mode contrast across dashboard cards, drawers, controls, inputs and menus."
       },
       {
         "type": "Improved",
-        "text": "Reduced desktop dashboard spacing in the sidebar, page header, tabs and content area for a cleaner PC layout."
+        "text": "Changed channel inputs into channel-style selectors and marked them as local preview settings until live Discord channel sync is connected."
       }
     ]
   },
