@@ -4236,3 +4236,285 @@ body.menu-open { overflow: hidden !important; }
   .dash-mobile-drawer { top: 86px !important; }
   .dash-discord-card { aspect-ratio: 1.82 / 1 !important; }
 }
+
+/* ===== Final responsive dashboard/menu spacing fix 2026-07-04 ===== */
+@media (min-width: 981px) {
+  .dash-shell {
+    grid-template-columns: 282px minmax(0, 1fr) !important;
+  }
+
+  .dash-sidebar {
+    padding: 14px !important;
+    gap: 12px !important;
+  }
+
+  .dash-current-server {
+    min-height: 60px !important;
+    padding: 10px !important;
+  }
+
+  .dash-current-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+  }
+
+  .dash-side-nav {
+    gap: 4px !important;
+  }
+
+  .dash-side-nav.muted {
+    padding-top: 10px !important;
+  }
+
+  .dash-side-nav small {
+    margin: 4px 8px 2px !important;
+  }
+
+  .dash-side-nav a {
+    min-height: 38px !important;
+    border-radius: 10px !important;
+  }
+
+  .dash-help-card {
+    padding: 13px !important;
+    gap: 6px !important;
+  }
+
+  .dash-content {
+    width: min(100% - 36px, 1360px) !important;
+    padding-top: 22px !important;
+    padding-bottom: 40px !important;
+  }
+
+  .dash-page-title,
+  .dash-server-title {
+    margin-bottom: 18px !important;
+  }
+
+  .dash-tabs {
+    margin: -4px 0 18px !important;
+  }
+
+  .dash-card {
+    padding: 20px !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .dash-mobile-bar {
+    position: sticky !important;
+    top: max(8px, env(safe-area-inset-top)) !important;
+    width: min(100% - 20px, 760px) !important;
+    min-height: 66px !important;
+    max-height: 66px !important;
+    margin-top: 10px !important;
+    padding: 9px 10px !important;
+    border-radius: 22px !important;
+    z-index: 950 !important;
+  }
+
+  .dash-mobile-bar .dash-brand {
+    min-width: 0 !important;
+    font-size: clamp(1.15rem, 7vw, 1.75rem) !important;
+  }
+
+  .dash-mobile-bar .dash-brand-mark {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 14px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .dash-menu-btn {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 14px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .dash-mobile-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 930 !important;
+    background: rgba(2, 3, 10, .72) !important;
+  }
+
+  .dash-mobile-drawer {
+    position: fixed !important;
+    z-index: 960 !important;
+    left: max(10px, env(safe-area-inset-left)) !important;
+    right: max(10px, env(safe-area-inset-right)) !important;
+    top: calc(max(8px, env(safe-area-inset-top)) + 76px) !important;
+    max-width: 720px !important;
+    width: auto !important;
+    margin: 0 auto !important;
+    max-height: calc(100dvh - 94px - env(safe-area-inset-top)) !important;
+    padding: 14px !important;
+    border-radius: 22px !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .dash-drawer-head {
+    min-height: 68px !important;
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+    padding: 9px !important;
+    border-radius: 18px !important;
+  }
+
+  .dash-drawer-head .dash-current-icon {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .dash-mobile-drawer nav,
+  .dash-drawer-group {
+    display: grid !important;
+    gap: 7px !important;
+  }
+
+  .dash-drawer-group + .dash-drawer-group {
+    padding-top: 9px !important;
+  }
+
+  .dash-mobile-drawer nav a {
+    min-height: 46px !important;
+    padding: 0 14px !important;
+    border-radius: 15px !important;
+    font-size: .98rem !important;
+  }
+
+  .dash-mobile-breadcrumb {
+    width: min(100% - 22px, 760px) !important;
+    margin-top: 12px !important;
+  }
+
+  .dash-content {
+    width: min(100% - 22px, 760px) !important;
+    padding-top: 16px !important;
+  }
+
+  .dash-page-title,
+  .dash-server-title {
+    margin-top: 0 !important;
+    margin-bottom: 16px !important;
+    padding-top: 0 !important;
+  }
+
+  .dash-page-title h1,
+  .dash-server-title h1 {
+    font-size: clamp(2.25rem, 12vw, 3.8rem) !important;
+    line-height: .98 !important;
+  }
+
+  .dash-page-title p,
+  .dash-server-title p,
+  .dash-card p {
+    font-size: 1rem !important;
+    line-height: 1.55 !important;
+  }
+
+  .dash-card {
+    border-radius: 24px !important;
+    padding: 20px !important;
+  }
+
+  .dash-card-head {
+    margin-bottom: 12px !important;
+  }
+
+  .dash-settings-page {
+    gap: 14px !important;
+  }
+
+  .dash-setting-block {
+    padding: 14px !important;
+    gap: 8px !important;
+  }
+
+  .dash-owner-toggle,
+  .dash-segmented {
+    width: 100% !important;
+  }
+
+  .dash-owner-toggle button,
+  .dash-segmented button {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+  }
+
+  .dash-feature-grid.compact,
+  .dash-feature-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dash-feature-card {
+    min-height: 86px !important;
+    padding: 14px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .dash-mobile-bar {
+    width: min(100% - 20px, 760px) !important;
+    min-height: 64px !important;
+    max-height: 64px !important;
+    padding: 8px 10px !important;
+  }
+
+  .dash-mobile-drawer {
+    top: calc(max(8px, env(safe-area-inset-top)) + 72px) !important;
+    max-height: calc(100dvh - 88px - env(safe-area-inset-top)) !important;
+    padding: 12px !important;
+  }
+
+  .dash-mobile-drawer nav a {
+    min-height: 44px !important;
+    font-size: .95rem !important;
+  }
+
+  .dash-content {
+    width: min(100% - 20px, 760px) !important;
+    padding-top: 14px !important;
+  }
+
+  .dash-server-title {
+    grid-template-columns: 54px minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .dash-title-icon {
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 16px !important;
+  }
+
+  .dash-page-title h1,
+  .dash-server-title h1 {
+    font-size: clamp(2rem, 12.5vw, 3.15rem) !important;
+  }
+
+  .dash-page-title > span,
+  .dash-server-title > div > span,
+  .dash-card > span,
+  .dash-card-head span {
+    letter-spacing: .16em !important;
+    font-size: .7rem !important;
+  }
+
+  .dash-card {
+    padding: 18px !important;
+    border-radius: 22px !important;
+  }
+
+  .dash-tabs {
+    margin-bottom: 14px !important;
+  }
+
+  .dash-tabs a {
+    min-height: 38px !important;
+    padding: 0 13px !important;
+  }
+}

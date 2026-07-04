@@ -1,5 +1,23 @@
 [
   {
+    "version": "Dashboard mobile spacing fix",
+    "date": "2026-07-04",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Tightened the mobile dashboard menu so it stays inside the viewport, scrolls cleanly and no longer leaves broken spacing around the drawer."
+      },
+      {
+        "type": "Fixed",
+        "text": "Improved the Settings page spacing on phones, including cards, segmented buttons and future settings blocks."
+      },
+      {
+        "type": "Improved",
+        "text": "Reduced desktop dashboard spacing in the sidebar, page header, tabs and content area for a cleaner PC layout."
+      }
+    ]
+  },
+  {
     "version": "Dashboard settings and diagnostics",
     "date": "2026-07-04",
     "changes": [
