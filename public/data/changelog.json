@@ -1,27 +1,27 @@
 [
   {
-    "version": "Dashboard mobile and settings fixes",
+    "version": "Dashboard hardening",
     "date": "2026-07-04",
     "changes": [
       {
         "type": "Fixed",
-        "text": "Fixed the dashboard homepage breadcrumb so it no longer shows Dashboard \u203a Dashboard on mobile."
+        "text": "Fixed root dashboard breadcrumbs so they no longer show Dashboard › Dashboard."
       },
       {
         "type": "Fixed",
-        "text": "Added consistent spacing between the Permissions cards and Server Tools on the server overview page."
+        "text": "Added clear spacing between the Permissions and Server Tools sections on server overview pages."
       },
       {
         "type": "Fixed",
-        "text": "Made the mobile dashboard menu fully opaque and sharp while keeping the page behind it visible but not blurred."
+        "text": "Reworked mobile drawer layering so the drawer stays sharp while the page overlay handles blur and scroll locking."
       },
       {
         "type": "Fixed",
-        "text": "Improved light mode contrast across dashboard cards, drawers, controls, inputs and menus."
+        "text": "Completed a stronger light theme pass across dashboard cards, menus, tabs, form surfaces and toast notifications."
       },
       {
         "type": "Improved",
-        "text": "Changed channel inputs into channel-style selectors and marked them as local preview settings until live Discord channel sync is connected."
+        "text": "Hid preview-only server controls on Welcome, Leveling, Logs and Moderation until real bot API endpoints are connected."
       }
     ]
   },
