@@ -1,27 +1,31 @@
 [
   {
-    "version": "Dashboard hardening",
+    "version": "Dashboard root-cause fixes",
     "date": "2026-07-04",
     "changes": [
       {
         "type": "Fixed",
-        "text": "Fixed root dashboard breadcrumbs so they no longer show Dashboard › Dashboard."
+        "text": "Fixed root dashboard breadcrumbs so the dashboard home no longer shows Dashboard > Dashboard."
       },
       {
         "type": "Fixed",
-        "text": "Added clear spacing between the Permissions and Server Tools sections on server overview pages."
+        "text": "Reworked the mobile drawer layering so the page backdrop blurs while the drawer stays sharp."
       },
       {
         "type": "Fixed",
-        "text": "Reworked mobile drawer layering so the drawer stays sharp while the page overlay handles blur and scroll locking."
+        "text": "Added consistent spacing between dashboard overview sections, including Permissions and Server Tools."
       },
       {
         "type": "Fixed",
-        "text": "Completed a stronger light theme pass across dashboard cards, menus, tabs, form surfaces and toast notifications."
+        "text": "Completed light theme coverage for dashboard cards, menus, inputs, buttons and toast notifications."
       },
       {
         "type": "Improved",
-        "text": "Hid preview-only server controls on Welcome, Leveling, Logs and Moderation until real bot API endpoints are connected."
+        "text": "Clarified preview-only dashboard setting saves as local drafts until bot configuration endpoints are available."
+      },
+      {
+        "type": "Improved",
+        "text": "Hardened bot API proxy diagnostics for Railway BOT_API_URL, JSON responses, timeouts and expected endpoints."
       }
     ]
   },

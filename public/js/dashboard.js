@@ -139,8 +139,8 @@ function sidebarNav(server, active) {
 }
 function topbar(server, active, showOwnerToggle, isOwner) {
   const breadcrumb = server
-    ? `<a href="/dashboard">Dashboard</a><span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active === 'Overview' ? '' : `<span>›</span><strong>${escapeHtml(active)}</strong>`}`
-    : `<strong>Dashboard</strong>`;
+    ? `<a href="/dashboard">Dashboard</a><span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active && active !== 'Overview' ? `<span>›</span><strong>${escapeHtml(active)}</strong>` : ''}`
+    : `${active && active !== 'Dashboard' ? `<a href="/dashboard">Dashboard</a><span>›</span><strong>${escapeHtml(active)}</strong>` : '<strong>Dashboard</strong>'}`;
   return `
     <header class="dash-topbar">
       <div class="dash-breadcrumb">${breadcrumb}</div>
@@ -170,9 +170,11 @@ function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwne
   return `<header class="dash-mobile-bar"><a class="dash-brand" href="/dashboard"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><div class="dash-mobile-backdrop" data-dash-backdrop hidden></div><aside class="dash-mobile-drawer" data-dash-drawer hidden><div class="dash-drawer-head"><span>${server ? serverIcon(server, 'dash-current-icon') : '<span class="dash-current-icon">M</span>'}</span><div><strong>${escapeHtml(activeLabel)}</strong><small>${escapeHtml(active)}</small></div></div>${showOwnerToggle && isOwner ? `<div class="dash-drawer-toggle">${ownerToggle()}</div>` : ''}<nav>${renderGroup('Dashboard', dashboardLinks)}${renderGroup('Resources', resourceLinks)}${renderGroup('Account', accountLinks)}<div class="dash-drawer-group"><a href="/auth/logout" class="danger">Logout</a></div></nav></aside></header>`;
 }
 function mobileBreadcrumb(server, active = 'Dashboard') {
-  if (!server) return `<div class="dash-mobile-breadcrumb"><strong>Dashboard</strong></div>`;
-  const tail = active === 'Overview' ? '' : `<span>›</span><strong>${escapeHtml(active)}</strong>`;
-  return `<div class="dash-mobile-breadcrumb"><a href="/dashboard">Dashboard</a><span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${tail}</div>`;
+  if (server) {
+    const current = active && active !== 'Overview' ? `<span>›</span><strong>${escapeHtml(active)}</strong>` : '';
+    return `<div class="dash-mobile-breadcrumb"><a href="/dashboard">Dashboard</a><span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${current}</div>`;
+  }
+  return `<div class="dash-mobile-breadcrumb">${active && active !== 'Dashboard' ? `<a href="/dashboard">Dashboard</a><span>›</span><strong>${escapeHtml(active)}</strong>` : '<strong>Dashboard</strong>'}</div>`;
 }
 function closeDashDrawer(bar = document) {
   const scope = bar?.querySelector ? bar : document;
@@ -307,7 +309,7 @@ function serverHeader(server, active) {
 function infoRow(label, value) { return `<div class="dash-info-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`; }
 
 function overviewPage(server) {
-  return `${serverHeader(server,'overview')}<section class="dash-section-stack"><section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome Messages','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section></section>`;
+  return `${serverHeader(server,'overview')}<div class="dash-section-stack"><section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome Messages','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section></div>`;
 }
 
 function switchField(name, checked, label, desc) { return `<label class="dash-switch"><input type="checkbox" name="${escapeHtml(name)}" ${checked ? 'checked' : ''}/><i></i><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(desc)}</small></span></label>`; }
@@ -317,19 +319,10 @@ function textareaField(name, label, value, max=200) { return `<label class="dash
 function variableButtons() { return `<div class="dash-variable-row"><span>Insert Variable</span><div>${['{user}','{server}','{memberCount}'].map(v => `<button type="button" data-insert-variable="${v}">${v}</button>`).join('')}</div></div>`; }
 function saveBtn() { return `<button class="dash-save-btn" type="submit">Save Changes</button>`; }
 
-function featureUnavailablePage(server, key, title, description, details = []) {
-  const items = details.length ? `<div class="dash-feature-grid compact">${details.map((item) => `<div class="dash-feature-card"><strong>${escapeHtml(item[0])}</strong><span>${escapeHtml(item[1])}</span></div>`).join('')}</div>` : '';
-  return `${serverHeader(server,key)}<section class="dash-grid two"><article class="dash-card"><span>${escapeHtml(title)}</span><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p><div class="dash-note dash-live-api-note"><strong>Live controls hidden</strong><span>This page no longer shows preview-only controls. Connect the matching bot API endpoints first, then the dashboard can show real channel/role selectors and save to Discord.</span></div></article><article class="dash-card"><span>Next API work</span><h2>Required endpoints</h2>${items || emptyState('No controls available yet.', 'This section is read-only until the bot API supports it.')}</article></section>`;
-}
-
 function welcomePage(server) {
-  return featureUnavailablePage(server, 'welcome', 'Welcome Messages', `Welcome settings for ${server.name} are read-only until live Discord channel sync is connected.`, [
-    ['Channels', 'Fetch text channels from Discord.'],
-    ['Settings save', 'Save welcome channel, style and messages through the bot API.'],
-    ['Preview', 'Render only after real saved settings load.'],
-  ]);
+  const s = readSettings(server.id, 'welcome', { enabled:true, channel:'# welcome', style:'Custom Card (Modern)', welcomeMessage:'WELCOME {user}\nTO\n{server}', leaveMessage:'Goodbye {user}. We hope to see you again soon.', showMember:true, showAvatar:true });
+  return `${serverHeader(server,'welcome')}<form class="dash-designer" data-settings-form="welcome" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Welcome Messages</span><h2>Welcome Messages</h2><p>Customize how Meowz welcomes new members to ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable welcome messages','Send a message when someone joins the server.')}<hr/><p class="dash-sync-note">Dashboard draft controls: changes save locally until the matching bot config API endpoints are deployed.</p>${textField('channel','Welcome Channel',s.channel,'# welcome')}<label class="dash-field"><span>Message Style</span><select name="style"><option ${s.style === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option><option ${s.style === 'Text only' ? 'selected' : ''}>Text only</option></select></label>${variableButtons()}${textareaField('welcomeMessage','Welcome Message',s.welcomeMessage,200)}${textField('leaveMessage','Leave Message (Optional)',s.leaveMessage,'Goodbye {user}')}<div class="dash-option-list">${switchField('showMember',s.showMember,'Show member number on the card','Display the member position in the server.')}${switchField('showAvatar',s.showAvatar,'Show avatar on the card','Display the member avatar on the welcome card.')}</div>${saveBtn()}</article>${welcomePreview(server,s)}</form>`;
 }
-
 function renderTemplate(template, server) {
   return String(template || '').replaceAll('{user}', 'Rafa').replaceAll('{server}', server.name).replaceAll('{memberCount}', '11');
 }
@@ -351,20 +344,23 @@ function updateWelcomePreview(server, form) {
 }
 
 function levelingPage(server) {
-  return featureUnavailablePage(server, 'leveling', 'Leveling System', `Leveling controls for ${server.name} are hidden until real XP, role and channel settings can be loaded from the bot API.`, [
-    ['XP settings', 'Load and save XP per message and cooldown.'],
-    ['Channel selector', 'Fetch available level-up channels.'],
-    ['Reward roles', 'Fetch roles and save level rewards.'],
-  ]);
+  const s = readSettings(server.id, 'leveling', { enabled:true, xp:15, cooldown:60, channel:'# level-up', stackRoles:true });
+  const roles = [
+    { level: 5, role: 'Lv5' },
+    { level: 10, role: 'Lv10' },
+    { level: 20, role: 'Lv20' },
+  ];
+  return `${serverHeader(server,'leveling')}<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/><p class="dash-sync-note">Dashboard draft controls: changes save locally until the matching bot config API endpoints are deployed.</p>${numberField('xp','XP per message',s.xp,1)}${numberField('cooldown','Cooldown seconds',s.cooldown,5)}${textField('channel','Level-up channel',s.channel,'# level-up')}${switchField('stackRoles',s.stackRoles,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><div class="dash-level-preview"><strong>Rafa reached Level 12</strong><span>1,240 / 1,500 XP</span><div><i style="width:82%"></i></div></div><div class="dash-role-table"><div class="dash-role-table-head"><strong>Reward roles</strong><button type="button" disabled>Add Role</button></div>${roles.map((r) => `<div class="dash-role-row"><span>Level ${r.level}</span><strong>${escapeHtml(r.role)}</strong></div>`).join('')}</div><small class="preview-note">Role editing can be connected to the API later. The layout is ready.</small></article></form>`;
+}
+function logsPage(server) {
+  const s = readSettings(server.id, 'logs', { enabled:true, channel:'# logs', messages:false, members:true, moderation:true, voice:false });
+  return `${serverHeader(server,'logs')}<form class="dash-designer" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Logs</span><h2>Logs</h2><p>Configure log channels and event tracking for ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable logs','Send selected events to a log channel.')}<hr/><p class="dash-sync-note">Dashboard draft controls: changes save locally until the matching bot config API endpoints are deployed.</p>${textField('channel','Log channel',s.channel,'# logs')}${switchField('messages',s.messages,'Message logs','Track message delete and edit events.')}${switchField('members',s.members,'Member logs','Track joins and leaves.')}${switchField('moderation',s.moderation,'Moderation logs','Track warnings, bans and mutes.')}${switchField('voice',s.voice,'Voice logs','Track voice channel joins and leaves.')}${saveBtn()}</article><article class="dash-card"><span>Live examples</span><h2>Tracked activity</h2><div class="dash-log-status-grid">${logStatus('Message Logs', s.messages)}${logStatus('Member Logs', s.members)}${logStatus('Voice Logs', s.voice)}${logStatus('Moderation Logs', s.moderation)}</div>${logExample('Member joined','Rafa joined the server.','success')}${logExample('Message deleted','A message was removed in #general.','warn')}${logExample('Moderation action','Zen warned a member.','mod')}</article></form>`;
 }
 function logStatus(label, enabled) { return `<div class="dash-log-status ${enabled ? 'on' : 'off'}"><span>${escapeHtml(label)}</span><strong>${enabled ? 'Enabled' : 'Disabled'}</strong></div>`; }
 function logExample(title, text, type) { return `<div class="dash-log-example ${type}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
 function moderationPage(server) {
-  return featureUnavailablePage(server, 'moderation', 'Moderation Tools', `Moderation controls for ${server.name} are hidden until they can be saved to the live bot configuration.`, [
-    ['Warning system', 'Load warning settings from the bot.'],
-    ['Filters', 'Persist anti-spam, links and invite filters.'],
-    ['Mod logs', 'Use a real Discord channel selector.'],
-  ]);
+  const s = readSettings(server.id, 'moderation', { enabled:false, warnings:true, antiSpam:false, antiLinks:false, antiInvites:false, channel:'# mod-logs' });
+  return `${serverHeader(server,'moderation')}<form class="dash-designer" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/><p class="dash-sync-note">Dashboard draft controls: changes save locally until the matching bot config API endpoints are deployed.</p>${textField('channel','Mod log channel',s.channel,'# mod-logs')}${switchField('warnings',s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('antiLinks',s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('antiInvites',s.antiInvites,'Invite filter','Block Discord invite links.')}${saveBtn()}</article><article class="dash-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Configurable preset.</span></div>`).join('')}</div></article></form>`;
 }
 function aiPage(server) {
   return `${serverHeader(server,'ai')}<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p><form class="dash-inline-form" data-ai-form><label class="dash-field"><span>Discord user ID</span><input name="userId" placeholder="123456789012345678" /></label><button class="dash-save-btn" type="submit">Add user</button></form><small class="preview-note">Users with Manage Server permission and the bot owner have access by default.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article></section>`;
@@ -446,7 +442,7 @@ function attachSettingsForm(server, section) {
     e.preventDefault();
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Saving...';
-    try { writeSettings(server.id, section, getFormValues(form)); showStatusToast('success', `${sectionTitle(section)} saved`, 'Your settings were saved.'); }
+    try { writeSettings(server.id, section, getFormValues(form)); showStatusToast('success', `${sectionTitle(section)} draft saved`, 'Saved locally in the dashboard. Connect bot config endpoints to sync these settings to Discord.'); }
     catch (err) { showStatusToast('error', 'Save failed', err.message || 'Could not save settings.'); }
     finally { setTimeout(() => { btn.disabled = false; btn.textContent = 'Save Changes'; }, 500); }
   });

@@ -4237,222 +4237,188 @@ body.menu-open { overflow: hidden !important; }
   .dash-discord-card { aspect-ratio: 1.82 / 1 !important; }
 }
 
-/* ===== Dashboard hardening fixes 2026-07-04 ===== */
+/* ===== Final dashboard hardening: breadcrumbs, drawer, spacing, light theme ===== */
 .dash-section-stack { display: grid; gap: 22px; }
-.dash-section-stack > .dash-grid { margin: 0 !important; }
-.dash-section-stack > .dash-card { margin: 0 !important; }
-.dash-live-api-note { margin-top: 18px; }
-.dash-live-api-note span { display: block; margin-top: 6px; line-height: 1.55; }
+.dash-sync-note {
+  margin: 0 0 14px !important;
+  padding: 12px 14px;
+  border: 1px solid rgba(34,211,238,.18);
+  border-radius: 14px;
+  background: rgba(34,211,238,.07);
+  color: rgba(255,255,255,.72) !important;
+  font-size: .92rem;
+  line-height: 1.5;
+  max-width: none !important;
+}
 
-/* Stop the mobile drawer itself from blurring; blur/dim only the overlay behind it. */
 @media (max-width: 980px) {
-  body.dash-drawer-open { overflow: hidden !important; }
-  .dash-mobile-backdrop:not([hidden]) {
+  .dash-mobile-backdrop {
     position: fixed !important;
     inset: 0 !important;
-    z-index: 80 !important;
-    display: block !important;
-    background: rgba(3, 4, 12, .72) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
+    z-index: 89 !important;
   }
-  .dash-mobile-bar { z-index: 100 !important; }
+  .dash-mobile-backdrop:not([hidden]) {
+    display: block !important;
+    background: rgba(2, 3, 10, .62) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
   .dash-mobile-drawer {
     position: fixed !important;
     left: 18px !important;
     right: 18px !important;
-    top: 104px !important;
-    z-index: 101 !important;
-    max-height: calc(100dvh - 122px) !important;
+    top: 112px !important;
+    z-index: 100 !important;
+    max-height: calc(100dvh - 132px) !important;
     overflow-y: auto !important;
-    overscroll-behavior: contain !important;
-    filter: none !important;
-    transform: none !important;
+    overscroll-behavior: contain;
+    background: #080913 !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    background: #090a14 !important;
-    border-color: rgba(255,255,255,.12) !important;
-    box-shadow: 0 28px 90px rgba(0,0,0,.72) !important;
+    box-shadow: 0 26px 90px rgba(0,0,0,.68) !important;
   }
-  body.dash-drawer-open .dash-content,
-  body.dash-drawer-open .dash-mobile-breadcrumb {
-    filter: none !important;
-    opacity: 1 !important;
-  }
+  body.dash-drawer-open { overflow: hidden; }
+  body.dash-drawer-open .dash-content { filter: none !important; opacity: 1 !important; }
+  .dash-content { width: min(100% - 40px, 760px) !important; padding-top: 18px !important; }
+  .dash-grid, .dash-grid.two, .dash-designer, .dash-section-stack { gap: 18px !important; }
+  .dash-page-title h1, .dash-server-title h1 { font-size: clamp(2.35rem, 12vw, 4rem); }
+  .dash-page-title p, .dash-server-title p { font-size: 1rem; }
+  .dash-tabs { margin-bottom: 20px !important; }
 }
 
 @media (max-width: 520px) {
-  .dash-mobile-drawer {
-    left: 20px !important;
-    right: 20px !important;
-    top: 104px !important;
-    max-height: calc(100dvh - 122px) !important;
-    border-radius: 22px !important;
-  }
-  .dash-section-stack { gap: 18px; }
+  .dash-content { width: min(100% - 36px, 760px) !important; }
+  .dash-mobile-drawer { left: 20px !important; right: 20px !important; top: 110px !important; max-height: calc(100dvh - 128px) !important; }
+  .dash-page-title, .dash-server-title { margin-bottom: 22px !important; }
+  .dash-section-stack { gap: 18px !important; }
 }
 
-/* Full light mode pass: every reusable dashboard surface uses light tokens. */
-:root[data-theme="light"] {
-  --bg: #f5f7fb;
-  --panel: rgba(255,255,255,.88);
-  --panel-strong: rgba(255,255,255,.96);
-  --text: #0f172a;
-  --muted: rgba(15,23,42,.66);
-  --border: rgba(15,23,42,.12);
-  --shadow: 0 24px 70px rgba(15,23,42,.12);
-}
-:root[data-theme="light"] body,
 :root[data-theme="light"] body.dashboard-app-body {
   color-scheme: light;
-  color: #0f172a !important;
   background:
-    radial-gradient(circle at 82% 16%, rgba(139,92,246,.16), transparent 30%),
-    radial-gradient(circle at 8% 88%, rgba(34,211,238,.18), transparent 36%),
-    linear-gradient(180deg, #f8fafc 0%, #eef6ff 100%) !important;
+    radial-gradient(circle at 78% 18%, rgba(124, 58, 237, .18), transparent 34%),
+    radial-gradient(circle at 12% 88%, rgba(34, 211, 238, .20), transparent 34%),
+    #f6f8fc !important;
+  color: #111827 !important;
 }
-:root[data-theme="light"] body::before {
-  background-image: linear-gradient(rgba(15,23,42,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,.035) 1px, transparent 1px) !important;
+:root[data-theme="light"] .dash-shell {
+  background: transparent !important;
 }
-:root[data-theme="light"] .nav,
-:root[data-theme="light"] .dash-mobile-bar,
 :root[data-theme="light"] .dash-sidebar,
 :root[data-theme="light"] .dash-topbar,
+:root[data-theme="light"] .dash-mobile-bar,
 :root[data-theme="light"] .dash-card,
 :root[data-theme="light"] .dashboard-login-card {
-  background: rgba(255,255,255,.92) !important;
-  border-color: rgba(15,23,42,.1) !important;
-  color: #0f172a !important;
-  box-shadow: 0 18px 55px rgba(15,23,42,.1) !important;
+  background: rgba(255,255,255,.88) !important;
+  color: #111827 !important;
+  border-color: rgba(15,23,42,.10) !important;
+  box-shadow: 0 18px 60px rgba(15,23,42,.10) !important;
 }
-:root[data-theme="light"] .dash-card,
 :root[data-theme="light"] .dash-sidebar,
 :root[data-theme="light"] .dash-topbar,
-:root[data-theme="light"] .dash-mobile-bar {
-  backdrop-filter: blur(18px) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-}
-:root[data-theme="light"] .brand,
-:root[data-theme="light"] .nav a,
+:root[data-theme="light"] .dash-mobile-bar { backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
 :root[data-theme="light"] .dash-brand,
-:root[data-theme="light"] .dash-brand strong,
+:root[data-theme="light"] .dash-card h2,
 :root[data-theme="light"] .dash-page-title h1,
 :root[data-theme="light"] .dash-server-title h1,
-:root[data-theme="light"] .dash-card h2,
-:root[data-theme="light"] .dash-card strong,
-:root[data-theme="light"] .dash-feature-card strong,
-:root[data-theme="light"] .dash-server-row strong,
-:root[data-theme="light"] .dash-info-row strong,
+:root[data-theme="light"] .dash-current-server,
+:root[data-theme="light"] .dash-current-server strong,
+:root[data-theme="light"] .dash-side-nav a,
+:root[data-theme="light"] .dash-breadcrumb strong,
+:root[data-theme="light"] .dash-mobile-breadcrumb strong,
 :root[data-theme="light"] .dash-field > span,
 :root[data-theme="light"] .dash-switch strong,
 :root[data-theme="light"] .dash-setting-block strong,
-:root[data-theme="light"] .dash-empty strong,
-:root[data-theme="light"] .dash-breadcrumb strong,
-:root[data-theme="light"] .dash-mobile-breadcrumb strong {
-  color: #0f172a !important;
+:root[data-theme="light"] .dash-server-row,
+:root[data-theme="light"] .dash-server-row strong,
+:root[data-theme="light"] .dash-server-row b,
+:root[data-theme="light"] .dash-feature-card,
+:root[data-theme="light"] .dash-feature-card strong,
+:root[data-theme="light"] .dash-info-row strong,
+:root[data-theme="light"] .dash-note strong,
+:root[data-theme="light"] .dash-role-row strong,
+:root[data-theme="light"] .dash-log-status span {
+  color: #111827 !important;
 }
+:root[data-theme="light"] .dash-card p,
 :root[data-theme="light"] .dash-page-title p,
 :root[data-theme="light"] .dash-server-title p,
-:root[data-theme="light"] .dash-card p,
-:root[data-theme="light"] .dash-feature-card span,
-:root[data-theme="light"] .dash-server-row small,
-:root[data-theme="light"] .dash-info-row span,
-:root[data-theme="light"] .dash-field small,
-:root[data-theme="light"] .dash-switch small,
-:root[data-theme="light"] .dash-setting-block p,
-:root[data-theme="light"] .dash-empty span,
+:root[data-theme="light"] .dash-current-server small,
+:root[data-theme="light"] .dash-current-server em,
+:root[data-theme="light"] .dash-side-nav small,
+:root[data-theme="light"] .dash-side-nav a:not(.is-active),
 :root[data-theme="light"] .dash-breadcrumb,
 :root[data-theme="light"] .dash-breadcrumb a,
 :root[data-theme="light"] .dash-mobile-breadcrumb,
 :root[data-theme="light"] .dash-mobile-breadcrumb a,
-:root[data-theme="light"] .dash-note span {
-  color: rgba(15,23,42,.68) !important;
+:root[data-theme="light"] .dash-switch small,
+:root[data-theme="light"] .dash-field small,
+:root[data-theme="light"] .dash-server-row small,
+:root[data-theme="light"] .dash-server-row em,
+:root[data-theme="light"] .dash-info-row span,
+:root[data-theme="light"] .dash-note span,
+:root[data-theme="light"] .dash-setting-block p,
+:root[data-theme="light"] .dash-log-status.off strong,
+:root[data-theme="light"] .dash-role-row span {
+  color: rgba(15,23,42,.64) !important;
 }
-:root[data-theme="light"] .dash-server-row,
-:root[data-theme="light"] .dash-feature-card,
-:root[data-theme="light"] .dash-info-row,
-:root[data-theme="light"] .dash-empty,
-:root[data-theme="light"] .dash-note,
-:root[data-theme="light"] .dash-setting-block,
+:root[data-theme="light"] .dash-current-server,
 :root[data-theme="light"] .dash-field input,
 :root[data-theme="light"] .dash-field textarea,
 :root[data-theme="light"] .dash-field select,
+:root[data-theme="light"] .dash-info-row,
+:root[data-theme="light"] .dash-feature-card,
+:root[data-theme="light"] .dash-empty,
+:root[data-theme="light"] .dash-server-row,
+:root[data-theme="light"] .dash-access-row,
+:root[data-theme="light"] .dash-note,
+:root[data-theme="light"] .dash-setting-block,
+:root[data-theme="light"] .dash-log-status,
+:root[data-theme="light"] .dash-log-example,
+:root[data-theme="light"] .dash-role-table-head,
+:root[data-theme="light"] .dash-role-row,
 :root[data-theme="light"] .dash-segmented,
 :root[data-theme="light"] .dash-owner-toggle,
+:root[data-theme="light"] .dash-tabs a,
 :root[data-theme="light"] .dash-pills span,
 :root[data-theme="light"] .dash-card-head > b,
-:root[data-theme="light"] .status,
-:root[data-theme="light"] .dash-access-row,
-:root[data-theme="light"] .dash-role-row,
-:root[data-theme="light"] .dash-role-table-head,
-:root[data-theme="light"] .dash-log-status {
-  background: rgba(255,255,255,.76) !important;
+:root[data-theme="light"] .status {
+  background: rgba(255,255,255,.78) !important;
   border-color: rgba(15,23,42,.11) !important;
-  color: #0f172a !important;
+  color: #111827 !important;
 }
-:root[data-theme="light"] .dash-tabs a,
-:root[data-theme="light"] .dash-side-nav a,
-:root[data-theme="light"] .dash-mobile-drawer a,
-:root[data-theme="light"] .dash-menu-btn,
-:root[data-theme="light"] .mobile-menu-button {
-  background: rgba(255,255,255,.74) !important;
-  border-color: rgba(15,23,42,.12) !important;
-  color: #0f172a !important;
-}
-:root[data-theme="light"] .dash-tabs a.is-active,
-:root[data-theme="light"] .dash-side-nav a.is-active,
-:root[data-theme="light"] .dash-owner-toggle button.is-active,
-:root[data-theme="light"] .dash-segmented button.is-active {
-  color: #fff !important;
-  background: linear-gradient(135deg,#7c3aed,#22d3ee) !important;
-}
+:root[data-theme="light"] .dash-tabs a:not(.is-active),
 :root[data-theme="light"] .dash-owner-toggle button:not(.is-active),
-:root[data-theme="light"] .dash-segmented button:not(.is-active) {
-  color: rgba(15,23,42,.62) !important;
-}
-:root[data-theme="light"] .dash-menu-btn span,
-:root[data-theme="light"] .mobile-menu-button span {
-  background: #0f172a !important;
-}
-:root[data-theme="light"] .dash-mobile-backdrop:not([hidden]) {
-  background: rgba(241,245,249,.62) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-}
-:root[data-theme="light"] .dash-mobile-drawer {
-  background: #ffffff !important;
-  color: #0f172a !important;
-  border-color: rgba(15,23,42,.12) !important;
-  box-shadow: 0 30px 90px rgba(15,23,42,.2) !important;
-}
-:root[data-theme="light"] .dash-drawer-group + .dash-drawer-group {
-  border-top-color: rgba(15,23,42,.1) !important;
-}
-:root[data-theme="light"] .dash-drawer-group small,
-:root[data-theme="light"] .dash-side-nav small {
-  color: rgba(15,23,42,.5) !important;
-}
+:root[data-theme="light"] .dash-segmented button:not(.is-active) { color: rgba(15,23,42,.62) !important; }
+:root[data-theme="light"] .dash-tabs a.is-active,
+:root[data-theme="light"] .dash-owner-toggle button.is-active,
+:root[data-theme="light"] .dash-segmented button.is-active { color: #fff !important; }
+:root[data-theme="light"] .dash-menu-btn { background: rgba(241,245,249,.92) !important; border-color: rgba(15,23,42,.12) !important; }
+:root[data-theme="light"] .dash-menu-btn span { background: #111827 !important; }
+:root[data-theme="light"] .dash-sync-note { color: #155e75 !important; background: rgba(34,211,238,.12) !important; border-color: rgba(8,145,178,.18) !important; }
 :root[data-theme="light"] .status-toast {
   background: rgba(255,255,255,.96) !important;
+  color: #111827 !important;
   border-color: rgba(15,23,42,.12) !important;
-  color: #0f172a !important;
-  box-shadow: 0 20px 50px rgba(15,23,42,.18) !important;
+  box-shadow: 0 18px 50px rgba(15,23,42,.18) !important;
 }
-:root[data-theme="light"] .status-toast strong { color: #0f172a !important; }
-:root[data-theme="light"] .status-toast span,
-:root[data-theme="light"] .status-toast button { color: rgba(15,23,42,.65) !important; }
-:root[data-theme="light"] .dash-discord-message,
-:root[data-theme="light"] .dash-discord-card {
-  color: #f8fafc !important;
-}
-:root[data-theme="light"] .dash-discord-message p,
-:root[data-theme="light"] .preview-note {
-  color: rgba(15,23,42,.68) !important;
-}
+:root[data-theme="light"] .status-toast strong { color: #111827 !important; }
+:root[data-theme="light"] .status-toast span { color: rgba(15,23,42,.68) !important; }
+:root[data-theme="light"] .status-toast button { color: #111827 !important; }
 
-@media (max-width: 640px) {
-  .toast-host { left: 14px !important; right: 14px !important; bottom: 14px !important; }
-  .status-toast { width: auto !important; max-width: none !important; }
-  .dash-card-head { gap: 12px !important; }
-  .dash-feature-grid.compact { grid-template-columns: 1fr !important; }
+@media (max-width: 980px) {
+  :root[data-theme="light"] .dash-mobile-backdrop:not([hidden]) {
+    background: rgba(248,250,252,.54) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  :root[data-theme="light"] .dash-mobile-drawer {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border-color: rgba(15,23,42,.12) !important;
+    box-shadow: 0 26px 90px rgba(15,23,42,.24) !important;
+  }
+  :root[data-theme="light"] .dash-mobile-drawer a { background: #f8fafc !important; color: #111827 !important; border-color: rgba(15,23,42,.08) !important; }
+  :root[data-theme="light"] .dash-drawer-group small { color: rgba(15,23,42,.58) !important; }
+  :root[data-theme="light"] .dash-drawer-group + .dash-drawer-group { border-color: rgba(15,23,42,.10) !important; }
 }
