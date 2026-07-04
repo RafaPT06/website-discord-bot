@@ -78,7 +78,7 @@ function shell({ server = null, active = 'Dashboard', section = 'dashboard', con
       </aside>
       <div class="dash-main">
         ${topbar(server, active, showOwnerToggle, isOwner)}
-        ${mobileBar(server)}
+        ${mobileBar(server, active, showOwnerToggle, isOwner)}
         <div class="dash-content">${content}</div>
       </div>
     </div>
@@ -117,19 +117,38 @@ function topbar(server, active, showOwnerToggle, isOwner) {
 function ownerToggle() {
   return `<div class="dash-owner-toggle" role="group" aria-label="Dashboard view mode"><button type="button" data-owner-mode="user" class="${viewMode === 'user' ? 'is-active' : ''}">User View</button><button type="button" data-owner-mode="owner" class="${viewMode === 'owner' ? 'is-active' : ''}">Owner View</button></div>`;
 }
-function mobileBar(server) {
+function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwner = false) {
   const links = server ? [
     ['Overview', sectionPath(server)], ['Welcome Messages', sectionPath(server, 'welcome')], ['Leveling', sectionPath(server, 'leveling')], ['AI Image Access', sectionPath(server, 'ai')], ['Logs', sectionPath(server, 'logs')], ['Moderation', sectionPath(server, 'moderation')],
   ] : [['Dashboard', '/dashboard'], ['Documentation', '/docs'], ['Changelog', '/changelog']];
-  return `<header class="dash-mobile-bar"><a class="dash-brand" href="/dashboard"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu"><span></span><span></span><span></span></button><div class="dash-mobile-drawer" data-dash-drawer hidden>${links.map(([label, href]) => `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`).join('')}<a href="/auth/logout" class="danger">Logout</a></div></header>`;
+  const activeLabel = server ? server.name : 'Dashboard';
+  return `<header class="dash-mobile-bar"><a class="dash-brand" href="/dashboard"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><div class="dash-mobile-backdrop" data-dash-backdrop hidden></div><aside class="dash-mobile-drawer" data-dash-drawer hidden><div class="dash-drawer-head"><span>${server ? serverIcon(server, 'dash-current-icon') : '<span class="dash-current-icon">M</span>'}</span><div><strong>${escapeHtml(activeLabel)}</strong><small>${escapeHtml(active)}</small></div></div>${showOwnerToggle && isOwner ? `<div class="dash-drawer-toggle">${ownerToggle()}</div>` : ''}<nav>${links.map(([label, href]) => `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`).join('')}<a href="/auth/logout" class="danger">Logout</a></nav></aside></header>`;
 }
 function wireShell(root = document) {
   root.querySelectorAll('[data-dash-menu]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const drawer = btn.closest('.dash-mobile-bar')?.querySelector('[data-dash-drawer]');
+      const bar = btn.closest('.dash-mobile-bar');
+      const drawer = bar?.querySelector('[data-dash-drawer]');
+      const backdrop = bar?.querySelector('[data-dash-backdrop]');
       if (!drawer) return;
-      drawer.hidden = !drawer.hidden;
-      btn.classList.toggle('is-open', !drawer.hidden);
+      const open = drawer.hidden;
+      drawer.hidden = !open;
+      if (backdrop) backdrop.hidden = !open;
+      btn.classList.toggle('is-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      document.body.classList.toggle('dash-drawer-open', open);
+    });
+  });
+  root.querySelectorAll('[data-dash-backdrop]').forEach((backdrop) => {
+    backdrop.addEventListener('click', () => {
+      const bar = backdrop.closest('.dash-mobile-bar');
+      const btn = bar?.querySelector('[data-dash-menu]');
+      const drawer = bar?.querySelector('[data-dash-drawer]');
+      if (drawer) drawer.hidden = true;
+      backdrop.hidden = true;
+      btn?.classList.remove('is-open');
+      btn?.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('dash-drawer-open');
     });
   });
   root.querySelectorAll('[data-owner-mode]').forEach((btn) => {
