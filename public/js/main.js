@@ -2,6 +2,18 @@ import { initAuth } from './auth.js';
 import { initNavigation } from './navigation.js';
 import { initStatusToasts } from './toast.js';
 
+function applyStoredTheme() {
+  try {
+    const prefs = JSON.parse(localStorage.getItem('meowzDashboardPreferences') || '{}');
+    const saved = prefs.theme || localStorage.getItem('meowzTheme') || 'dark';
+    document.documentElement.dataset.theme = saved === 'light' ? 'light' : 'dark';
+  } catch {
+    document.documentElement.dataset.theme = localStorage.getItem('meowzTheme') === 'light' ? 'light' : 'dark';
+  }
+}
+
+applyStoredTheme();
+
 function setFooterYear() {
   document.querySelectorAll('[data-footer-year]').forEach((el) => {
     el.textContent = new Date().getFullYear();

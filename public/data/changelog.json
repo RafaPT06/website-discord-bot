@@ -1,5 +1,23 @@
 [
   {
+    "version": "Unified mobile menu and light theme coverage",
+    "date": "2026-07-05",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Unified the mobile navigation styling across homepage, documentation, changelog and dashboard shells so the menu no longer changes appearance between pages."
+      },
+      {
+        "type": "Fixed",
+        "text": "Applied saved light mode before page modules boot so home, documentation and changelog follow the selected theme instead of staying dark."
+      },
+      {
+        "type": "Fixed",
+        "text": "Improved light mode coverage for status messages, documentation tables, changelog cards, homepage cards and mobile menu labels."
+      }
+    ]
+  },
+  {
     "version": "Dashboard API and theme reliability",
     "date": "2026-07-05",
     "changes": [
