@@ -1,20 +1,3 @@
-function normalizeBotApiStats(data = {}) {
-  return {
-    ok: data.ok !== false,
-    botName: data.botName || data.name || data.username || 'Meowz',
-    botTag: data.botTag || data.tag || (data.online === false ? 'Offline' : 'Online and ready'),
-    avatarUrl: data.avatarUrl || data.avatar || null,
-    servers: data.servers ?? data.guilds ?? data.guildCount ?? 0,
-    users: data.users ?? data.members ?? data.userCount ?? 0,
-    commands: data.commands ?? data.commandCount ?? 0,
-    ping: data.ping ?? data.wsPing ?? null,
-    uptime: data.uptime || data.uptimeText || '—',
-    online: data.online !== false,
-    inviteUrl: data.inviteUrl || null,
-    updatedAt: data.updatedAt || new Date().toISOString(),
-  };
-}
-
 async function requestBotApi(pathname, options = {}) {
   const botApiUrl = process.env.BOT_API_URL;
   const botApiToken = process.env.BOT_API_TOKEN;
@@ -57,19 +40,6 @@ async function requestBotApi(pathname, options = {}) {
   return data;
 }
 
-async function requestFirstBotApi(paths, options = {}) {
-  let lastError = null;
-  for (const pathname of paths) {
-    try {
-      return await requestBotApi(pathname, options);
-    } catch (err) {
-      lastError = err;
-      if (err.statusCode === 401 || err.statusCode === 403) break;
-    }
-  }
-  throw lastError || new Error('Could not reach the bot API.');
-}
-
 function getBotApiDiagnostics() {
   const botApiUrl = process.env.BOT_API_URL || '';
   return {
@@ -80,4 +50,4 @@ function getBotApiDiagnostics() {
   };
 }
 
-module.exports = { requestBotApi, requestFirstBotApi, normalizeBotApiStats, getBotApiDiagnostics };
+module.exports = { requestBotApi, getBotApiDiagnostics };

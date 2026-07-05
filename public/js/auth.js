@@ -1,9 +1,9 @@
 import { escapeHtml } from './utils.js';
 
-const authArea = document.querySelector('[data-auth-area]');
-const authOnlyEls = document.querySelectorAll('[data-auth-only]');
-const dashboardSection = document.querySelector('[data-dashboard]');
-const dashboardGuest = document.querySelector('[data-dashboard-guest]');
+function authAreaEl() { return document.querySelector('[data-auth-area]'); }
+function authOnlyEls() { return document.querySelectorAll('[data-auth-only]'); }
+function dashboardSectionEl() { return document.querySelector('[data-dashboard]'); }
+function dashboardGuestEl() { return document.querySelector('[data-dashboard-guest]'); }
 let activeUser = null;
 
 function avatarUrl(user, size = 96) {
@@ -36,16 +36,14 @@ function setAuthOnlyVisible(isVisible) {
   document.body.classList.toggle('dashboard-signed-in', Boolean(isVisible));
   document.body.classList.toggle('dashboard-signed-out', !isVisible);
   document.body.classList.remove('menu-open', 'dash-drawer-open');
-  authOnlyEls.forEach((el) => {
+  authOnlyEls().forEach((el) => {
     el.hidden = !isVisible;
   });
 
-  if (dashboardSection) {
-    dashboardSection.hidden = !isVisible;
-  }
-  if (dashboardGuest) {
-    dashboardGuest.hidden = isVisible;
-  }
+  const dashboardSection = dashboardSectionEl();
+  const dashboardGuest = dashboardGuestEl();
+  if (dashboardSection) dashboardSection.hidden = !isVisible;
+  if (dashboardGuest) dashboardGuest.hidden = isVisible;
 }
 
 function closeProfileMenu() {
@@ -66,6 +64,7 @@ function toggleProfileMenu() {
 }
 
 function renderDashboard(user) {
+  const dashboardSection = dashboardSectionEl();
   if (!dashboardSection) return;
 
   const name = displayName(user);
@@ -94,6 +93,7 @@ function renderLoggedOut() {
   activeUser = null;
   setAuthOnlyVisible(false);
 
+  const authArea = authAreaEl();
   if (!authArea) return;
   authArea.className = 'auth-area';
   authArea.innerHTML = '<a class="login-button" href="/auth/discord">Login with Discord</a>';
@@ -104,6 +104,7 @@ function renderLoggedIn(user) {
   setAuthOnlyVisible(true);
   renderDashboard(user);
 
+  const authArea = authAreaEl();
   if (!authArea) return;
 
   const name = escapeHtml(displayName(user));
@@ -133,6 +134,18 @@ function renderLoggedIn(user) {
         <a class="logout-link" href="/auth/logout" role="menuitem">Logout</a>
       </div>
     </div>
+
+    <div class="mobile-account-panel">
+      <div class="mobile-account-header">
+        ${renderAvatar(user, 'mobile-account-avatar')}
+        <div>
+          <strong>${name}</strong>
+          <span>${username}</span>
+        </div>
+      </div>
+      <a href="/dashboard/settings">Settings</a>
+      <a class="logout-link" href="/auth/logout">Logout</a>
+    </div>
   `;
 
   const toggle = authArea.querySelector('[data-profile-toggle]');
@@ -143,7 +156,7 @@ function renderLoggedIn(user) {
 }
 
 export async function initAuth() {
-  if (!authArea) return;
+  if (!authAreaEl()) return;
 
   try {
     const res = await fetch('/api/me', { credentials: 'include' });

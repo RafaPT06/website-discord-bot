@@ -4237,494 +4237,203 @@ body.menu-open { overflow: hidden !important; }
   .dash-discord-card { aspect-ratio: 1.82 / 1 !important; }
 }
 
-
-/* ===== Implementation fix: API/loading/navigation/light-mode hardening ===== */
-.dash-section + .dash-section { margin-top: 22px; }
-.dash-breadcrumb:empty,
-.dash-mobile-breadcrumb:empty { display: none !important; }
-
-@media (max-width: 980px) {
-  .dash-mobile-bar {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-  .dash-mobile-backdrop:not([hidden]) {
-    background: rgba(3, 5, 15, .72) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-  }
-  .dash-mobile-drawer {
-    background: #090a14 !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    filter: none !important;
-  }
-  body.dash-drawer-open .dash-mobile-drawer,
-  body.dash-drawer-open .dash-mobile-bar { filter: none !important; opacity: 1 !important; }
+/* ===== component refactor foundation ===== */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f8fd;
+  --panel: rgba(255,255,255,.78);
+  --panel-strong: rgba(255,255,255,.92);
+  --text: #0f172a;
+  --muted: rgba(15,23,42,.68);
+  --border: rgba(15,23,42,.12);
+  --shadow: 0 22px 70px rgba(15,23,42,.13);
 }
 
-:root[data-theme="light"] body.dashboard-app-body {
-  background: radial-gradient(circle at 82% 16%, rgba(139,92,246,.16), transparent 32%), radial-gradient(circle at 10% 90%, rgba(34,211,238,.18), transparent 34%), #f7f9fc !important;
-  color: #101828 !important;
+:root[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 78% 16%, rgba(139,92,246,.18), transparent 34%),
+    radial-gradient(circle at 8% 94%, rgba(34,211,238,.20), transparent 36%),
+    var(--bg) !important;
+  color: var(--text);
 }
+:root[data-theme="light"] body::before {
+  background-image: linear-gradient(rgba(15,23,42,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,.045) 1px, transparent 1px);
+}
+:root[data-theme="light"] .nav,
+:root[data-theme="light"] .bot-card,
+:root[data-theme="light"] .feature-card,
+:root[data-theme="light"] .commands-table-wrap,
+:root[data-theme="light"] .changelog-card,
+:root[data-theme="light"] .footer-card,
+:root[data-theme="light"] .dash-card,
+:root[data-theme="light"] .dashboard-login-card,
 :root[data-theme="light"] .dash-sidebar,
 :root[data-theme="light"] .dash-topbar,
-:root[data-theme="light"] .dash-mobile-bar,
-:root[data-theme="light"] .dash-card,
-:root[data-theme="light"] .dashboard-login-card,
-:root[data-theme="light"] .dash-mobile-drawer {
-  background: rgba(255,255,255,.94) !important;
-  border-color: rgba(15,23,42,.12) !important;
-  color: #101828 !important;
-  box-shadow: 0 20px 65px rgba(15,23,42,.12) !important;
-}
-:root[data-theme="light"] .dash-mobile-drawer a,
-:root[data-theme="light"] .dash-current-server,
-:root[data-theme="light"] .dash-side-nav a,
-:root[data-theme="light"] .dash-feature-card,
-:root[data-theme="light"] .dash-info-row,
-:root[data-theme="light"] .dash-server-row,
-:root[data-theme="light"] .dash-access-row,
-:root[data-theme="light"] .dash-note,
-:root[data-theme="light"] .dash-setting-block,
-:root[data-theme="light"] .dash-field input,
-:root[data-theme="light"] .dash-field textarea,
-:root[data-theme="light"] .dash-field select,
-:root[data-theme="light"] .dash-owner-toggle,
-:root[data-theme="light"] .dash-segmented,
-:root[data-theme="light"] .dash-tabs a,
-:root[data-theme="light"] .dash-pills span,
-:root[data-theme="light"] .dash-card-head > b,
-:root[data-theme="light"] .dash-empty,
-:root[data-theme="light"] .dash-log-status,
-:root[data-theme="light"] .dash-role-row,
-:root[data-theme="light"] .dash-role-table-head {
-  background: rgba(255,255,255,.78) !important;
-  border-color: rgba(15,23,42,.12) !important;
-  color: #101828 !important;
-}
-:root[data-theme="light"] .dash-brand,
-:root[data-theme="light"] .dash-card h2,
-:root[data-theme="light"] .dash-page-title h1,
-:root[data-theme="light"] .dash-server-title h1,
-:root[data-theme="light"] .dash-current-server strong,
-:root[data-theme="light"] .dash-server-row strong,
-:root[data-theme="light"] .dash-field > span,
-:root[data-theme="light"] .dash-switch strong,
-:root[data-theme="light"] .dash-setting-block strong,
-:root[data-theme="light"] .dash-mobile-drawer strong,
-:root[data-theme="light"] .dash-tabs a.is-active {
-  color: #101828 !important;
-}
-:root[data-theme="light"] .dash-card p,
-:root[data-theme="light"] .dash-page-title p,
-:root[data-theme="light"] .dash-server-title p,
-:root[data-theme="light"] .dash-current-server small,
-:root[data-theme="light"] .dash-server-row small,
-:root[data-theme="light"] .dash-switch small,
-:root[data-theme="light"] .dash-field small,
-:root[data-theme="light"] .dash-mobile-breadcrumb,
-:root[data-theme="light"] .dash-mobile-breadcrumb a,
-:root[data-theme="light"] .dash-log-status span {
-  color: rgba(16,24,40,.68) !important;
-}
-:root[data-theme="light"] .dash-owner-toggle button,
-:root[data-theme="light"] .dash-segmented button { color: rgba(16,24,40,.62) !important; }
-:root[data-theme="light"] .dash-owner-toggle button.is-active,
-:root[data-theme="light"] .dash-segmented button.is-active,
-:root[data-theme="light"] .dash-tabs a.is-active,
-:root[data-theme="light"] .dash-save-btn,
-:root[data-theme="light"] .dash-primary-small { color: #fff !important; }
-:root[data-theme="light"] .dash-mobile-backdrop:not([hidden]) { background: rgba(15,23,42,.30) !important; }
-:root[data-theme="light"] .status-toast {
-  background: rgba(255,255,255,.96) !important;
-  border-color: rgba(15,23,42,.12) !important;
-  color: #101828 !important;
-  box-shadow: 0 22px 70px rgba(15,23,42,.18) !important;
-}
-:root[data-theme="light"] .status-toast span,
-:root[data-theme="light"] .status-toast button { color: rgba(16,24,40,.66) !important; }
-
-
-/* ===== Unified mobile navigation + full light theme coverage 2026-07-05 ===== */
-:root[data-theme="light"] {
-  color-scheme: light;
-  --bg: #f7f9fc;
-  --panel: rgba(255,255,255,.86);
-  --panel-strong: rgba(255,255,255,.96);
-  --text: #101828;
-  --muted: rgba(16,24,40,.68);
-  --border: rgba(15,23,42,.12);
-  --shadow: 0 24px 75px rgba(15,23,42,.14);
-}
-:root[data-theme="light"] body {
-  background:
-    radial-gradient(circle at 82% 16%, rgba(139,92,246,.16), transparent 32%),
-    radial-gradient(circle at 8% 92%, rgba(34,211,238,.18), transparent 34%),
-    #f7f9fc !important;
-  color: var(--text) !important;
-}
-:root[data-theme="light"] body::before {
-  background-image: linear-gradient(rgba(15,23,42,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,.035) 1px, transparent 1px);
-}
-:root[data-theme="light"] .nav,
-:root[data-theme="light"] .footer-card,
-:root[data-theme="light"] .bot-card,
-:root[data-theme="light"] .feature-card,
-:root[data-theme="light"] .commands-table-wrap,
-:root[data-theme="light"] .command-detail-panel,
-:root[data-theme="light"] .command-toolbar,
-:root[data-theme="light"] .command-summary,
-:root[data-theme="light"] .changelog-card,
-:root[data-theme="light"] .page-modal,
-:root[data-theme="light"] .command-sheet,
-:root[data-theme="light"] .search-box,
-:root[data-theme="light"] .category-tabs,
-:root[data-theme="light"] .stat-card,
-:root[data-theme="light"] .commands-table td,
-:root[data-theme="light"] .commands-table th {
-  background: rgba(255,255,255,.88) !important;
-  border-color: rgba(15,23,42,.12) !important;
-  color: #101828 !important;
-  box-shadow: 0 20px 65px rgba(15,23,42,.10) !important;
-}
-:root[data-theme="light"] .bot-card,
-:root[data-theme="light"] .feature-card,
-:root[data-theme="light"] .commands-table-wrap,
-:root[data-theme="light"] .changelog-card,
-:root[data-theme="light"] .footer-card { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-:root[data-theme="light"] .brand,
-:root[data-theme="light"] .nav a,
-:root[data-theme="light"] h1,
-:root[data-theme="light"] h2,
-:root[data-theme="light"] h3,
-:root[data-theme="light"] .bot-card strong,
-:root[data-theme="light"] .bot-card h2,
-:root[data-theme="light"] .feature-card h3,
-:root[data-theme="light"] .changelog-card h3,
-:root[data-theme="light"] .commands-table,
-:root[data-theme="light"] .command-name,
-:root[data-theme="light"] .status-toast strong { color: #101828 !important; }
-:root[data-theme="light"] p,
-:root[data-theme="light"] .muted,
-:root[data-theme="light"] .hero-text,
-:root[data-theme="light"] .bot-card p,
-:root[data-theme="light"] .feature-card p,
-:root[data-theme="light"] .changelog-date,
-:root[data-theme="light"] .updated,
-:root[data-theme="light"] .command-description,
-:root[data-theme="light"] .status-toast span { color: rgba(16,24,40,.68) !important; }
-:root[data-theme="light"] .mobile-menu-button,
-:root[data-theme="light"] .dash-menu-btn,
-:root[data-theme="light"] .app-mobile-menu-btn {
-  background: rgba(255,255,255,.78) !important;
-  border-color: rgba(15,23,42,.12) !important;
-  color: #101828 !important;
-}
-:root[data-theme="light"] .mobile-menu-button span,
-:root[data-theme="light"] .dash-menu-btn span,
-:root[data-theme="light"] .app-mobile-menu-btn span { background: #101828 !important; }
-:root[data-theme="light"] .btn-secondary,
-:root[data-theme="light"] .category-tabs button,
-:root[data-theme="light"] .pagination button,
-:root[data-theme="light"] .page-modal-actions button,
-:root[data-theme="light"] input,
-:root[data-theme="light"] select,
-:root[data-theme="light"] textarea {
-  background: rgba(255,255,255,.78) !important;
-  color: #101828 !important;
-  border-color: rgba(15,23,42,.12) !important;
-}
-:root[data-theme="light"] .btn-primary,
-:root[data-theme="light"] .category-tabs button.active,
-:root[data-theme="light"] .pagination button.active { color: #fff !important; }
-
-@media (max-width: 720px) {
-  .nav {
-    min-height: 78px;
-    padding: 12px 16px;
-    border-radius: 28px;
-    top: 16px;
-    z-index: 90;
-  }
-  .brand { font-size: 1.35rem; gap: 14px; }
-  .brand-icon { width: 54px; height: 54px; border-radius: 18px; }
-  .mobile-menu-button { width: 54px; height: 54px; border-radius: 18px; }
-  .mobile-menu-button span { width: 24px; height: 2.5px; margin: 5px auto; }
-  body.menu-open::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 70;
-    background: rgba(3,5,15,.62);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    pointer-events: none;
-  }
-  .nav:has(.nav-links.is-open) { z-index: 100; }
-  .nav-links {
-    position: fixed !important;
-    left: 24px !important;
-    right: 24px !important;
-    top: 118px !important;
-    max-height: calc(100dvh - 150px);
-    overflow-y: auto;
-    display: grid !important;
-    gap: 12px !important;
-    padding: 22px !important;
-    border-radius: 28px !important;
-    border: 1px solid var(--border) !important;
-    background: rgba(8,9,19,.98) !important;
-    box-shadow: 0 30px 90px rgba(0,0,0,.60) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    z-index: 101 !important;
-  }
-  .nav-links::before {
-    content: "Dashboard";
-    display: block;
-    color: rgba(255,255,255,.55);
-    text-transform: uppercase;
-    letter-spacing: .14em;
-    font-size: .78rem;
-    font-weight: 950;
-    padding: 0 4px 2px;
-  }
-  .nav-links a,
-  .nav-links .auth-area,
-  .login-coming-soon {
-    min-height: 54px;
-    display: flex;
-    align-items: center;
-    padding: 0 18px !important;
-    border-radius: 17px !important;
-    background: rgba(255,255,255,.055) !important;
-    border: 1px solid rgba(255,255,255,.09) !important;
-    color: #fff !important;
-    font-weight: 900;
-  }
-  .nav-links a.active { background: linear-gradient(135deg, rgba(124,58,237,.86), rgba(34,211,238,.76)) !important; color: #fff !important; }
-  :root[data-theme="light"] body.menu-open::after { background: rgba(15,23,42,.26); }
-  :root[data-theme="light"] .nav-links {
-    background: rgba(255,255,255,.96) !important;
-    box-shadow: 0 30px 90px rgba(15,23,42,.18) !important;
-  }
-  :root[data-theme="light"] .nav-links::before { color: rgba(16,24,40,.52) !important; }
-  :root[data-theme="light"] .nav-links a,
-  :root[data-theme="light"] .nav-links .auth-area,
-  :root[data-theme="light"] .login-coming-soon {
-    background: rgba(255,255,255,.78) !important;
-    border-color: rgba(15,23,42,.12) !important;
-    color: #101828 !important;
-  }
-  :root[data-theme="light"] .nav-links a.active { color: #fff !important; }
-}
-
-@media (max-width: 980px) {
-  :root[data-theme="light"] .dash-mobile-drawer {
-    background: rgba(255,255,255,.96) !important;
-    color: #101828 !important;
-    box-shadow: 0 30px 90px rgba(15,23,42,.18) !important;
-  }
-  :root[data-theme="light"] .dash-drawer-group small,
-  :root[data-theme="light"] .dash-mobile-drawer small { color: rgba(16,24,40,.56) !important; }
-  :root[data-theme="light"] .dash-mobile-drawer nav a,
-  :root[data-theme="light"] .dash-drawer-group a {
-    background: rgba(255,255,255,.78) !important;
-    border: 1px solid rgba(15,23,42,.12) !important;
-    color: #101828 !important;
-  }
-  :root[data-theme="light"] .dash-mobile-backdrop:not([hidden]) {
-    background: rgba(15,23,42,.26) !important;
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
-  }
-}
-
-:root[data-theme="light"] .dash-card > span,
-:root[data-theme="light"] .dash-card-head span,
-:root[data-theme="light"] .dash-feature-card span,
-:root[data-theme="light"] .dash-note span,
-:root[data-theme="light"] .dash-field small,
-:root[data-theme="light"] .dash-pills span { color: rgba(16,24,40,.68) !important; }
-:root[data-theme="light"] .dash-feature-card strong,
-:root[data-theme="light"] .dash-note strong { color: #101828 !important; }
-:root[data-theme="light"] .status-pill { background: rgba(255,255,255,.76) !important; color: #101828 !important; border-color: rgba(15,23,42,.12) !important; }
-:root[data-theme="light"] .status-toast {
-  background: rgba(255,255,255,.97) !important;
-  color: #101828 !important;
-  border-color: rgba(15,23,42,.12) !important;
-}
-
-/* ===== final unified navigation + no theme flash fixes ===== */
-:root[data-theme="light"] {
-  color-scheme: light;
-  --bg: #f8fbff;
-  --panel: rgba(255,255,255,.84);
-  --panel-strong: rgba(255,255,255,.96);
-  --text: #0f172a;
-  --muted: #596172;
-  --border: rgba(15,23,42,.12);
-  --shadow: 0 22px 70px rgba(15,23,42,.14);
-}
-:root[data-theme="light"] body {
-  background:
-    radial-gradient(circle at 86% 22%, rgba(139,92,246,.26), transparent 38%),
-    radial-gradient(circle at 10% 86%, rgba(34,211,238,.30), transparent 36%),
-    var(--bg) !important;
-  color: var(--text) !important;
-}
-:root[data-theme="light"] body::before {
-  background-image: linear-gradient(rgba(15,23,42,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,.045) 1px, transparent 1px) !important;
-}
-.nav {
-  min-height: 70px;
-}
-:root[data-theme="light"] .nav,
-:root[data-theme="light"] .footer-card,
-:root[data-theme="light"] .section,
-:root[data-theme="light"] .bot-card,
-:root[data-theme="light"] .feature-card,
-:root[data-theme="light"] .command-toolbar,
-:root[data-theme="light"] .commands-table-panel,
-:root[data-theme="light"] .changelog-card,
-:root[data-theme="light"] .modal-panel,
-:root[data-theme="light"] .dashboard-login-card,
-:root[data-theme="light"] .dash-card,
-:root[data-theme="light"] .dash-empty,
-:root[data-theme="light"] .dash-server-row,
-:root[data-theme="light"] .dash-current-server,
-:root[data-theme="light"] .dash-info-list div,
-:root[data-theme="light"] .dash-feature-card,
-:root[data-theme="light"] .dash-field input,
-:root[data-theme="light"] .dash-field textarea,
-:root[data-theme="light"] .dash-field select,
-:root[data-theme="light"] .app-card,
-:root[data-theme="light"] .app-field input,
-:root[data-theme="light"] .app-field textarea,
-:root[data-theme="light"] .app-field select {
-  background: rgba(255,255,255,.86) !important;
-  border-color: rgba(15,23,42,.12) !important;
+:root[data-theme="light"] .dashboard-welcome-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.74)) !important;
+  border-color: var(--border) !important;
   color: var(--text) !important;
   box-shadow: var(--shadow);
 }
-:root[data-theme="light"] .btn-secondary,
-:root[data-theme="light"] .status-pill,
-:root[data-theme="light"] .category-tabs button,
-:root[data-theme="light"] .tag,
-:root[data-theme="light"] .command-summary,
-:root[data-theme="light"] .pagination button,
+:root[data-theme="light"] .brand,
+:root[data-theme="light"] .nav a,
 :root[data-theme="light"] .mobile-menu-button,
-:root[data-theme="light"] .owner-view-toggle,
-:root[data-theme="light"] .dash-owner-toggle,
-:root[data-theme="light"] .dash-side-nav a,
-:root[data-theme="light"] .dash-mobile-breadcrumb {
-  background: rgba(255,255,255,.72) !important;
-  border-color: rgba(15,23,42,.12) !important;
-  color: var(--text) !important;
-}
-:root[data-theme="light"] .muted,
-:root[data-theme="light"] p,
-:root[data-theme="light"] .hero-text,
-:root[data-theme="light"] .bot-card p,
-:root[data-theme="light"] .stat-card span,
-:root[data-theme="light"] .feature-card p,
-:root[data-theme="light"] .changelog-card p,
-:root[data-theme="light"] .dash-card p,
-:root[data-theme="light"] .dash-card small,
-:root[data-theme="light"] .dash-empty span,
-:root[data-theme="light"] .dash-info-list span,
-:root[data-theme="light"] .dash-feature-card span,
-:root[data-theme="light"] .dash-side-nav small,
-:root[data-theme="light"] .dash-mobile-breadcrumb a {
-  color: var(--muted) !important;
-}
 :root[data-theme="light"] h1,
 :root[data-theme="light"] h2,
 :root[data-theme="light"] h3,
-:root[data-theme="light"] strong,
-:root[data-theme="light"] .brand,
-:root[data-theme="light"] .brand a,
-:root[data-theme="light"] .nav a,
+:root[data-theme="light"] .bot-top h2,
 :root[data-theme="light"] .stat-card strong,
 :root[data-theme="light"] .command-name,
-:root[data-theme="light"] .dash-card h2,
-:root[data-theme="light"] .dash-page-title h1 {
+:root[data-theme="light"] .change-list li > span:last-child,
+:root[data-theme="light"] .dash-breadcrumb strong,
+:root[data-theme="light"] .dash-user-name,
+:root[data-theme="light"] .dash-info-list strong,
+:root[data-theme="light"] .dashboard-info-list strong,
+:root[data-theme="light"] .dash-server-row strong,
+:root[data-theme="light"] .dash-current-server strong,
+:root[data-theme="light"] .dash-mobile-breadcrumb strong {
   color: var(--text) !important;
 }
-:root[data-theme="light"] .toast,
-:root[data-theme="light"] [data-toast-container] > * {
+:root[data-theme="light"] .nav-links a,
+:root[data-theme="light"] .hero-text,
+:root[data-theme="light"] .muted,
+:root[data-theme="light"] .bot-top p,
+:root[data-theme="light"] .stat-card span,
+:root[data-theme="light"] .updated,
+:root[data-theme="light"] .command-description,
+:root[data-theme="light"] .dash-card p,
+:root[data-theme="light"] .dash-breadcrumb,
+:root[data-theme="light"] .dash-breadcrumb a,
+:root[data-theme="light"] .dash-server-row small,
+:root[data-theme="light"] .dash-current-server small,
+:root[data-theme="light"] .dashboard-info-list span,
+:root[data-theme="light"] .dash-info-list span,
+:root[data-theme="light"] .dash-user-subtitle {
+  color: var(--muted) !important;
+}
+:root[data-theme="light"] .stat-card,
+:root[data-theme="light"] .dash-info-list div,
+:root[data-theme="light"] .dashboard-info-list div,
+:root[data-theme="light"] .command-search,
+:root[data-theme="light"] .command-category,
+:root[data-theme="light"] .command-row,
+:root[data-theme="light"] .dash-field input,
+:root[data-theme="light"] .dash-field textarea,
+:root[data-theme="light"] .dash-field select,
+:root[data-theme="light"] .dash-feature-card,
+:root[data-theme="light"] .dash-server-row,
+:root[data-theme="light"] .dash-empty,
+:root[data-theme="light"] .dash-setting-block,
+:root[data-theme="light"] .dash-note {
+  background: rgba(255,255,255,.76) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+:root[data-theme="light"] .btn-secondary,
+:root[data-theme="light"] .mobile-menu-button,
+:root[data-theme="light"] .auth-loading,
+:root[data-theme="light"] .logout-button,
+:root[data-theme="light"] .user-chip,
+:root[data-theme="light"] .nav-user-button {
+  background: rgba(255,255,255,.68) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+:root[data-theme="light"] .profile-dropdown,
+:root[data-theme="light"] .status-toast {
   background: rgba(255,255,255,.96) !important;
   color: var(--text) !important;
-  border-color: rgba(15,23,42,.12) !important;
+  border-color: var(--border) !important;
 }
-:root[data-theme="light"] .toast p,
-:root[data-theme="light"] [data-toast-container] p,
-:root[data-theme="light"] [data-toast-container] span { color: var(--muted) !important; }
+:root[data-theme="light"] .status-toast strong { color: var(--text) !important; }
+:root[data-theme="light"] .status-toast span { color: var(--muted) !important; }
+:root[data-theme="light"] .status-pill {
+  background: rgba(16,185,129,.12) !important;
+  color: #065f46 !important;
+}
+
+.nav[data-global-navbar] { isolation: isolate; }
+.nav-links a.active { color: var(--text) !important; }
 
 @media (max-width: 720px) {
-  .nav { position: sticky !important; top: 10px !important; z-index: 120 !important; width: min(100% - 24px, 760px) !important; margin-top: 14px !important; padding: 12px 14px !important; border-radius: 22px !important; }
-  .mobile-menu-button { display: grid !important; place-items: center; flex: 0 0 auto; }
-  .nav-links {
+  .nav[data-global-navbar] { width: min(100% - 24px, 1120px); margin-top: 16px; padding: 14px 16px; border-radius: 28px; }
+  .nav[data-global-navbar] .brand { font-size: 1.55rem; gap: 14px; }
+  .nav[data-global-navbar] .brand-icon { width: 56px; height: 56px; border-radius: 18px; font-size: 1.35rem; }
+  .nav[data-global-navbar] .mobile-menu-button { display: grid; place-content: center; width: 60px; height: 60px; border-radius: 18px; }
+  .nav[data-global-navbar] .nav-links {
     position: fixed !important;
-    top: 96px !important;
-    left: 20px !important;
-    right: 20px !important;
-    max-height: min(70vh, 620px) !important;
+    top: 104px !important;
+    left: 22px !important;
+    right: 22px !important;
+    max-height: calc(100vh - 128px) !important;
     overflow-y: auto !important;
     display: grid !important;
-    gap: 10px !important;
-    padding: 16px !important;
-    border-radius: 24px !important;
+    gap: 12px !important;
+    padding: 28px !important;
+    border-radius: 28px !important;
+    background: rgba(10,11,22,.98) !important;
     border: 1px solid var(--border) !important;
-    background: rgba(8,9,19,.98) !important;
+    box-shadow: var(--shadow) !important;
     backdrop-filter: none !important;
-    transform: translateY(-10px) !important;
+    transform: translateY(-12px) scale(.985) !important;
     opacity: 0 !important;
     pointer-events: none !important;
-    z-index: 140 !important;
+    z-index: 80 !important;
   }
-  .nav-links.is-open { transform: translateY(0) !important; opacity: 1 !important; pointer-events: auto !important; }
-  .nav-links a,
-  .auth-area .login-button {
+  .nav[data-global-navbar] .nav-links.is-open { transform: translateY(0) scale(1) !important; opacity: 1 !important; pointer-events: auto !important; }
+  .nav[data-global-navbar] .nav-links a,
+  .nav[data-global-navbar] .auth-area > a,
+  .nav[data-global-navbar] .auth-loading {
     width: 100% !important;
-    min-height: 52px !important;
+    min-height: 58px !important;
     display: flex !important;
     align-items: center !important;
-    padding: 0 16px !important;
-    border-radius: 16px !important;
-    background: rgba(255,255,255,.06) !important;
+    padding: 16px 18px !important;
+    border-radius: 18px !important;
+    background: rgba(255,255,255,.065) !important;
     border: 1px solid var(--border) !important;
     color: var(--text) !important;
+    font-size: 1rem !important;
     font-weight: 850 !important;
-    text-align: left !important;
   }
-  .nav-links .auth-area { width: 100% !important; }
-  .nav-links .profile-menu-wrap { display: none !important; }
-  :root[data-theme="light"] .nav-links { background: rgba(255,255,255,.98) !important; }
-  :root[data-theme="light"] .nav-links a,
-  :root[data-theme="light"] .auth-area .login-button { background: rgba(255,255,255,.74) !important; color: var(--text) !important; border-color: rgba(15,23,42,.12) !important; }
+  .nav[data-global-navbar] .auth-area { display: grid !important; gap: 12px !important; width: 100% !important; }
+  .nav[data-global-navbar] .profile-menu-wrap { display: none !important; }
+  .nav[data-global-navbar] .mobile-account-panel { display: grid !important; gap: 12px !important; }
+  :root[data-theme="light"] .nav[data-global-navbar] .nav-links {
+    background: rgba(255,255,255,.97) !important;
+  }
+  :root[data-theme="light"] .nav[data-global-navbar] .nav-links a,
+  :root[data-theme="light"] .nav[data-global-navbar] .auth-area > a,
+  :root[data-theme="light"] .nav[data-global-navbar] .auth-loading {
+    background: rgba(255,255,255,.78) !important;
+    color: var(--text) !important;
+  }
   body.menu-open::after {
     content: "";
     position: fixed;
     inset: 0;
-    z-index: 100;
-    background: rgba(5,7,14,.42);
-    backdrop-filter: blur(9px);
+    z-index: 45;
+    background: rgba(4,6,12,.32);
+    backdrop-filter: blur(8px);
     pointer-events: none;
   }
-  :root[data-theme="light"] body.menu-open::after { background: rgba(15,23,42,.22); }
+  :root[data-theme="light"] body.menu-open::after { background: rgba(226,232,240,.5); }
 }
 
-/* Use one global mobile menu everywhere. Dashboard keeps its side navigation on desktop only. */
-.dashboard-app-body .dashboard-auth-nav { display: flex !important; }
+/* Dashboard now uses the shared global navbar; keep server navigation inside content only. */
+.dash-mobile-bar,
+.dash-mobile-backdrop,
+.dash-mobile-drawer { display: none !important; }
+.dashboard-app-root { padding-top: 30px; }
+.dashboard-section-stack,
+.dash-grid.two { gap: 20px; }
+.dash-grid.two + .dash-card,
+.dash-card + .dash-card,
+.dash-card + .dash-grid { margin-top: 20px; }
 @media (max-width: 980px) {
-  .dashboard-app-body .dashboard-auth-nav { display: flex !important; }
-  .dash-mobile-bar { display: none !important; }
+  .dash-sidebar { display: none !important; }
   .dash-main { min-width: 0; }
-  .dash-content { padding-top: 28px; }
-  .dashboard-app-root { padding-top: 0 !important; }
-}
-@media (min-width: 981px) {
-  .dashboard-app-body .dashboard-auth-nav { display: none !important; }
+  .dash-shell { display: block !important; }
+  .dash-topbar { display: none !important; }
+  .dash-mobile-breadcrumb { display: flex !important; gap: 8px; margin: 0 0 18px; font-weight: 800; }
 }

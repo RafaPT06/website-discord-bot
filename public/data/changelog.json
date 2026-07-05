@@ -1,67 +1,23 @@
 [
   {
-    "version": "Global navigation and light theme startup fix",
+    "version": "v1.8.0",
     "date": "2026-07-05",
     "changes": [
       {
-        "type": "Fixed",
-        "text": "Reused the same top navigation links on home, dashboard, documentation, changelog and settings, including Dashboard, Settings and Logout only after login."
+        "type": "Improved",
+        "text": "Refactored the website to use shared layout components for the global navbar, mobile menu, theme loading and navigation items."
       },
       {
         "type": "Fixed",
-        "text": "Added early theme hydration in each HTML page so home, documentation and changelog no longer flash dark mode before switching to light mode."
+        "text": "Unified the mobile menu across home, dashboard, documentation, changelog and settings."
       },
       {
         "type": "Fixed",
-        "text": "Forced the mobile menu button and drawer to work consistently on public pages and dashboard pages."
+        "text": "Applied light/dark theme before page render to reduce dark-mode flashes during reloads."
       },
       {
         "type": "Improved",
-        "text": "Expanded light mode overrides for public pages, documentation, changelog, toasts, status pills and navigation controls."
-      }
-    ]
-  },
-  {
-    "version": "Unified mobile menu and light theme coverage",
-    "date": "2026-07-05",
-    "changes": [
-      {
-        "type": "Fixed",
-        "text": "Unified the mobile navigation styling across homepage, documentation, changelog and dashboard shells so the menu no longer changes appearance between pages."
-      },
-      {
-        "type": "Fixed",
-        "text": "Applied saved light mode before page modules boot so home, documentation and changelog follow the selected theme instead of staying dark."
-      },
-      {
-        "type": "Fixed",
-        "text": "Improved light mode coverage for status messages, documentation tables, changelog cards, homepage cards and mobile menu labels."
-      }
-    ]
-  },
-  {
-    "version": "Dashboard API and theme reliability",
-    "date": "2026-07-05",
-    "changes": [
-      {
-        "type": "Fixed",
-        "text": "Fixed homepage auth and stats initialization so auth is resolved before dashboard modules render and API calls time out instead of leaving loading text forever."
-      },
-      {
-        "type": "Fixed",
-        "text": "Added bot stats endpoint fallback and normalization for common bot API response shapes."
-      },
-      {
-        "type": "Fixed",
-        "text": "Removed duplicate Dashboard breadcrumbs and added spacing between Overview permission and server tool sections."
-      },
-      {
-        "type": "Fixed",
-        "text": "Corrected mobile drawer layering so the backdrop blurs while the menu stays sharp."
-      },
-      {
-        "type": "Improved",
-        "text": "Expanded light mode coverage for dashboard cards, drawer, inputs, tabs and toast notifications."
+        "text": "Expanded light mode coverage for homepage, documentation, changelog, dashboard cards, status messages and menu states."
       }
     ]
   },

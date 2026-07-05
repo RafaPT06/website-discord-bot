@@ -8,6 +8,7 @@ import {
 import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
 import { getActiveUser } from './auth.js';
+import { applyTheme as applyStoredTheme, setStoredTheme } from './components/theme.js';
 
 const els = {
   home: document.querySelector('[data-dashboard-home]'),
@@ -38,13 +39,11 @@ function readDashboardPrefs() {
 function writeDashboardPrefs(next) {
   const prefs = { ...readDashboardPrefs(), ...next };
   localStorage.setItem(DASHBOARD_PREFS_KEY, JSON.stringify(prefs));
-  localStorage.setItem('meowzTheme', prefs.theme);
-  applyTheme(prefs.theme);
+  setStoredTheme(prefs.theme);
   return prefs;
 }
 function applyTheme(theme = readDashboardPrefs().theme) {
-  const normalized = VALID_THEMES.has(theme) ? theme : 'dark';
-  document.documentElement.dataset.theme = normalized;
+  return applyStoredTheme(theme);
 }
 applyTheme();
 
@@ -107,7 +106,6 @@ function shell({ server = null, active = 'Dashboard', section = 'dashboard', con
       </aside>
       <div class="dash-main">
         ${topbar(server, active, showOwnerToggle, isOwner)}
-        ${mobileBar(server, active, showOwnerToggle, isOwner)}
         ${mobileBreadcrumb(server, active)}
         <div class="dash-content">${content}</div>
       </div>
@@ -140,7 +138,7 @@ function sidebarNav(server, active) {
 function topbar(server, active, showOwnerToggle, isOwner) {
   return `
     <header class="dash-topbar">
-      <div class="dash-breadcrumb"><a href="/dashboard">Dashboard</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active === 'Overview' ? '' : `<span>›</span><strong>${escapeHtml(active)}</strong>`}` : ''}</div>
+      <div class="dash-breadcrumb"><a href="/dashboard">Servers</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active !== 'Overview' ? `<span>›</span><strong>${escapeHtml(active)}</strong>` : ''}` : ''}</div>
       <div class="dash-top-actions">
         ${showOwnerToggle && isOwner ? ownerToggle() : ''}
         ${server ? `<a class="dash-primary-small" href="/">View Bot</a>` : ''}
@@ -167,7 +165,7 @@ function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwne
   return `<header class="dash-mobile-bar"><a class="dash-brand" href="/dashboard"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><div class="dash-mobile-backdrop" data-dash-backdrop hidden></div><aside class="dash-mobile-drawer" data-dash-drawer hidden><div class="dash-drawer-head"><span>${server ? serverIcon(server, 'dash-current-icon') : '<span class="dash-current-icon">M</span>'}</span><div><strong>${escapeHtml(activeLabel)}</strong><small>${escapeHtml(active)}</small></div></div>${showOwnerToggle && isOwner ? `<div class="dash-drawer-toggle">${ownerToggle()}</div>` : ''}<nav>${renderGroup('Dashboard', dashboardLinks)}${renderGroup('Resources', resourceLinks)}${renderGroup('Account', accountLinks)}<div class="dash-drawer-group"><a href="/auth/logout" class="danger">Logout</a></div></nav></aside></header>`;
 }
 function mobileBreadcrumb(server, active = 'Dashboard') {
-  return `<div class="dash-mobile-breadcrumb"><a href="/dashboard">Dashboard</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active === 'Overview' ? '' : `<span>›</span><strong>${escapeHtml(active)}</strong>`}` : ''}</div>`;
+  return `<div class="dash-mobile-breadcrumb"><a href="/dashboard">Dashboard</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active !== 'Overview' ? `<span>›</span><strong>${escapeHtml(active)}</strong>` : ''}` : ''}</div>`;
 }
 function closeDashDrawer(bar = document) {
   const scope = bar?.querySelector ? bar : document;
@@ -302,7 +300,7 @@ function serverHeader(server, active) {
 function infoRow(label, value) { return `<div class="dash-info-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`; }
 
 function overviewPage(server) {
-  return `${serverHeader(server,'overview')}<section class="dash-grid two dash-section"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card dash-section"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome Messages','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section>`;
+  return `${serverHeader(server,'overview')}<section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome Messages','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section>`;
 }
 
 function switchField(name, checked, label, desc) { return `<label class="dash-switch"><input type="checkbox" name="${escapeHtml(name)}" ${checked ? 'checked' : ''}/><i></i><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(desc)}</small></span></label>`; }

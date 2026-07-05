@@ -1,18 +1,8 @@
+import { initTheme } from './components/theme.js';
+import { mountNavbar } from './components/navbar.js';
 import { initAuth } from './auth.js';
 import { initNavigation } from './navigation.js';
 import { initStatusToasts } from './toast.js';
-
-function applyStoredTheme() {
-  try {
-    const prefs = JSON.parse(localStorage.getItem('meowzDashboardPreferences') || '{}');
-    const saved = prefs.theme || localStorage.getItem('meowzTheme') || 'dark';
-    document.documentElement.dataset.theme = saved === 'light' ? 'light' : 'dark';
-  } catch {
-    document.documentElement.dataset.theme = localStorage.getItem('meowzTheme') === 'light' ? 'light' : 'dark';
-  }
-}
-
-applyStoredTheme();
 
 function setFooterYear() {
   document.querySelectorAll('[data-footer-year]').forEach((el) => {
@@ -48,12 +38,10 @@ async function bootPageModules() {
   await Promise.allSettled(jobs);
 }
 
+initTheme();
+mountNavbar();
 initNavigation();
 setFooterYear();
 initStatusToasts();
-
-// Dashboard rendering depends on the signed-in user. Wait for auth first so the
-// dashboard does not render with fallback names or stay on stale loading text.
-Promise.resolve(initAuth())
-  .catch(() => {})
-  .finally(() => bootPageModules());
+initAuth();
+bootPageModules();
