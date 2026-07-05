@@ -13,6 +13,18 @@
   <meta name="theme-color" content="#8b5cf6" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <script>
+    (() => {
+      try {
+        const prefs = JSON.parse(localStorage.getItem('meowzDashboardPreferences') || '{}');
+        const saved = prefs.theme || localStorage.getItem('meowzTheme') || 'dark';
+        document.documentElement.dataset.theme = saved === 'light' ? 'light' : 'dark';
+      } catch {
+        document.documentElement.dataset.theme = localStorage.getItem('meowzTheme') === 'light' ? 'light' : 'dark';
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="/css/main.css" />
 </head>
 <body class="dashboard-app-body">
@@ -32,6 +44,8 @@
       <a class="auth-only-nav" href="/dashboard" data-nav-link data-route="/dashboard" data-auth-only hidden>Dashboard</a>
       <a href="/docs" data-nav-link data-route="/docs">Documentation</a>
       <a href="/changelog" data-nav-link data-route="/changelog">Changelog</a>
+      <a class="auth-only-nav" href="/dashboard/settings" data-nav-link data-route="/dashboard/settings" data-auth-only hidden>Settings</a>
+      <a class="auth-only-nav logout-link" href="/auth/logout" data-nav-link data-auth-only hidden>Logout</a>
       <div class="auth-area auth-loading" data-auth-area>Checking login...</div>
     </nav>
   </header>

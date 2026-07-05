@@ -129,21 +129,9 @@ function renderLoggedIn(user) {
             <span>${username}</span>
           </div>
         </div>
-        <a href="#settings" role="menuitem">Settings</a>
+        <a href="/dashboard/settings" role="menuitem">Settings</a>
         <a class="logout-link" href="/auth/logout" role="menuitem">Logout</a>
       </div>
-    </div>
-
-    <div class="mobile-account-panel">
-      <div class="mobile-account-header">
-        ${renderAvatar(user, 'mobile-account-avatar')}
-        <div>
-          <strong>${name}</strong>
-          <span>${username}</span>
-        </div>
-      </div>
-      <a href="#settings">Settings</a>
-      <a class="logout-link" href="/auth/logout">Logout</a>
     </div>
   `;
 

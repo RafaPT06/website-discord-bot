@@ -4555,3 +4555,176 @@ body.menu-open { overflow: hidden !important; }
   color: #101828 !important;
   border-color: rgba(15,23,42,.12) !important;
 }
+
+/* ===== final unified navigation + no theme flash fixes ===== */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f8fbff;
+  --panel: rgba(255,255,255,.84);
+  --panel-strong: rgba(255,255,255,.96);
+  --text: #0f172a;
+  --muted: #596172;
+  --border: rgba(15,23,42,.12);
+  --shadow: 0 22px 70px rgba(15,23,42,.14);
+}
+:root[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 86% 22%, rgba(139,92,246,.26), transparent 38%),
+    radial-gradient(circle at 10% 86%, rgba(34,211,238,.30), transparent 36%),
+    var(--bg) !important;
+  color: var(--text) !important;
+}
+:root[data-theme="light"] body::before {
+  background-image: linear-gradient(rgba(15,23,42,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,.045) 1px, transparent 1px) !important;
+}
+.nav {
+  min-height: 70px;
+}
+:root[data-theme="light"] .nav,
+:root[data-theme="light"] .footer-card,
+:root[data-theme="light"] .section,
+:root[data-theme="light"] .bot-card,
+:root[data-theme="light"] .feature-card,
+:root[data-theme="light"] .command-toolbar,
+:root[data-theme="light"] .commands-table-panel,
+:root[data-theme="light"] .changelog-card,
+:root[data-theme="light"] .modal-panel,
+:root[data-theme="light"] .dashboard-login-card,
+:root[data-theme="light"] .dash-card,
+:root[data-theme="light"] .dash-empty,
+:root[data-theme="light"] .dash-server-row,
+:root[data-theme="light"] .dash-current-server,
+:root[data-theme="light"] .dash-info-list div,
+:root[data-theme="light"] .dash-feature-card,
+:root[data-theme="light"] .dash-field input,
+:root[data-theme="light"] .dash-field textarea,
+:root[data-theme="light"] .dash-field select,
+:root[data-theme="light"] .app-card,
+:root[data-theme="light"] .app-field input,
+:root[data-theme="light"] .app-field textarea,
+:root[data-theme="light"] .app-field select {
+  background: rgba(255,255,255,.86) !important;
+  border-color: rgba(15,23,42,.12) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow);
+}
+:root[data-theme="light"] .btn-secondary,
+:root[data-theme="light"] .status-pill,
+:root[data-theme="light"] .category-tabs button,
+:root[data-theme="light"] .tag,
+:root[data-theme="light"] .command-summary,
+:root[data-theme="light"] .pagination button,
+:root[data-theme="light"] .mobile-menu-button,
+:root[data-theme="light"] .owner-view-toggle,
+:root[data-theme="light"] .dash-owner-toggle,
+:root[data-theme="light"] .dash-side-nav a,
+:root[data-theme="light"] .dash-mobile-breadcrumb {
+  background: rgba(255,255,255,.72) !important;
+  border-color: rgba(15,23,42,.12) !important;
+  color: var(--text) !important;
+}
+:root[data-theme="light"] .muted,
+:root[data-theme="light"] p,
+:root[data-theme="light"] .hero-text,
+:root[data-theme="light"] .bot-card p,
+:root[data-theme="light"] .stat-card span,
+:root[data-theme="light"] .feature-card p,
+:root[data-theme="light"] .changelog-card p,
+:root[data-theme="light"] .dash-card p,
+:root[data-theme="light"] .dash-card small,
+:root[data-theme="light"] .dash-empty span,
+:root[data-theme="light"] .dash-info-list span,
+:root[data-theme="light"] .dash-feature-card span,
+:root[data-theme="light"] .dash-side-nav small,
+:root[data-theme="light"] .dash-mobile-breadcrumb a {
+  color: var(--muted) !important;
+}
+:root[data-theme="light"] h1,
+:root[data-theme="light"] h2,
+:root[data-theme="light"] h3,
+:root[data-theme="light"] strong,
+:root[data-theme="light"] .brand,
+:root[data-theme="light"] .brand a,
+:root[data-theme="light"] .nav a,
+:root[data-theme="light"] .stat-card strong,
+:root[data-theme="light"] .command-name,
+:root[data-theme="light"] .dash-card h2,
+:root[data-theme="light"] .dash-page-title h1 {
+  color: var(--text) !important;
+}
+:root[data-theme="light"] .toast,
+:root[data-theme="light"] [data-toast-container] > * {
+  background: rgba(255,255,255,.96) !important;
+  color: var(--text) !important;
+  border-color: rgba(15,23,42,.12) !important;
+}
+:root[data-theme="light"] .toast p,
+:root[data-theme="light"] [data-toast-container] p,
+:root[data-theme="light"] [data-toast-container] span { color: var(--muted) !important; }
+
+@media (max-width: 720px) {
+  .nav { position: sticky !important; top: 10px !important; z-index: 120 !important; width: min(100% - 24px, 760px) !important; margin-top: 14px !important; padding: 12px 14px !important; border-radius: 22px !important; }
+  .mobile-menu-button { display: grid !important; place-items: center; flex: 0 0 auto; }
+  .nav-links {
+    position: fixed !important;
+    top: 96px !important;
+    left: 20px !important;
+    right: 20px !important;
+    max-height: min(70vh, 620px) !important;
+    overflow-y: auto !important;
+    display: grid !important;
+    gap: 10px !important;
+    padding: 16px !important;
+    border-radius: 24px !important;
+    border: 1px solid var(--border) !important;
+    background: rgba(8,9,19,.98) !important;
+    backdrop-filter: none !important;
+    transform: translateY(-10px) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: 140 !important;
+  }
+  .nav-links.is-open { transform: translateY(0) !important; opacity: 1 !important; pointer-events: auto !important; }
+  .nav-links a,
+  .auth-area .login-button {
+    width: 100% !important;
+    min-height: 52px !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 16px !important;
+    border-radius: 16px !important;
+    background: rgba(255,255,255,.06) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    font-weight: 850 !important;
+    text-align: left !important;
+  }
+  .nav-links .auth-area { width: 100% !important; }
+  .nav-links .profile-menu-wrap { display: none !important; }
+  :root[data-theme="light"] .nav-links { background: rgba(255,255,255,.98) !important; }
+  :root[data-theme="light"] .nav-links a,
+  :root[data-theme="light"] .auth-area .login-button { background: rgba(255,255,255,.74) !important; color: var(--text) !important; border-color: rgba(15,23,42,.12) !important; }
+  body.menu-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(5,7,14,.42);
+    backdrop-filter: blur(9px);
+    pointer-events: none;
+  }
+  :root[data-theme="light"] body.menu-open::after { background: rgba(15,23,42,.22); }
+}
+
+/* Use one global mobile menu everywhere. Dashboard keeps its side navigation on desktop only. */
+.dashboard-app-body .dashboard-auth-nav { display: flex !important; }
+@media (max-width: 980px) {
+  .dashboard-app-body .dashboard-auth-nav { display: flex !important; }
+  .dash-mobile-bar { display: none !important; }
+  .dash-main { min-width: 0; }
+  .dash-content { padding-top: 28px; }
+  .dashboard-app-root { padding-top: 0 !important; }
+}
+@media (min-width: 981px) {
+  .dashboard-app-body .dashboard-auth-nav { display: none !important; }
+}

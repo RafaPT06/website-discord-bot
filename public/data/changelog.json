@@ -1,5 +1,27 @@
 [
   {
+    "version": "Global navigation and light theme startup fix",
+    "date": "2026-07-05",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Reused the same top navigation links on home, dashboard, documentation, changelog and settings, including Dashboard, Settings and Logout only after login."
+      },
+      {
+        "type": "Fixed",
+        "text": "Added early theme hydration in each HTML page so home, documentation and changelog no longer flash dark mode before switching to light mode."
+      },
+      {
+        "type": "Fixed",
+        "text": "Forced the mobile menu button and drawer to work consistently on public pages and dashboard pages."
+      },
+      {
+        "type": "Improved",
+        "text": "Expanded light mode overrides for public pages, documentation, changelog, toasts, status pills and navigation controls."
+      }
+    ]
+  },
+  {
     "version": "Unified mobile menu and light theme coverage",
     "date": "2026-07-05",
     "changes": [
