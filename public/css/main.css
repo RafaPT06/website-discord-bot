@@ -4437,3 +4437,24 @@ body.menu-open { overflow: hidden !important; }
   .dash-topbar { display: none !important; }
   .dash-mobile-breadcrumb { display: flex !important; gap: 8px; margin: 0 0 18px; font-weight: 800; }
 }
+
+/* ===== Global menu auth visibility fix 2026-07-05 =====
+   The dashboard refactor left an older rule that hid the shared navbar links and
+   hamburger when auth finished. Keep the single global mobile menu available on
+   every page, whether the user is logged in or logged out. */
+@media (max-width: 720px) {
+  body.dashboard-signed-in .nav[data-global-navbar] .nav-links,
+  body.dashboard-signed-out .nav[data-global-navbar] .nav-links {
+    display: grid !important;
+  }
+
+  body.dashboard-signed-in .nav[data-global-navbar] .mobile-menu-button,
+  body.dashboard-signed-out .nav[data-global-navbar] .mobile-menu-button {
+    display: grid !important;
+  }
+
+  .nav[data-global-navbar] .mobile-menu-button[hidden],
+  .nav[data-global-navbar] .nav-links[hidden] {
+    display: grid !important;
+  }
+}

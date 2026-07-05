@@ -4,6 +4,10 @@
     "date": "2026-07-05",
     "changes": [
       {
+        "type": "Fixed",
+        "text": "Fixed the shared mobile menu disappearing after login/session initialization on every page."
+      },
+      {
         "type": "Improved",
         "text": "Refactored the website to use shared layout components for the global navbar, mobile menu, theme loading and navigation items."
       },
