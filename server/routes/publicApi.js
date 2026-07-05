@@ -1,5 +1,5 @@
 const express = require('express');
-const { requestBotApi, getBotApiDiagnostics } = require('../api/botApi');
+const { requestBotApi, requestFirstBotApi, normalizeBotApiStats, getBotApiDiagnostics } = require('../api/botApi');
 const { readSession } = require('../authSession');
 
 const router = express.Router();
@@ -19,8 +19,12 @@ function isBotOwner(session) {
 }
 
 
+function safeReadSession(req) {
+  try { return readSession(req); } catch { return null; }
+}
+
 function requireAuth(req, res, next) {
-  const session = readSession(req);
+  const session = safeReadSession(req);
   if (!session?.user) return res.status(401).json({ ok: false, error: 'Login required.' });
   req.sessionData = session;
   return next();
@@ -194,15 +198,15 @@ router.get('/status', (req, res) => {
 });
 
 router.get('/me', (req, res) => {
-  const session = readSession(req);
+  const session = safeReadSession(req);
   if (!session?.user) return res.json({ authenticated: false, user: null });
   return res.json({ authenticated: true, user: session.user });
 });
 
 router.get('/bot-stats', async (req, res) => {
   try {
-    const data = await requestBotApi('/api/stats');
-    res.json(data);
+    const data = await requestFirstBotApi(['/api/stats', '/stats', '/api/bot/stats']);
+    res.json(normalizeBotApiStats(data));
   } catch (err) {
     res.status(err.statusCode || 502).json({
       ok: false,
@@ -217,7 +221,7 @@ router.get('/bot-stats/diagnostics', async (req, res) => {
   let statsOk = false;
   let error = null;
   try {
-    await requestBotApi('/api/stats');
+    await requestFirstBotApi(['/api/stats', '/stats', '/api/bot/stats']);
     statsOk = true;
   } catch (err) {
     error = err.message || 'Could not reach the bot API.';

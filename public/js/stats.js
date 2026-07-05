@@ -54,18 +54,18 @@ export async function loadBotStats() {
     const data = await getBotStats();
     if (!data.ok) throw new Error(data.error || 'Stats unavailable');
 
-    const botName = data.botName || 'Meowz';
+    const botName = data.botName || data.name || data.username || 'Meowz';
     setBotName(botName);
     setAvatar(data.avatarUrl, botName);
-    setText(statEls.servers, formatNumber(data.servers));
-    setText(statEls.users, formatNumber(data.users));
-    setText(statEls.commands, formatNumber(data.commands));
-    setText(statEls.ping, typeof data.ping === 'number' ? `${data.ping}ms` : '—');
-    setText(statEls.uptime, data.uptime || '—');
+    setText(statEls.servers, formatNumber(data.servers ?? data.guilds ?? data.guildCount));
+    setText(statEls.users, formatNumber(data.users ?? data.members ?? data.userCount));
+    setText(statEls.commands, formatNumber(data.commands ?? data.commandCount));
+    setText(statEls.ping, typeof data.ping === 'number' ? `${data.ping}ms` : (typeof data.wsPing === 'number' ? `${data.wsPing}ms` : '—'));
+    setText(statEls.uptime, data.uptime || data.uptimeText || '—');
     setText(statEls.status, data.online ? 'Live' : 'Offline');
     setText(statEls.botTag, data.botTag || (data.online ? 'Online and ready' : 'Offline'));
     setText(statEls.statusPill, data.online ? 'Bot online' : 'Bot offline');
-    setText(statEls.updated, `Updated ${new Date(data.updatedAt).toLocaleTimeString()}`);
+    setText(statEls.updated, `Updated ${new Date(data.updatedAt || Date.now()).toLocaleTimeString()}`);
     clearSkeletons();
 
     if (statEls.inviteLink && data.inviteUrl) {
@@ -75,6 +75,7 @@ export async function loadBotStats() {
     }
   } catch (err) {
     setText(statEls.status, 'Offline');
+    setText(statEls.botTag, 'Website cannot reach the bot API');
     setText(statEls.statusPill, 'Bot API offline');
     setText(statEls.updated, err?.message ? `Stats unavailable: ${err.message}` : 'Connect BOT_API_URL in Railway to show live stats');
     setBotName('Meowz');

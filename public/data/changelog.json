@@ -1,31 +1,27 @@
 [
   {
-    "version": "Dashboard root-cause fixes",
-    "date": "2026-07-04",
+    "version": "Dashboard API and theme reliability",
+    "date": "2026-07-05",
     "changes": [
       {
         "type": "Fixed",
-        "text": "Fixed root dashboard breadcrumbs so the dashboard home no longer shows Dashboard > Dashboard."
+        "text": "Fixed homepage auth and stats initialization so auth is resolved before dashboard modules render and API calls time out instead of leaving loading text forever."
       },
       {
         "type": "Fixed",
-        "text": "Reworked the mobile drawer layering so the page backdrop blurs while the drawer stays sharp."
+        "text": "Added bot stats endpoint fallback and normalization for common bot API response shapes."
       },
       {
         "type": "Fixed",
-        "text": "Added consistent spacing between dashboard overview sections, including Permissions and Server Tools."
+        "text": "Removed duplicate Dashboard breadcrumbs and added spacing between Overview permission and server tool sections."
       },
       {
         "type": "Fixed",
-        "text": "Completed light theme coverage for dashboard cards, menus, inputs, buttons and toast notifications."
+        "text": "Corrected mobile drawer layering so the backdrop blurs while the menu stays sharp."
       },
       {
         "type": "Improved",
-        "text": "Clarified preview-only dashboard setting saves as local drafts until bot configuration endpoints are available."
-      },
-      {
-        "type": "Improved",
-        "text": "Hardened bot API proxy diagnostics for Railway BOT_API_URL, JSON responses, timeouts and expected endpoints."
+        "text": "Expanded light mode coverage for dashboard cards, drawer, inputs, tabs and toast notifications."
       }
     ]
   },

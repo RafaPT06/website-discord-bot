@@ -1,17 +1,28 @@
 const memoryCache = new Map();
 
 async function fetchJson(url, options = {}) {
-  const { cacheKey, cacheMs = 0, ...fetchOptions } = options;
+  const { cacheKey, cacheMs = 0, timeoutMs = 10000, ...fetchOptions } = options;
   if (cacheKey && cacheMs > 0) {
     const cached = memoryCache.get(cacheKey);
     if (cached && Date.now() - cached.at < cacheMs) return cached.data;
   }
 
-  const response = await fetch(url, {
-    cache: 'no-store',
-    headers: { 'content-type': 'application/json', ...(fetchOptions.headers || {}) },
-    ...fetchOptions,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let response;
+  try {
+    response = await fetch(url, {
+      cache: 'no-store',
+      credentials: 'same-origin',
+      headers: { 'content-type': 'application/json', ...(fetchOptions.headers || {}) },
+      ...fetchOptions,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    throw new Error(err?.name === 'AbortError' ? 'Website API request timed out.' : (err?.message || 'Website API request failed.'));
+  } finally {
+    clearTimeout(timer);
+  }
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
@@ -23,11 +34,11 @@ async function fetchJson(url, options = {}) {
 }
 
 export function getBotStats() {
-  return fetchJson('/api/bot-stats', { cacheKey: 'bot-stats', cacheMs: 15000 });
+  return fetchJson('/api/bot-stats', { cacheKey: 'bot-stats', cacheMs: 15000, timeoutMs: 9000 });
 }
 
 export function getBotCommands() {
-  return fetchJson('/api/bot-commands', { cacheKey: 'bot-commands', cacheMs: 30000 });
+  return fetchJson('/api/bot-commands', { cacheKey: 'bot-commands', cacheMs: 30000, timeoutMs: 9000 });
 }
 
 export function getChangelog() {

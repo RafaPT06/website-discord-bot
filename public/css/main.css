@@ -4237,188 +4237,110 @@ body.menu-open { overflow: hidden !important; }
   .dash-discord-card { aspect-ratio: 1.82 / 1 !important; }
 }
 
-/* ===== Final dashboard hardening: breadcrumbs, drawer, spacing, light theme ===== */
-.dash-section-stack { display: grid; gap: 22px; }
-.dash-sync-note {
-  margin: 0 0 14px !important;
-  padding: 12px 14px;
-  border: 1px solid rgba(34,211,238,.18);
-  border-radius: 14px;
-  background: rgba(34,211,238,.07);
-  color: rgba(255,255,255,.72) !important;
-  font-size: .92rem;
-  line-height: 1.5;
-  max-width: none !important;
-}
+
+/* ===== Implementation fix: API/loading/navigation/light-mode hardening ===== */
+.dash-section + .dash-section { margin-top: 22px; }
+.dash-breadcrumb:empty,
+.dash-mobile-breadcrumb:empty { display: none !important; }
 
 @media (max-width: 980px) {
-  .dash-mobile-backdrop {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 89 !important;
+  .dash-mobile-bar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
   .dash-mobile-backdrop:not([hidden]) {
-    display: block !important;
-    background: rgba(2, 3, 10, .62) !important;
+    background: rgba(3, 5, 15, .72) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
   }
   .dash-mobile-drawer {
-    position: fixed !important;
-    left: 18px !important;
-    right: 18px !important;
-    top: 112px !important;
-    z-index: 100 !important;
-    max-height: calc(100dvh - 132px) !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain;
-    background: #080913 !important;
+    background: #090a14 !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    box-shadow: 0 26px 90px rgba(0,0,0,.68) !important;
+    filter: none !important;
   }
-  body.dash-drawer-open { overflow: hidden; }
-  body.dash-drawer-open .dash-content { filter: none !important; opacity: 1 !important; }
-  .dash-content { width: min(100% - 40px, 760px) !important; padding-top: 18px !important; }
-  .dash-grid, .dash-grid.two, .dash-designer, .dash-section-stack { gap: 18px !important; }
-  .dash-page-title h1, .dash-server-title h1 { font-size: clamp(2.35rem, 12vw, 4rem); }
-  .dash-page-title p, .dash-server-title p { font-size: 1rem; }
-  .dash-tabs { margin-bottom: 20px !important; }
-}
-
-@media (max-width: 520px) {
-  .dash-content { width: min(100% - 36px, 760px) !important; }
-  .dash-mobile-drawer { left: 20px !important; right: 20px !important; top: 110px !important; max-height: calc(100dvh - 128px) !important; }
-  .dash-page-title, .dash-server-title { margin-bottom: 22px !important; }
-  .dash-section-stack { gap: 18px !important; }
+  body.dash-drawer-open .dash-mobile-drawer,
+  body.dash-drawer-open .dash-mobile-bar { filter: none !important; opacity: 1 !important; }
 }
 
 :root[data-theme="light"] body.dashboard-app-body {
-  color-scheme: light;
-  background:
-    radial-gradient(circle at 78% 18%, rgba(124, 58, 237, .18), transparent 34%),
-    radial-gradient(circle at 12% 88%, rgba(34, 211, 238, .20), transparent 34%),
-    #f6f8fc !important;
-  color: #111827 !important;
-}
-:root[data-theme="light"] .dash-shell {
-  background: transparent !important;
+  background: radial-gradient(circle at 82% 16%, rgba(139,92,246,.16), transparent 32%), radial-gradient(circle at 10% 90%, rgba(34,211,238,.18), transparent 34%), #f7f9fc !important;
+  color: #101828 !important;
 }
 :root[data-theme="light"] .dash-sidebar,
 :root[data-theme="light"] .dash-topbar,
 :root[data-theme="light"] .dash-mobile-bar,
 :root[data-theme="light"] .dash-card,
-:root[data-theme="light"] .dashboard-login-card {
-  background: rgba(255,255,255,.88) !important;
-  color: #111827 !important;
-  border-color: rgba(15,23,42,.10) !important;
-  box-shadow: 0 18px 60px rgba(15,23,42,.10) !important;
+:root[data-theme="light"] .dashboard-login-card,
+:root[data-theme="light"] .dash-mobile-drawer {
+  background: rgba(255,255,255,.94) !important;
+  border-color: rgba(15,23,42,.12) !important;
+  color: #101828 !important;
+  box-shadow: 0 20px 65px rgba(15,23,42,.12) !important;
 }
-:root[data-theme="light"] .dash-sidebar,
-:root[data-theme="light"] .dash-topbar,
-:root[data-theme="light"] .dash-mobile-bar { backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+:root[data-theme="light"] .dash-mobile-drawer a,
+:root[data-theme="light"] .dash-current-server,
+:root[data-theme="light"] .dash-side-nav a,
+:root[data-theme="light"] .dash-feature-card,
+:root[data-theme="light"] .dash-info-row,
+:root[data-theme="light"] .dash-server-row,
+:root[data-theme="light"] .dash-access-row,
+:root[data-theme="light"] .dash-note,
+:root[data-theme="light"] .dash-setting-block,
+:root[data-theme="light"] .dash-field input,
+:root[data-theme="light"] .dash-field textarea,
+:root[data-theme="light"] .dash-field select,
+:root[data-theme="light"] .dash-owner-toggle,
+:root[data-theme="light"] .dash-segmented,
+:root[data-theme="light"] .dash-tabs a,
+:root[data-theme="light"] .dash-pills span,
+:root[data-theme="light"] .dash-card-head > b,
+:root[data-theme="light"] .dash-empty,
+:root[data-theme="light"] .dash-log-status,
+:root[data-theme="light"] .dash-role-row,
+:root[data-theme="light"] .dash-role-table-head {
+  background: rgba(255,255,255,.78) !important;
+  border-color: rgba(15,23,42,.12) !important;
+  color: #101828 !important;
+}
 :root[data-theme="light"] .dash-brand,
 :root[data-theme="light"] .dash-card h2,
 :root[data-theme="light"] .dash-page-title h1,
 :root[data-theme="light"] .dash-server-title h1,
-:root[data-theme="light"] .dash-current-server,
 :root[data-theme="light"] .dash-current-server strong,
-:root[data-theme="light"] .dash-side-nav a,
-:root[data-theme="light"] .dash-breadcrumb strong,
-:root[data-theme="light"] .dash-mobile-breadcrumb strong,
+:root[data-theme="light"] .dash-server-row strong,
 :root[data-theme="light"] .dash-field > span,
 :root[data-theme="light"] .dash-switch strong,
 :root[data-theme="light"] .dash-setting-block strong,
-:root[data-theme="light"] .dash-server-row,
-:root[data-theme="light"] .dash-server-row strong,
-:root[data-theme="light"] .dash-server-row b,
-:root[data-theme="light"] .dash-feature-card,
-:root[data-theme="light"] .dash-feature-card strong,
-:root[data-theme="light"] .dash-info-row strong,
-:root[data-theme="light"] .dash-note strong,
-:root[data-theme="light"] .dash-role-row strong,
-:root[data-theme="light"] .dash-log-status span {
-  color: #111827 !important;
+:root[data-theme="light"] .dash-mobile-drawer strong,
+:root[data-theme="light"] .dash-tabs a.is-active {
+  color: #101828 !important;
 }
 :root[data-theme="light"] .dash-card p,
 :root[data-theme="light"] .dash-page-title p,
 :root[data-theme="light"] .dash-server-title p,
 :root[data-theme="light"] .dash-current-server small,
-:root[data-theme="light"] .dash-current-server em,
-:root[data-theme="light"] .dash-side-nav small,
-:root[data-theme="light"] .dash-side-nav a:not(.is-active),
-:root[data-theme="light"] .dash-breadcrumb,
-:root[data-theme="light"] .dash-breadcrumb a,
-:root[data-theme="light"] .dash-mobile-breadcrumb,
-:root[data-theme="light"] .dash-mobile-breadcrumb a,
+:root[data-theme="light"] .dash-server-row small,
 :root[data-theme="light"] .dash-switch small,
 :root[data-theme="light"] .dash-field small,
-:root[data-theme="light"] .dash-server-row small,
-:root[data-theme="light"] .dash-server-row em,
-:root[data-theme="light"] .dash-info-row span,
-:root[data-theme="light"] .dash-note span,
-:root[data-theme="light"] .dash-setting-block p,
-:root[data-theme="light"] .dash-log-status.off strong,
-:root[data-theme="light"] .dash-role-row span {
-  color: rgba(15,23,42,.64) !important;
+:root[data-theme="light"] .dash-mobile-breadcrumb,
+:root[data-theme="light"] .dash-mobile-breadcrumb a,
+:root[data-theme="light"] .dash-log-status span {
+  color: rgba(16,24,40,.68) !important;
 }
-:root[data-theme="light"] .dash-current-server,
-:root[data-theme="light"] .dash-field input,
-:root[data-theme="light"] .dash-field textarea,
-:root[data-theme="light"] .dash-field select,
-:root[data-theme="light"] .dash-info-row,
-:root[data-theme="light"] .dash-feature-card,
-:root[data-theme="light"] .dash-empty,
-:root[data-theme="light"] .dash-server-row,
-:root[data-theme="light"] .dash-access-row,
-:root[data-theme="light"] .dash-note,
-:root[data-theme="light"] .dash-setting-block,
-:root[data-theme="light"] .dash-log-status,
-:root[data-theme="light"] .dash-log-example,
-:root[data-theme="light"] .dash-role-table-head,
-:root[data-theme="light"] .dash-role-row,
-:root[data-theme="light"] .dash-segmented,
-:root[data-theme="light"] .dash-owner-toggle,
-:root[data-theme="light"] .dash-tabs a,
-:root[data-theme="light"] .dash-pills span,
-:root[data-theme="light"] .dash-card-head > b,
-:root[data-theme="light"] .status {
-  background: rgba(255,255,255,.78) !important;
-  border-color: rgba(15,23,42,.11) !important;
-  color: #111827 !important;
-}
-:root[data-theme="light"] .dash-tabs a:not(.is-active),
-:root[data-theme="light"] .dash-owner-toggle button:not(.is-active),
-:root[data-theme="light"] .dash-segmented button:not(.is-active) { color: rgba(15,23,42,.62) !important; }
-:root[data-theme="light"] .dash-tabs a.is-active,
+:root[data-theme="light"] .dash-owner-toggle button,
+:root[data-theme="light"] .dash-segmented button { color: rgba(16,24,40,.62) !important; }
 :root[data-theme="light"] .dash-owner-toggle button.is-active,
-:root[data-theme="light"] .dash-segmented button.is-active { color: #fff !important; }
-:root[data-theme="light"] .dash-menu-btn { background: rgba(241,245,249,.92) !important; border-color: rgba(15,23,42,.12) !important; }
-:root[data-theme="light"] .dash-menu-btn span { background: #111827 !important; }
-:root[data-theme="light"] .dash-sync-note { color: #155e75 !important; background: rgba(34,211,238,.12) !important; border-color: rgba(8,145,178,.18) !important; }
+:root[data-theme="light"] .dash-segmented button.is-active,
+:root[data-theme="light"] .dash-tabs a.is-active,
+:root[data-theme="light"] .dash-save-btn,
+:root[data-theme="light"] .dash-primary-small { color: #fff !important; }
+:root[data-theme="light"] .dash-mobile-backdrop:not([hidden]) { background: rgba(15,23,42,.30) !important; }
 :root[data-theme="light"] .status-toast {
   background: rgba(255,255,255,.96) !important;
-  color: #111827 !important;
   border-color: rgba(15,23,42,.12) !important;
-  box-shadow: 0 18px 50px rgba(15,23,42,.18) !important;
+  color: #101828 !important;
+  box-shadow: 0 22px 70px rgba(15,23,42,.18) !important;
 }
-:root[data-theme="light"] .status-toast strong { color: #111827 !important; }
-:root[data-theme="light"] .status-toast span { color: rgba(15,23,42,.68) !important; }
-:root[data-theme="light"] .status-toast button { color: #111827 !important; }
-
-@media (max-width: 980px) {
-  :root[data-theme="light"] .dash-mobile-backdrop:not([hidden]) {
-    background: rgba(248,250,252,.54) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-  }
-  :root[data-theme="light"] .dash-mobile-drawer {
-    background: #ffffff !important;
-    color: #111827 !important;
-    border-color: rgba(15,23,42,.12) !important;
-    box-shadow: 0 26px 90px rgba(15,23,42,.24) !important;
-  }
-  :root[data-theme="light"] .dash-mobile-drawer a { background: #f8fafc !important; color: #111827 !important; border-color: rgba(15,23,42,.08) !important; }
-  :root[data-theme="light"] .dash-drawer-group small { color: rgba(15,23,42,.58) !important; }
-  :root[data-theme="light"] .dash-drawer-group + .dash-drawer-group { border-color: rgba(15,23,42,.10) !important; }
-}
+:root[data-theme="light"] .status-toast span,
+:root[data-theme="light"] .status-toast button { color: rgba(16,24,40,.66) !important; }

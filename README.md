@@ -19,6 +19,21 @@ DISCORD_REDIRECT_URI=https://meowz.up.railway.app/auth/discord/callback
 SESSION_SECRET=random_long_secret
 ```
 
+
+
+### Bot stats requirements
+
+The website reads live stats through its own `/api/bot-stats` proxy, then the website service calls the bot service through `BOT_API_URL`. On Railway, set these on the **website** service:
+
+```env
+BOT_API_URL=https://your-bot-service.up.railway.app
+BOT_API_TOKEN=optional_shared_token_if_the_bot_api_requires_it
+BOT_API_TIMEOUT_MS=8000
+SESSION_SECRET=random_long_secret
+```
+
+The bot service must expose one of these JSON endpoints: `/api/stats`, `/stats`, or `/api/bot/stats`. The response can use `servers`, `guilds`, or `guildCount`; `users`, `members`, or `userCount`; and `commands` or `commandCount`.
+
 ## Commands
 
 ```bash

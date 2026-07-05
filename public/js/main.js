@@ -39,5 +39,9 @@ async function bootPageModules() {
 initNavigation();
 setFooterYear();
 initStatusToasts();
-initAuth();
-bootPageModules();
+
+// Dashboard rendering depends on the signed-in user. Wait for auth first so the
+// dashboard does not render with fallback names or stay on stale loading text.
+Promise.resolve(initAuth())
+  .catch(() => {})
+  .finally(() => bootPageModules());
