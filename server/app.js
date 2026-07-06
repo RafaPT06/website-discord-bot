@@ -12,14 +12,12 @@ function createApp() {
   app.use(express.json());
   app.get('/', (req, res) => res.sendFile(path.join(publicPath, 'index.html')));
   app.get('/dashboard', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
-  // Public read-only preview mode. These routes deliberately render the dashboard shell;
-  // client-side demoData.js supplies fake data and prevents private API writes.
-  app.get(['/demo', '/demo/'], (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
-  app.get(['/demo/settings', '/demo/settings/'], (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
-  app.get(['/settings', '/settings/'], (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
-  app.get('/demo/server/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
-  app.get('/demo/server/:guildId/:section', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
-  app.get(['/dashboard/settings', '/dashboard/settings/'], (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
+  app.get('/demo', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
+  app.get('/demo/dashboard', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
+  app.get('/demo/settings', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
+  app.get('/demo/server/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
+  app.get('/demo/server/:guildId/:section', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
+  app.get('/dashboard/settings', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
   app.get('/dashboard/server/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
   app.get('/dashboard/server/:guildId/:section', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
   app.get('/docs', (req, res) => res.sendFile(path.join(publicPath, 'docs.html')));

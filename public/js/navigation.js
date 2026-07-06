@@ -8,7 +8,7 @@ function getNavEls() {
 function normalizeRoute(pathname = window.location.pathname) {
   if (pathname === '/' || pathname === '') return '/';
   if (pathname.startsWith('/dashboard/server/')) return '/dashboard';
-  if (pathname === '/dashboard/settings' || pathname === '/settings' || pathname === '/demo/settings') return '/settings';
+  if (pathname === '/dashboard/settings') return '/dashboard/settings';
   return pathname.replace(/\/$/, '');
 }
 

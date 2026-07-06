@@ -26,7 +26,7 @@ const VALID_SECTIONS = new Set(['overview', 'welcome', 'leveling', 'ai', 'logs',
 let viewMode = localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner' ? 'owner' : 'user';
 
 function isDemoMode() { return isDemoRoute(); }
-function dashboardBase() { return isDemoMode() ? '/demo' : '/dashboard'; }
+function dashboardBase() { return isDemoMode() ? '/demo/dashboard' : '/dashboard'; }
 function settingsPath() { return isDemoMode() ? '/demo/settings' : '/dashboard/settings'; }
 function demoBadge() { return isDemoMode() ? '<div class="demo-banner" role="status"><strong>Demo Mode</strong><span>Read-only preview using fake data. Log in to make real changes.</span></div>' : ''; }
 function readOnlyDemoToast() { showStatusToast('info', 'Demo mode is read-only', 'Log in to make changes.'); }
@@ -55,8 +55,15 @@ function applyTheme(theme = readDashboardPrefs().theme) {
 applyTheme();
 
 function routeInfo() {
-  const base = isDemoMode() ? 'demo' : 'dashboard';
-  if (window.location.pathname === '/settings' || window.location.pathname === '/settings/') return { settings: true };
+  if (isDemoMode()) {
+    const path = window.location.pathname;
+    if (/^\/demo\/settings\/?$/.test(path)) return { settings: true };
+    if (/^\/demo(?:\/dashboard)?\/?$/.test(path)) return { home: true };
+    const demoServerMatch = path.match(/^\/demo\/server\/([^/]+)(?:\/([^/]+))?\/?$/);
+    if (demoServerMatch) return { id: decodeURIComponent(demoServerMatch[1]), section: decodeURIComponent(demoServerMatch[2] || 'overview') };
+    return { home: true };
+  }
+  const base = 'dashboard';
   const settingsRe = new RegExp(`^/${base}/settings/?$`);
   if (settingsRe.test(window.location.pathname)) return { settings: true };
   const serverRe = new RegExp(`^/${base}/server/([^/]+)(?:/([^/]+))?/?$`);
@@ -273,7 +280,7 @@ function dashboardHomeContent(data) {
     <section class="dash-page-title">
       <span>Dashboard</span>
       <h1>Welcome back, ${escapeHtml(activeName())}</h1>
-      <p>Choose a server below to manage Meowz. Use owner view to preview every server Meowz is installed in.</p>
+      <p>${isDemoMode() ? 'Preview the protected dashboard with safe fake data. Demo mode is read-only and never changes Discord.' : 'Choose a server below to manage Meowz. Use owner view to preview every server Meowz is installed in.'}</p>
       ${data.isOwner ? `<div class="dash-owner-inline">${ownerToggle()}</div>` : ''}
     </section>
     <section id="servers" class="dash-grid two">
@@ -488,9 +495,17 @@ async function renderSettingsPage() {
   if (!els.home) return;
   els.home.hidden = false;
   if (els.detail) els.detail.hidden = true;
-  document.title = 'Settings — Meowz';
+  document.title = isDemoMode() ? 'Demo Settings — Meowz' : 'Settings — Meowz';
   const authenticated = isAuthenticated();
   els.home.innerHTML = shell({ active: 'Settings', section: 'settings', content: loadingCard('Loading settings...') });
+
+  if (isDemoMode()) {
+    const data = await getDashboardGuilds(viewMode);
+    els.home.innerHTML = shell({ active: 'Settings', section: 'settings', showOwnerToggle: false, isOwner: Boolean(data.isOwner), content: settingsPage({ ...data, authenticated: true }) });
+    wireShell(els.home);
+    attachDashboardSettings();
+    return;
+  }
 
   if (!authenticated) {
     els.home.innerHTML = shell({ active: 'Settings', section: 'settings', content: settingsPage({ authenticated: false, isOwner: false }) });

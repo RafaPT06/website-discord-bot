@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Dashboard — Meowz</title>
+  <meta name="description" content="Preview the Meowz dashboard in read-only demo mode." />
+  <meta property="og:title" content="Meowz | Discord Bot" />
+  <meta property="og:description" content="A modern Discord bot with live stats, slash command docs, AI image editing, leveling and utilities." />
+  <meta property="og:image" content="https://meowz.up.railway.app/preview.png" />
+  <meta property="og:url" content="https://meowz.up.railway.app/" />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#8b5cf6" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <script>
+    (function () {
+      try {
+        var prefs = JSON.parse(localStorage.getItem('meowzDashboardPreferences') || '{}');
+        var theme = prefs.theme || localStorage.getItem('meowzTheme') || 'dark';
+        if (theme !== 'light' && theme !== 'dark') theme = 'dark';
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body class="dashboard-app-body">
+  <div class="bg-glow bg-glow-one"></div>
+  <div class="bg-glow bg-glow-two"></div>
+
+  <header class="nav" data-global-navbar>
+    <a class="brand" href="/" aria-label="Meowz home">
+      <span class="brand-icon" data-bot-avatar-small>M</span>
+      <span data-bot-name-short>Meowz</span>
+    </a>
+    <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav-links" data-nav-links aria-label="Main navigation">
+      <a href="/" data-nav-link data-route="/">Home</a>
+      <a href="/dashboard" data-nav-link data-route="/dashboard" data-auth-only hidden>Dashboard</a>
+      <a href="/docs" data-nav-link data-route="/docs">Documentation</a>
+      <a href="/changelog" data-nav-link data-route="/changelog">Changelog</a>
+      <a href="/dashboard/settings" data-nav-link data-route="/dashboard/settings">Settings</a>
+      <div class="auth-area auth-loading" data-auth-area>Checking login...</div>
+    </nav>
+  </header>
+
+  <main id="top" class="dashboard-app-root">
+    <section class="dashboard-app" data-dashboard hidden>
+      <div data-dashboard-home></div>
+      <div data-server-detail hidden>
+        <div data-server-detail-content></div>
+      </div>
+    </section>
+
+    <section class="dashboard-login-screen" data-dashboard-guest hidden aria-hidden="true"></section>
+  </main>
+
+  <footer class="footer-card">
+    <p>© <span data-footer-year></span> <span data-footer-bot-name>Meowz</span>. All rights reserved.</p>
+    <p>Made by Rafa (@atuaprima_)</p>
+  </footer>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

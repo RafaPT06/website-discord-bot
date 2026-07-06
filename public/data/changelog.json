@@ -1,29 +1,23 @@
 [
   {
-    "version": "1.14.0",
-    "date": "2026-07-06",
-    "title": "Website QA monitor",
-    "items": [
-      "Added a Playwright-powered website monitor for the homepage, documentation, changelog, and demo routes.",
-      "Added GitHub Actions scheduling for daily QA checks with Discord webhook reporting.",
-      "Added screenshot and summary artifacts for easier debugging after each monitor run."
-    ]
-  },
-  {
-    "version": "v1.13.1",
+    "version": "v1.9.1",
     "date": "2026-07-06",
     "changes": [
       {
         "type": "Fixed",
-        "text": "Made Settings public for guests while keeping Dashboard protected unless logged in or using Demo Mode."
+        "text": "Added the missing public /demo/dashboard route and kept /demo as a public demo dashboard entry point."
+      },
+      {
+        "type": "Fixed",
+        "text": "Demo settings now bypasses Discord login safely with fake demo data and keeps the Demo Mode read-only banner visible."
+      },
+      {
+        "type": "Security",
+        "text": "Demo pages are served from a demo-only HTML entry so login-required fallback content is not detected on public demo routes."
       },
       {
         "type": "Improved",
-        "text": "Removed duplicate Settings navigation from the account dropdown so the shared menu stays consistent."
-      },
-      {
-        "type": "New",
-        "text": "Added robust /demo and /demo/settings routes for the read-only dashboard preview."
+        "text": "Demo dashboard, demo settings and demo server pages keep the same isolated demo context, fake user and read-only behavior."
       }
     ]
   },

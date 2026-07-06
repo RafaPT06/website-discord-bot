@@ -5,7 +5,6 @@ function authAreaEl() { return document.querySelector('[data-auth-area]'); }
 function authOnlyEls() { return document.querySelectorAll('[data-auth-only]'); }
 function dashboardSectionEl() { return document.querySelector('[data-dashboard]'); }
 function dashboardGuestEl() { return document.querySelector('[data-dashboard-guest]'); }
-function isPublicSettingsRoute() { return window.location.pathname === '/dashboard/settings' || window.location.pathname === '/settings' || window.location.pathname === '/demo/settings'; }
 let activeUser = null;
 
 function avatarUrl(user, size = 96) {
@@ -35,7 +34,6 @@ function renderAvatar(user, className = 'nav-user-avatar', size = 96) {
 }
 
 function setAuthOnlyVisible(isVisible) {
-  const allowPublicSettings = isPublicSettingsRoute();
   document.body.classList.toggle('dashboard-signed-in', Boolean(isVisible));
   document.body.classList.toggle('dashboard-signed-out', !isVisible);
   document.body.classList.remove('menu-open', 'dash-drawer-open');
@@ -45,8 +43,8 @@ function setAuthOnlyVisible(isVisible) {
 
   const dashboardSection = dashboardSectionEl();
   const dashboardGuest = dashboardGuestEl();
-  if (dashboardSection) dashboardSection.hidden = !(isVisible || allowPublicSettings);
-  if (dashboardGuest) dashboardGuest.hidden = isVisible || allowPublicSettings;
+  if (dashboardSection) dashboardSection.hidden = !isVisible;
+  if (dashboardGuest) dashboardGuest.hidden = isVisible;
 }
 
 function closeProfileMenu() {
@@ -96,9 +94,14 @@ function renderDemoUser() {
   activeUser = { ...DEMO_USER };
   setAuthOnlyVisible(true);
   document.body.classList.add('demo-mode');
-  document.querySelectorAll('[data-route="/dashboard"]').forEach((link) => { link.href = '/demo'; link.hidden = false; });
-  document.querySelectorAll('[data-route="/settings"]').forEach((link) => { link.href = '/demo/settings'; });
+  document.querySelectorAll('[data-route="/dashboard"]').forEach((link) => { link.href = '/demo/dashboard'; link.hidden = false; });
+  document.querySelectorAll('[data-route="/dashboard/settings"]').forEach((link) => { link.href = '/demo/settings'; });
   renderDashboard(activeUser);
+  const dashboardGuest = dashboardGuestEl();
+  if (dashboardGuest) {
+    dashboardGuest.hidden = true;
+    dashboardGuest.setAttribute('aria-hidden', 'true');
+  }
 
   const authArea = authAreaEl();
   if (!authArea) return;
@@ -116,7 +119,6 @@ function renderDemoUser() {
 
 function renderLoggedOut() {
   activeUser = null;
-  document.body.classList.remove('demo-mode');
   setAuthOnlyVisible(false);
 
   const authArea = authAreaEl();
@@ -156,6 +158,7 @@ function renderLoggedIn(user) {
             <span>${username}</span>
           </div>
         </div>
+        <a href="/dashboard/settings" role="menuitem">Settings</a>
         <a class="logout-link" href="/auth/logout" role="menuitem">Logout</a>
       </div>
     </div>
