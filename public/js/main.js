@@ -38,10 +38,14 @@ async function bootPageModules() {
   await Promise.allSettled(jobs);
 }
 
-initTheme();
-mountNavbar();
-initNavigation();
-setFooterYear();
-initStatusToasts();
-initAuth();
-bootPageModules();
+async function boot() {
+  initTheme();
+  mountNavbar();
+  initNavigation();
+  setFooterYear();
+  initStatusToasts();
+  await initAuth();
+  await bootPageModules();
+}
+
+boot();

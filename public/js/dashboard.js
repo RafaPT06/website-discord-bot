@@ -54,6 +54,7 @@ function routeInfo() {
 }
 
 function activeUser() { return getActiveUser?.() || null; }
+function isAuthenticated() { return Boolean(activeUser()); }
 function activeName() { const u = activeUser(); return u?.globalName || u?.username || 'Rafa'; }
 function activeUsername() { const u = activeUser(); return u?.username ? `@${u.username}` : '@atuaprima_'; }
 function userAvatarUrl(user = activeUser(), size = 96) {
@@ -442,11 +443,16 @@ function attachSettingsForm(server, section) {
 function settingsPage(data = {}) {
   const prefs = readDashboardPrefs();
   const isOwner = Boolean(data.isOwner);
+  const authenticated = Boolean(data.authenticated || activeUser());
   const languageOptions = [
     ['en', 'English'], ['pt', 'Português'], ['es', 'Español'], ['de', 'Deutsch'], ['fr', 'Français'],
   ].map(([value, label]) => `<option value="${value}" ${prefs.language === value ? 'selected' : ''}>${label}</option>`).join('');
-  return `<section class="dash-page-title"><span>Account</span><h1>Settings</h1><p>Control dashboard preferences. More account and language options will be added later.</p></section><form class="dash-settings-page" data-dashboard-settings><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Dashboard Preferences</span><h2>View mode</h2><p>Choose how the dashboard lists servers.</p></div></div>${isOwner ? `<div class="dash-setting-block"><strong>Owner/User view</strong><p>Owner View shows every server Meowz is installed in. User View shows the same list a normal manager sees.</p>${ownerToggle()}</div>` : `<div class="dash-note"><strong>User View</strong><span>Owner View is only available to the bot owner.</span></div>`}</article><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Appearance</span><h2>Theme</h2><p>Dark mode is optimized for Meowz. Light mode is available as a preview.</p></div></div><div class="dash-segmented" data-theme-toggle><button type="button" data-theme-choice="dark" class="${prefs.theme === 'dark' ? 'is-active' : ''}">Dark</button><button type="button" data-theme-choice="light" class="${prefs.theme === 'light' ? 'is-active' : ''}">Light</button></div></article><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Language</span><h2>Language</h2><p>The selector is ready for future translations. English remains the active dashboard copy for now.</p></div></div><label class="dash-field"><span>Dashboard language</span><select name="language">${languageOptions}</select></label></article><article class="dash-card"><span>Coming soon</span><h2>Future settings</h2><div class="dash-feature-grid compact"><div class="dash-feature-card"><strong>Notifications</strong><span>Control dashboard alerts and reminders.</span></div><div class="dash-feature-card"><strong>Privacy</strong><span>Manage account visibility and saved preferences.</span></div><div class="dash-feature-card"><strong>Experiments</strong><span>Try new dashboard features early.</span></div></div></article></form>`;
+
+  const viewModeCard = authenticated ? `<article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Dashboard Preferences</span><h2>View mode</h2><p>Choose how the dashboard lists servers.</p></div></div>${isOwner ? `<div class="dash-setting-block"><strong>Owner/User view</strong><p>Owner View shows every server Meowz is installed in. User View shows the same list a normal manager sees.</p>${ownerToggle()}</div>` : `<div class="dash-note"><strong>User View</strong><span>Owner View is only available to the bot owner.</span></div>`}</article>` : '';
+
+  return `<section class="dash-page-title"><span>Account</span><h1>Settings</h1><p>Control dashboard preferences. Theme and language preferences are saved locally on this browser, even when you are not logged in.</p></section><form class="dash-settings-page" data-dashboard-settings>${viewModeCard}<article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Appearance</span><h2>Theme</h2><p>Choose the dashboard theme for this browser.</p></div></div><div class="dash-segmented" data-theme-toggle><button type="button" data-theme-choice="dark" class="${prefs.theme === 'dark' ? 'is-active' : ''}">Dark</button><button type="button" data-theme-choice="light" class="${prefs.theme === 'light' ? 'is-active' : ''}">Light</button></div></article><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Language</span><h2>Language</h2><p>The selector is ready for future translations. English remains the active dashboard copy for now.</p></div></div><label class="dash-field"><span>Dashboard language</span><select name="language">${languageOptions}</select></label></article><article class="dash-card"><span>Coming soon</span><h2>Future settings</h2><div class="dash-feature-grid compact"><div class="dash-feature-card"><strong>Notifications</strong><span>Control dashboard alerts and reminders.</span></div><div class="dash-feature-card"><strong>Privacy</strong><span>Manage account visibility and saved preferences.</span></div><div class="dash-feature-card"><strong>Experiments</strong><span>Try new dashboard features early.</span></div></div></article></form>`;
 }
+
 function attachDashboardSettings() {
   const form = document.querySelector('[data-dashboard-settings]');
   if (!form) return;
@@ -469,14 +475,23 @@ async function renderSettingsPage() {
   els.home.hidden = false;
   if (els.detail) els.detail.hidden = true;
   document.title = 'Settings — Meowz';
+  const authenticated = isAuthenticated();
   els.home.innerHTML = shell({ active: 'Settings', section: 'settings', content: loadingCard('Loading settings...') });
+
+  if (!authenticated) {
+    els.home.innerHTML = shell({ active: 'Settings', section: 'settings', content: settingsPage({ authenticated: false, isOwner: false }) });
+    wireShell(els.home);
+    attachDashboardSettings();
+    return;
+  }
+
   try {
     const data = await getDashboardGuilds(viewMode);
-    els.home.innerHTML = shell({ active: 'Settings', section: 'settings', showOwnerToggle: false, isOwner: Boolean(data.isOwner), content: settingsPage(data) });
+    els.home.innerHTML = shell({ active: 'Settings', section: 'settings', showOwnerToggle: false, isOwner: Boolean(data.isOwner), content: settingsPage({ ...data, authenticated: true }) });
     wireShell(els.home);
     attachDashboardSettings();
   } catch (err) {
-    els.home.innerHTML = shell({ active: 'Settings', section: 'settings', content: settingsPage({ isOwner: false }) });
+    els.home.innerHTML = shell({ active: 'Settings', section: 'settings', content: settingsPage({ authenticated: true, isOwner: false }) });
     wireShell(els.home);
     attachDashboardSettings();
     showStatusToast('error', 'Settings loaded with limited access', err.message || 'Could not verify owner mode.');
@@ -514,7 +529,15 @@ async function renderServerPage(id, section = 'overview') {
 export function initDashboard() {
   if (!els.home && !els.detail) return;
   const route = routeInfo();
-  if (route?.settings) renderSettingsPage();
-  else if (route?.id) renderServerPage(route.id, route.section);
+  if (route?.settings) {
+    renderSettingsPage();
+    return;
+  }
+  if (!isAuthenticated()) {
+    if (els.home) els.home.hidden = true;
+    if (els.detail) els.detail.hidden = true;
+    return;
+  }
+  if (route?.id) renderServerPage(route.id, route.section);
   else renderDashboardHome();
 }

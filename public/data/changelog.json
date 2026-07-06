@@ -1,5 +1,31 @@
 [
   {
+    "version": "v1.8.1",
+    "date": "2026-07-06",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Removed the duplicate Settings entry from the authenticated mobile menu while keeping Settings available in the main menu."
+      },
+      {
+        "type": "Fixed",
+        "text": "Hid Dashboard navigation for guests and kept Settings available for both logged-in and logged-out visitors."
+      },
+      {
+        "type": "Improved",
+        "text": "Settings now saves light/dark mode and language locally for this browser without requiring Discord login."
+      },
+      {
+        "type": "Fixed",
+        "text": "Hid Owner/User dashboard view controls from guests and kept them only for authenticated users."
+      },
+      {
+        "type": "Improved",
+        "text": "Added the shared website footer to dashboard/settings routes for consistent page layout and credits."
+      }
+    ]
+  },
+  {
     "version": "v1.8.0",
     "date": "2026-07-05",
     "changes": [

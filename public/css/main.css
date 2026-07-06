@@ -4458,3 +4458,42 @@ body.menu-open { overflow: hidden !important; }
     display: grid !important;
   }
 }
+
+/* ===== Global layout/menu consistency fix ===== */
+@media (max-width: 720px) {
+  body.dashboard-signed-in .nav-links,
+  body.dashboard-signed-in .mobile-menu-button {
+    display: grid !important;
+  }
+
+  body.dashboard-signed-in .mobile-menu-button {
+    display: block !important;
+  }
+
+  .nav-links {
+    max-height: calc(100dvh - 96px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  :root[data-theme="light"] .nav-links {
+    background: rgba(255,255,255,.96) !important;
+    color: var(--text);
+  }
+
+  :root[data-theme="light"] .nav-links a,
+  :root[data-theme="light"] .mobile-account-panel,
+  :root[data-theme="light"] .login-button {
+    background: rgba(255,255,255,.72) !important;
+    color: var(--text) !important;
+  }
+}
+
+.dashboard-app-root + .footer-card {
+  margin-top: 28px;
+}
+
+body.dashboard-signed-out .dash-top-actions .dash-user-pill,
+body.dashboard-signed-out .dash-top-actions .dash-owner-toggle {
+  display: none !important;
+}

@@ -143,7 +143,6 @@ function renderLoggedIn(user) {
           <span>${username}</span>
         </div>
       </div>
-      <a href="/dashboard/settings">Settings</a>
       <a class="logout-link" href="/auth/logout">Logout</a>
     </div>
   `;
@@ -156,7 +155,7 @@ function renderLoggedIn(user) {
 }
 
 export async function initAuth() {
-  if (!authAreaEl()) return;
+  if (!authAreaEl()) return { authenticated: false, user: null };
 
   try {
     const res = await fetch('/api/me', { credentials: 'include' });
@@ -164,12 +163,17 @@ export async function initAuth() {
 
     if (data?.authenticated && data?.user) {
       renderLoggedIn(data.user);
-      return;
+      window.dispatchEvent(new CustomEvent('meowz:auth-ready', { detail: { authenticated: true, user: data.user } }));
+      return { authenticated: true, user: data.user };
     }
 
     renderLoggedOut();
+    window.dispatchEvent(new CustomEvent('meowz:auth-ready', { detail: { authenticated: false, user: null } }));
+    return { authenticated: false, user: null };
   } catch {
     renderLoggedOut();
+    window.dispatchEvent(new CustomEvent('meowz:auth-ready', { detail: { authenticated: false, user: null } }));
+    return { authenticated: false, user: null };
   }
 }
 
