@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.14.0",
+    "date": "2026-07-06",
+    "title": "Website QA monitor",
+    "items": [
+      "Added a Playwright-powered website monitor for the homepage, documentation, changelog, and demo routes.",
+      "Added GitHub Actions scheduling for daily QA checks with Discord webhook reporting.",
+      "Added screenshot and summary artifacts for easier debugging after each monitor run."
+    ]
+  },
+  {
     "version": "v1.13.1",
     "date": "2026-07-06",
     "changes": [

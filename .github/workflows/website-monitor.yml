@@ -1,0 +1,43 @@
+name: Meowz Website Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 10:00 Europe/Lisbon during WEST/summer time. Change to 10:00 UTC in winter if needed.
+    - cron: '0 9 * * *'
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run website monitor
+        env:
+          MEOWZ_BASE_URL: https://meowz.up.railway.app
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          MONITOR_WAIT_MS: 7000
+        run: npm run monitor
+
+      - name: Upload monitor screenshots and summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meowz-website-monitor
+          path: test-results/website-monitor
+          if-no-files-found: ignore
