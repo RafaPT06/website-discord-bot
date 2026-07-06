@@ -1,4 +1,5 @@
 import { escapeHtml } from './utils.js';
+import { DEMO_USER, isDemoRoute } from './demoData.js';
 
 function authAreaEl() { return document.querySelector('[data-auth-area]'); }
 function authOnlyEls() { return document.querySelectorAll('[data-auth-only]'); }
@@ -89,6 +90,28 @@ function renderDashboard(user) {
   }
 }
 
+function renderDemoUser() {
+  activeUser = { ...DEMO_USER };
+  setAuthOnlyVisible(true);
+  document.body.classList.add('demo-mode');
+  document.querySelectorAll('[data-route="/dashboard"]').forEach((link) => { link.href = '/demo'; link.hidden = false; });
+  document.querySelectorAll('[data-route="/dashboard/settings"]').forEach((link) => { link.href = '/demo/settings'; });
+  renderDashboard(activeUser);
+
+  const authArea = authAreaEl();
+  if (!authArea) return;
+  authArea.className = 'auth-area is-authenticated is-demo';
+  authArea.innerHTML = `
+    <div class="profile-menu-wrap">
+      <a class="nav-user-button" href="/demo/settings" aria-label="Demo settings">
+        ${renderAvatar(activeUser)}
+        <span class="nav-user-text"><span class="nav-user-name">Demo User</span><span class="nav-user-subtitle">Demo Mode</span></span>
+      </a>
+    </div>
+    <div class="mobile-account-panel"><a class="logout-link" href="/auth/discord">Login with Discord</a></div>
+  `;
+}
+
 function renderLoggedOut() {
   activeUser = null;
   setAuthOnlyVisible(false);
@@ -155,7 +178,13 @@ function renderLoggedIn(user) {
 }
 
 export async function initAuth() {
-  if (!authAreaEl()) return { authenticated: false, user: null };
+  if (!authAreaEl()) return { authenticated: false, user: null, demo: false };
+
+  if (isDemoRoute()) {
+    renderDemoUser();
+    window.dispatchEvent(new CustomEvent('meowz:auth-ready', { detail: { authenticated: false, user: DEMO_USER, demo: true } }));
+    return { authenticated: false, user: DEMO_USER, demo: true };
+  }
 
   try {
     const res = await fetch('/api/me', { credentials: 'include' });

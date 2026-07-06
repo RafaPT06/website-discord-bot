@@ -1,5 +1,27 @@
 [
   {
+    "version": "v1.9.0",
+    "date": "2026-07-06",
+    "changes": [
+      {
+        "type": "Added",
+        "text": "Added a public /demo route for previewing protected dashboard and settings pages without Discord login."
+      },
+      {
+        "type": "Added",
+        "text": "Demo mode now uses isolated fake user, server, bot stats, leveling and settings data from a dedicated demo data module."
+      },
+      {
+        "type": "Security",
+        "text": "Demo mode is read-only and does not call private dashboard APIs or allow server/account modifications."
+      },
+      {
+        "type": "Improved",
+        "text": "Demo pages show a clear Demo Mode banner and can be used to test breadcrumbs, navigation, mobile menu, owner/user view and light/dark styling."
+      }
+    ]
+  },
+  {
     "version": "v1.8.1",
     "date": "2026-07-06",
     "changes": [

@@ -8,6 +8,7 @@ import {
 import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
 import { getActiveUser } from './auth.js';
+import { DEMO_LEVELING, isDemoRoute } from './demoData.js';
 import { applyTheme as applyStoredTheme, setStoredTheme } from './components/theme.js';
 
 const els = {
@@ -23,6 +24,12 @@ const VALID_THEMES = new Set(['dark', 'light']);
 const VALID_LANGUAGES = new Set(['en', 'pt', 'es', 'de', 'fr']);
 const VALID_SECTIONS = new Set(['overview', 'welcome', 'leveling', 'ai', 'logs', 'moderation']);
 let viewMode = localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner' ? 'owner' : 'user';
+
+function isDemoMode() { return isDemoRoute(); }
+function dashboardBase() { return isDemoMode() ? '/demo' : '/dashboard'; }
+function settingsPath() { return isDemoMode() ? '/demo/settings' : '/dashboard/settings'; }
+function demoBadge() { return isDemoMode() ? '<div class="demo-banner" role="status"><strong>Demo Mode</strong><span>Read-only preview using fake data. Log in to make real changes.</span></div>' : ''; }
+function readOnlyDemoToast() { showStatusToast('info', 'Demo mode is read-only', 'Log in to make changes.'); }
 
 function readDashboardPrefs() {
   try {
@@ -48,13 +55,17 @@ function applyTheme(theme = readDashboardPrefs().theme) {
 applyTheme();
 
 function routeInfo() {
-  if (/^\/dashboard\/settings\/?$/.test(window.location.pathname)) return { settings: true };
-  const match = window.location.pathname.match(/^\/dashboard\/server\/([^/]+)(?:\/([^/]+))?\/?$/);
+  const base = isDemoMode() ? 'demo' : 'dashboard';
+  const settingsRe = new RegExp(`^/${base}/settings/?$`);
+  if (settingsRe.test(window.location.pathname)) return { settings: true };
+  const serverRe = new RegExp(`^/${base}/server/([^/]+)(?:/([^/]+))?/?$`);
+  const match = window.location.pathname.match(serverRe);
   return match ? { id: decodeURIComponent(match[1]), section: decodeURIComponent(match[2] || 'overview') } : null;
 }
 
 function activeUser() { return getActiveUser?.() || null; }
-function isAuthenticated() { return Boolean(activeUser()); }
+function isAuthenticated() { return Boolean(activeUser()) && !isDemoMode(); }
+function canAccessProtected() { return isDemoMode() || isAuthenticated(); }
 function activeName() { const u = activeUser(); return u?.globalName || u?.username || 'Rafa'; }
 function activeUsername() { const u = activeUser(); return u?.username ? `@${u.username}` : '@atuaprima_'; }
 function userAvatarUrl(user = activeUser(), size = 96) {
@@ -77,7 +88,7 @@ function sectionTitle(section) {
   return ({ overview: 'Overview', welcome: 'Welcome Messages', leveling: 'Leveling System', ai: 'AI Image Access', logs: 'Logs', moderation: 'Moderation', settings: 'Settings' })[section] || 'Overview';
 }
 function sectionPath(server, section = 'overview') {
-  const base = `/dashboard/server/${encodeURIComponent(server.id)}`;
+  const base = `${dashboardBase()}/server/${encodeURIComponent(server.id)}`;
   return section === 'overview' ? base : `${base}/${encodeURIComponent(section)}`;
 }
 function readSettings(guildId, section, defaults = {}) {
@@ -95,10 +106,10 @@ function writeSettings(guildId, section, values) {
 
 function shell({ server = null, active = 'Dashboard', section = 'dashboard', content = '', showOwnerToggle = false, isOwner = false }) {
   return `
-    <div class="dash-shell">
+    <div class="dash-shell">${demoBadge()}
       <aside class="dash-sidebar" aria-label="Dashboard navigation">
         <div class="dash-brand-row">
-          <a class="dash-brand" href="/dashboard"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a>
+          <a class="dash-brand" href="${dashboardBase()}"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a>
           <a class="dash-round-action" href="/">+</a>
         </div>
         ${server ? currentServerCard(server) : dashboardCard()}
@@ -115,7 +126,7 @@ function shell({ server = null, active = 'Dashboard', section = 'dashboard', con
 }
 
 function dashboardCard() {
-  return `<a class="dash-current-server" href="/dashboard"><span class="dash-current-icon">M</span><span><strong>Meowz Dashboard</strong><small>Server manager</small></span></a>`;
+  return `<a class="dash-current-server" href="${dashboardBase()}"><span class="dash-current-icon">M</span><span><strong>Meowz Dashboard</strong><small>Server manager</small></span></a>`;
 }
 function currentServerCard(server) {
   return `<a class="dash-current-server" href="${escapeHtml(sectionPath(server))}">${serverIcon(server, 'dash-current-icon')}<span><strong>${escapeHtml(server.name)}</strong><small>Server Settings</small></span><em>⌄</em></a>`;
@@ -129,21 +140,21 @@ function sidebarNav(server, active) {
       ['overview', 'Overview'], ['welcome', 'Welcome Messages'], ['leveling', 'Leveling System'], ['ai', 'AI Image Access'], ['logs', 'Logs'], ['moderation', 'Moderation'],
     ].map(([key, label]) => navLink(sectionPath(server, key), key, active, label)).join('');
     const resources = `${navLink('/docs', 'docs', active, 'Documentation')}${navLink('/changelog', 'changelog', active, 'Changelog')}`;
-    const account = navLink('/dashboard/settings', 'settings', active, 'Settings');
+    const account = navLink(settingsPath(), 'settings', active, 'Settings');
     return `<nav class="dash-side-nav"><small>Dashboard</small>${settings}</nav><nav class="dash-side-nav muted"><small>Resources</small>${resources}</nav><nav class="dash-side-nav muted"><small>Account</small>${account}</nav>`;
   }
-  const dashboard = `${navLink('/dashboard', 'dashboard', active, 'Overview')}${navLink('/dashboard/settings', 'settings', active, 'Settings')}`;
+  const dashboard = `${navLink(dashboardBase(), 'dashboard', active, 'Overview')}${navLink(settingsPath(), 'settings', active, 'Settings')}`;
   const resources = `${navLink('/docs', 'docs', active, 'Documentation')}${navLink('/changelog', 'changelog', active, 'Changelog')}`;
   return `<nav class="dash-side-nav"><small>Dashboard</small>${dashboard}</nav><nav class="dash-side-nav muted"><small>Resources</small>${resources}</nav>`;
 }
 function topbar(server, active, showOwnerToggle, isOwner) {
   return `
     <header class="dash-topbar">
-      <div class="dash-breadcrumb"><a href="/dashboard">Servers</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active !== 'Overview' ? `<span>›</span><strong>${escapeHtml(active)}</strong>` : ''}` : ''}</div>
+      <div class="dash-breadcrumb"><a href="${dashboardBase()}">Servers</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active !== 'Overview' ? `<span>›</span><strong>${escapeHtml(active)}</strong>` : ''}` : ''}</div>
       <div class="dash-top-actions">
         ${showOwnerToggle && isOwner ? ownerToggle() : ''}
         ${server ? `<a class="dash-primary-small" href="/">View Bot</a>` : ''}
-        <a class="dash-user-pill" href="/dashboard/settings">${avatarHtml()}<span><strong>${escapeHtml(activeName())}</strong><small>${escapeHtml(activeUsername())}</small></span><em>OWNER</em></a>
+        <a class="dash-user-pill" href="${settingsPath()}">${avatarHtml()}<span><strong>${escapeHtml(activeName())}</strong><small>${escapeHtml(activeUsername())}</small></span><em>OWNER</em></a>
       </div>
     </header>`;
 }
@@ -158,15 +169,15 @@ function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwne
     ['AI Image Access', sectionPath(server, 'ai')],
     ['Logs', sectionPath(server, 'logs')],
     ['Moderation', sectionPath(server, 'moderation')],
-  ] : [['Overview', '/dashboard']];
+  ] : [['Overview', dashboardBase()]];
   const resourceLinks = [['Documentation', '/docs'], ['Changelog', '/changelog']];
-  const accountLinks = [['Settings', '/dashboard/settings']];
+  const accountLinks = [['Settings', settingsPath()]];
   const activeLabel = server ? server.name : 'Dashboard';
   const renderGroup = (title, links) => `<div class="dash-drawer-group"><small>${escapeHtml(title)}</small>${links.map(([label, href]) => `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`).join('')}</div>`;
-  return `<header class="dash-mobile-bar"><a class="dash-brand" href="/dashboard"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><div class="dash-mobile-backdrop" data-dash-backdrop hidden></div><aside class="dash-mobile-drawer" data-dash-drawer hidden><div class="dash-drawer-head"><span>${server ? serverIcon(server, 'dash-current-icon') : '<span class="dash-current-icon">M</span>'}</span><div><strong>${escapeHtml(activeLabel)}</strong><small>${escapeHtml(active)}</small></div></div>${showOwnerToggle && isOwner ? `<div class="dash-drawer-toggle">${ownerToggle()}</div>` : ''}<nav>${renderGroup('Dashboard', dashboardLinks)}${renderGroup('Resources', resourceLinks)}${renderGroup('Account', accountLinks)}<div class="dash-drawer-group"><a href="/auth/logout" class="danger">Logout</a></div></nav></aside></header>`;
+  return `<header class="dash-mobile-bar"><a class="dash-brand" href="${dashboardBase()}"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><div class="dash-mobile-backdrop" data-dash-backdrop hidden></div><aside class="dash-mobile-drawer" data-dash-drawer hidden><div class="dash-drawer-head"><span>${server ? serverIcon(server, 'dash-current-icon') : '<span class="dash-current-icon">M</span>'}</span><div><strong>${escapeHtml(activeLabel)}</strong><small>${escapeHtml(active)}</small></div></div>${showOwnerToggle && isOwner ? `<div class="dash-drawer-toggle">${ownerToggle()}</div>` : ''}<nav>${renderGroup('Dashboard', dashboardLinks)}${renderGroup('Resources', resourceLinks)}${renderGroup('Account', accountLinks)}${isDemoMode() ? '<div class="dash-drawer-group"><a href="/auth/discord">Login with Discord</a></div>' : '<div class="dash-drawer-group"><a href="/auth/logout" class="danger">Logout</a></div>'}</nav></aside></header>`;
 }
 function mobileBreadcrumb(server, active = 'Dashboard') {
-  return `<div class="dash-mobile-breadcrumb"><a href="/dashboard">Dashboard</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active !== 'Overview' ? `<span>›</span><strong>${escapeHtml(active)}</strong>` : ''}` : ''}</div>`;
+  return `<div class="dash-mobile-breadcrumb"><a href="${dashboardBase()}">Dashboard</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active !== 'Overview' ? `<span>›</span><strong>${escapeHtml(active)}</strong>` : ''}` : ''}</div>`;
 }
 function closeDashDrawer(bar = document) {
   const scope = bar?.querySelector ? bar : document;
@@ -250,7 +261,7 @@ function wireShell(root = document) {
 
 function serverRow(server, type = 'installed') {
   const installed = type === 'installed';
-  const href = installed ? (server.manageUrl || `/dashboard/server/${encodeURIComponent(server.id)}`) : (server.inviteUrl || '#');
+  const href = installed ? (server.manageUrl || `${dashboardBase()}/server/${encodeURIComponent(server.id)}`) : (server.inviteUrl || '#');
   const subtitle = typeof server.memberCount === 'number' ? `${formatNumber(server.memberCount)} members` : (installed ? 'Meowz installed' : 'Ready to invite');
   return `<a class="dash-server-row" href="${escapeHtml(href)}" ${installed ? '' : 'target="_blank" rel="noopener noreferrer"'}>${serverIcon(server, 'dash-list-icon')}<span><strong>${escapeHtml(server.name)}</strong><small>${escapeHtml(subtitle)}</small>${server.accessLabel ? `<em>${escapeHtml(server.accessLabel)}</em>` : ''}</span><b>${installed ? 'Open' : 'Invite'}</b></a>`;
 }
@@ -342,7 +353,7 @@ function levelingPage(server) {
     { level: 10, role: 'Lv10' },
     { level: 20, role: 'Lv20' },
   ];
-  return `${serverHeader(server,'leveling')}<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xp','XP per message',s.xp,1)}${numberField('cooldown','Cooldown seconds',s.cooldown,5)}${textField('channel','Level-up channel',s.channel,'# level-up')}${switchField('stackRoles',s.stackRoles,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><div class="dash-level-preview"><strong>Rafa reached Level 12</strong><span>1,240 / 1,500 XP</span><div><i style="width:82%"></i></div></div><div class="dash-role-table"><div class="dash-role-table-head"><strong>Reward roles</strong><button type="button" disabled>Add Role</button></div>${roles.map((r) => `<div class="dash-role-row"><span>Level ${r.level}</span><strong>${escapeHtml(r.role)}</strong></div>`).join('')}</div><small class="preview-note">Role editing can be connected to the API later. The layout is ready.</small></article></form>`;
+  return `${serverHeader(server,'leveling')}<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xp','XP per message',s.xp,1)}${numberField('cooldown','Cooldown seconds',s.cooldown,5)}${textField('channel','Level-up channel',s.channel,'# level-up')}${switchField('stackRoles',s.stackRoles,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><div class="dash-level-preview"><strong>${isDemoMode() ? `Demo rank #${DEMO_LEVELING.rank} · Level ${DEMO_LEVELING.level}` : 'Rafa reached Level 12'}</strong><span>${isDemoMode() ? `${formatNumber(DEMO_LEVELING.xp)} / ${formatNumber(DEMO_LEVELING.nextLevelXp)} XP` : '1,240 / 1,500 XP'}</span><div><i style="width:${isDemoMode() ? Math.min(100, Math.round((DEMO_LEVELING.xp / DEMO_LEVELING.nextLevelXp) * 100)) : 82}%"></i></div></div><div class="dash-role-table"><div class="dash-role-table-head"><strong>Reward roles</strong><button type="button" disabled>Add Role</button></div>${roles.map((r) => `<div class="dash-role-row"><span>Level ${r.level}</span><strong>${escapeHtml(r.role)}</strong></div>`).join('')}</div><small class="preview-note">Role editing can be connected to the API later. The layout is ready.</small></article></form>`;
 }
 function logsPage(server) {
   const s = readSettings(server.id, 'logs', { enabled:true, channel:'# logs', messages:false, members:true, moderation:true, voice:false });
@@ -432,6 +443,7 @@ function attachSettingsForm(server, section) {
   });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (isDemoMode()) { readOnlyDemoToast(); return; }
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Saving...';
     try { writeSettings(server.id, section, getFormValues(form)); showStatusToast('success', `${sectionTitle(section)} saved`, 'Your settings were saved.'); }
@@ -444,13 +456,14 @@ function settingsPage(data = {}) {
   const prefs = readDashboardPrefs();
   const isOwner = Boolean(data.isOwner);
   const authenticated = Boolean(data.authenticated || activeUser());
+  const demo = isDemoMode();
   const languageOptions = [
     ['en', 'English'], ['pt', 'Português'], ['es', 'Español'], ['de', 'Deutsch'], ['fr', 'Français'],
   ].map(([value, label]) => `<option value="${value}" ${prefs.language === value ? 'selected' : ''}>${label}</option>`).join('');
 
   const viewModeCard = authenticated ? `<article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Dashboard Preferences</span><h2>View mode</h2><p>Choose how the dashboard lists servers.</p></div></div>${isOwner ? `<div class="dash-setting-block"><strong>Owner/User view</strong><p>Owner View shows every server Meowz is installed in. User View shows the same list a normal manager sees.</p>${ownerToggle()}</div>` : `<div class="dash-note"><strong>User View</strong><span>Owner View is only available to the bot owner.</span></div>`}</article>` : '';
 
-  return `<section class="dash-page-title"><span>Account</span><h1>Settings</h1><p>Control dashboard preferences. Theme and language preferences are saved locally on this browser, even when you are not logged in.</p></section><form class="dash-settings-page" data-dashboard-settings>${viewModeCard}<article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Appearance</span><h2>Theme</h2><p>Choose the dashboard theme for this browser.</p></div></div><div class="dash-segmented" data-theme-toggle><button type="button" data-theme-choice="dark" class="${prefs.theme === 'dark' ? 'is-active' : ''}">Dark</button><button type="button" data-theme-choice="light" class="${prefs.theme === 'light' ? 'is-active' : ''}">Light</button></div></article><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Language</span><h2>Language</h2><p>The selector is ready for future translations. English remains the active dashboard copy for now.</p></div></div><label class="dash-field"><span>Dashboard language</span><select name="language">${languageOptions}</select></label></article><article class="dash-card"><span>Coming soon</span><h2>Future settings</h2><div class="dash-feature-grid compact"><div class="dash-feature-card"><strong>Notifications</strong><span>Control dashboard alerts and reminders.</span></div><div class="dash-feature-card"><strong>Privacy</strong><span>Manage account visibility and saved preferences.</span></div><div class="dash-feature-card"><strong>Experiments</strong><span>Try new dashboard features early.</span></div></div></article></form>`;
+  return `<section class="dash-page-title"><span>Account</span><h1>Settings</h1><p>Control dashboard preferences. Theme and language preferences are saved locally on this browser, even when you are not logged in.</p></section>${demo ? '<div class="dash-note demo-note"><strong>Demo Mode</strong><span>This page is a read-only preview. Visual preferences can be changed locally, but server/account changes are disabled.</span></div>' : ''}<form class="dash-settings-page" data-dashboard-settings>${viewModeCard}<article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Appearance</span><h2>Theme</h2><p>Choose the dashboard theme for this browser.</p></div></div><div class="dash-segmented" data-theme-toggle><button type="button" data-theme-choice="dark" class="${prefs.theme === 'dark' ? 'is-active' : ''}">Dark</button><button type="button" data-theme-choice="light" class="${prefs.theme === 'light' ? 'is-active' : ''}">Light</button></div></article><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Language</span><h2>Language</h2><p>The selector is ready for future translations. English remains the active dashboard copy for now.</p></div></div><label class="dash-field"><span>Dashboard language</span><select name="language">${languageOptions}</select></label></article><article class="dash-card"><span>Coming soon</span><h2>Future settings</h2><div class="dash-feature-grid compact"><div class="dash-feature-card"><strong>Notifications</strong><span>Control dashboard alerts and reminders.</span></div><div class="dash-feature-card"><strong>Privacy</strong><span>Manage account visibility and saved preferences.</span></div><div class="dash-feature-card"><strong>Experiments</strong><span>Try new dashboard features early.</span></div></div></article></form>`;
 }
 
 function attachDashboardSettings() {
@@ -533,7 +546,7 @@ export function initDashboard() {
     renderSettingsPage();
     return;
   }
-  if (!isAuthenticated()) {
+  if (!canAccessProtected()) {
     if (els.home) els.home.hidden = true;
     if (els.detail) els.detail.hidden = true;
     return;

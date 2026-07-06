@@ -1,3 +1,5 @@
+import { DEMO_BOT_STATS, DEMO_DASHBOARD, DEMO_IMAGE_ACCESS, demoServerById, isDemoRoute } from './demoData.js';
+
 const memoryCache = new Map();
 
 async function fetchJson(url, options = {}) {
@@ -23,6 +25,7 @@ async function fetchJson(url, options = {}) {
 }
 
 export function getBotStats() {
+  if (isDemoRoute()) return Promise.resolve({ ...DEMO_BOT_STATS, updatedAt: new Date().toISOString() });
   return fetchJson('/api/bot-stats', { cacheKey: 'bot-stats', cacheMs: 15000 });
 }
 
@@ -36,18 +39,26 @@ export function getChangelog() {
 
 export function getDashboardGuilds(mode = 'user') {
   const normalized = mode === 'owner' ? 'owner' : 'user';
+  if (isDemoRoute()) {
+    const data = { ...DEMO_DASHBOARD, ownerMode: normalized === 'owner' };
+    if (normalized !== 'owner') data.installed = DEMO_DASHBOARD.installed.filter((server) => server.manageable);
+    return Promise.resolve(data);
+  }
   return fetchJson(`/api/dashboard/guilds?mode=${encodeURIComponent(normalized)}`, { cacheKey: `dashboard-guilds:${normalized}`, cacheMs: 10000 });
 }
 
 export function getDashboardServer(guildId) {
+  if (isDemoRoute()) return Promise.resolve({ ok: true, server: demoServerById(guildId), updatedAt: new Date().toISOString(), demo: true });
   return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}`, { cacheKey: `dashboard-server:${guildId}`, cacheMs: 10000 });
 }
 
 export function getImageAccess(guildId) {
+  if (isDemoRoute()) return Promise.resolve({ ...DEMO_IMAGE_ACCESS });
   return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access`, { cacheKey: `image-access:${guildId}`, cacheMs: 15000 });
 }
 
 export async function addImageAccessUser(guildId, userId) {
+  if (isDemoRoute()) throw new Error('Demo mode is read-only. Log in to make changes.');
   const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access`, {
     method: 'POST',
     body: JSON.stringify({ userId }),
@@ -57,6 +68,7 @@ export async function addImageAccessUser(guildId, userId) {
 }
 
 export async function removeImageAccessUser(guildId, userId) {
+  if (isDemoRoute()) throw new Error('Demo mode is read-only. Log in to make changes.');
   const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access/${encodeURIComponent(userId)}`, {
     method: 'DELETE',
   });
