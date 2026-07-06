@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.13.1",
+    "date": "2026-07-06",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Made Settings public for guests while keeping Dashboard protected unless logged in or using Demo Mode."
+      },
+      {
+        "type": "Improved",
+        "text": "Removed duplicate Settings navigation from the account dropdown so the shared menu stays consistent."
+      },
+      {
+        "type": "New",
+        "text": "Added robust /demo and /demo/settings routes for the read-only dashboard preview."
+      }
+    ]
+  },
+  {
     "version": "v1.9.0",
     "date": "2026-07-06",
     "changes": [

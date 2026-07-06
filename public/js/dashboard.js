@@ -56,6 +56,7 @@ applyTheme();
 
 function routeInfo() {
   const base = isDemoMode() ? 'demo' : 'dashboard';
+  if (window.location.pathname === '/settings' || window.location.pathname === '/settings/') return { settings: true };
   const settingsRe = new RegExp(`^/${base}/settings/?$`);
   if (settingsRe.test(window.location.pathname)) return { settings: true };
   const serverRe = new RegExp(`^/${base}/server/([^/]+)(?:/([^/]+))?/?$`);
