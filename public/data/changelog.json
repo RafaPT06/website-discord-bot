@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.9.4",
+    "date": "2026-07-06",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Added @playwright/test as a development dependency so npm ci installs the monitor test runner before GitHub Actions runs npm run monitor."
+      },
+      {
+        "type": "Fixed",
+        "text": "Updated the monitor runner to use the local Playwright install instead of relying on an npx temporary package that could not be resolved by monitor.spec.js."
+      },
+      {
+        "type": "Improved",
+        "text": "Monitor screenshots now write to test-results/website-monitor, matching the GitHub Actions artifact upload path."
+      }
+    ]
+  },
+  {
     "version": "v1.9.3",
     "date": "2026-07-06",
     "changes": [
