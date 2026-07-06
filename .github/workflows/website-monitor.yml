@@ -1,6 +1,7 @@
 name: Meowz Website Monitor
  
 on:
+  push:
   workflow_dispatch:
   schedule:
     # 10:00 Europe/Lisbon during WEST/summer time. Change to 10:00 UTC in winter if needed.
