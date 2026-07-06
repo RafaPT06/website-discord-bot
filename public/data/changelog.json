@@ -1,5 +1,19 @@
 [
   {
+    "version": "v1.9.5",
+    "date": "2026-07-06",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Regenerated the Playwright package-lock entries so Railway and GitHub Actions download @playwright/test, playwright, playwright-core and fsevents from the public npm registry instead of an internal proxy URL."
+      },
+      {
+        "type": "Fixed",
+        "text": "Kept the npm monitor script and monitor files intact while repairing the lockfile source URLs used by npm ci."
+      }
+    ]
+  },
+  {
     "version": "v1.9.4",
     "date": "2026-07-06",
     "changes": [
