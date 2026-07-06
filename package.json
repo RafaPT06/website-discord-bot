@@ -5,11 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "monitor": "node scripts/website-monitor.js",
-    "monitor:headed": "PLAYWRIGHT_HEADED=1 node scripts/website-monitor.js"
+    "monitor": "node scripts/monitor.js"
   },
   "dependencies": {
-    "express": "^4.21.2",
-    "playwright": "^1.61.1"
+    "express": "^4.21.2"
   }
 }

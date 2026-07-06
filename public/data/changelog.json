@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.9.3",
+    "date": "2026-07-06",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Removed leftover Discord login prompts from demo dashboard and demo settings so QA no longer flags demo pages as protected routes."
+      },
+      {
+        "type": "Improved",
+        "text": "Demo read-only warnings now avoid auth-required wording while still making it clear that real changes are disabled."
+      },
+      {
+        "type": "Fixed",
+        "text": "Demo mobile drawer now offers Exit Demo instead of Login with Discord, keeping the preview context fake-data only."
+      }
+    ]
+  },
+  {
     "version": "v1.9.2",
     "date": "2026-07-06",
     "changes": [

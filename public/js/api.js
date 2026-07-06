@@ -58,7 +58,7 @@ export function getImageAccess(guildId) {
 }
 
 export async function addImageAccessUser(guildId, userId) {
-  if (isDemoRoute()) throw new Error('Demo mode is read-only. Log in to make changes.');
+  if (isDemoRoute()) throw new Error('Demo mode is read-only. Real changes are disabled in preview mode.');
   const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access`, {
     method: 'POST',
     body: JSON.stringify({ userId }),
@@ -68,7 +68,7 @@ export async function addImageAccessUser(guildId, userId) {
 }
 
 export async function removeImageAccessUser(guildId, userId) {
-  if (isDemoRoute()) throw new Error('Demo mode is read-only. Log in to make changes.');
+  if (isDemoRoute()) throw new Error('Demo mode is read-only. Real changes are disabled in preview mode.');
   const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access/${encodeURIComponent(userId)}`, {
     method: 'DELETE',
   });

@@ -113,7 +113,7 @@ function renderDemoUser() {
         <span class="nav-user-text"><span class="nav-user-name">Demo User</span><span class="nav-user-subtitle">Demo Mode</span></span>
       </a>
     </div>
-    <div class="mobile-account-panel"><a class="logout-link" href="/auth/discord">Login with Discord</a></div>
+    <div class="mobile-account-panel"><a class="logout-link" href="/">Exit Demo</a></div>
   `;
 }
 
