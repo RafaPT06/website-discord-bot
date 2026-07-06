@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.9.2",
+    "date": "2026-07-06",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Restored the npm monitor script used by the GitHub Actions website monitor workflow."
+      },
+      {
+        "type": "Added",
+        "text": "Added a Playwright-based monitor runner for homepage, documentation, changelog, demo dashboard and demo settings routes."
+      },
+      {
+        "type": "Improved",
+        "text": "Monitor screenshots are saved to monitor-artifacts so failed workflow runs can upload QA evidence."
+      }
+    ]
+  },
+  {
     "version": "v1.9.1",
     "date": "2026-07-06",
     "changes": [

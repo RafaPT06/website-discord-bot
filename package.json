@@ -4,7 +4,8 @@
   "description": "Public website and future dashboard for the Meowz Discord bot.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "monitor": "node scripts/monitor.js"
   },
   "dependencies": {
     "express": "^4.21.2"
