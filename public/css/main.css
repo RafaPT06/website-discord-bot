@@ -5024,283 +5024,103 @@ body.dashboard-signed-out .dash-top-actions .dash-owner-toggle {
 }
 
 
-/* ===== Final mobile drawer, density and skeleton polish ===== */
-.dash-skeleton-wrap { display: grid; gap: 14px; }
-.dash-skeleton-stack { display: grid; gap: 14px; }
-.dash-skeleton-card, .dash-skeleton-server { overflow: hidden; }
-.dash-skeleton-kicker,
-.dash-skeleton-line,
-.dash-skeleton-block,
-.dash-skeleton-avatar,
-.dash-skeleton-tabs span,
-.dash-access-skeleton i {
-  display: block;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(90deg, rgba(255,255,255,.055), rgba(255,255,255,.11), rgba(255,255,255,.055));
-  background-size: 220% 100%;
-  animation: meowz-skeleton 1.35s ease-in-out infinite;
-}
-:root[data-theme="light"] .dash-skeleton-kicker,
-:root[data-theme="light"] .dash-skeleton-line,
-:root[data-theme="light"] .dash-skeleton-block,
-:root[data-theme="light"] .dash-skeleton-avatar,
-:root[data-theme="light"] .dash-skeleton-tabs span,
-:root[data-theme="light"] .dash-access-skeleton i {
-  background: linear-gradient(90deg, rgba(15,23,42,.055), rgba(15,23,42,.11), rgba(15,23,42,.055));
-  background-size: 220% 100%;
-}
-@keyframes meowz-skeleton { 0% { background-position: 180% 0; } 100% { background-position: -80% 0; } }
-.dash-skeleton-kicker { width: 82px; height: 10px; border-radius: 999px; margin-bottom: 8px; }
-.dash-skeleton-line { width: var(--sk-width, 100%); height: 13px; border-radius: 999px; margin-top: 9px; }
-.dash-skeleton-line.strong { height: 20px; }
-.dash-skeleton-block { height: 74px; border-radius: 18px; margin-top: 14px; }
-.dash-skeleton-block.short { height: 54px; }
-.dash-skeleton-avatar { width: 52px; height: 52px; border-radius: 17px; }
-.dash-skeleton-avatar.small { width: 38px; height: 38px; border-radius: 13px; }
-.dash-skeleton-server { display: grid; grid-template-columns: 52px minmax(0,1fr); gap: 14px; align-items: center; }
-.dash-skeleton-tabs { display: flex !important; gap: 8px; overflow: hidden; padding: 0 !important; border: 0 !important; background: transparent !important; }
-.dash-skeleton-tabs span { width: 92px; height: 34px; flex: 0 0 auto; border-radius: 999px; }
-.dash-user-search-loading { display:grid; grid-template-columns:34px minmax(0,1fr); align-items:center; gap:10px; padding:8px; }
-.dash-access-skeleton .dash-access-row { pointer-events: none; }
-.dash-access-skeleton .dash-access-row > span:nth-child(2) { display:block; min-width:0; }
-.dash-access-skeleton i { width:58px; height:32px; border-radius:10px; }
-
-.status-pill,
-.status,
-.dash-log-status,
-.dash-card-head > b {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-.status-pill { align-self: flex-start; }
-.status-pill .pulse { flex: 0 0 auto; }
-
+/* ===== Fluid mobile density + drawer fix 2026-07-07 =====
+   Uses responsive units instead of fixed device-specific pixel spacing.
+   Keeps the shared global navbar/drawer from stretching menu items across tall screens. */
 @media (max-width: 720px) {
-  .nav[data-global-navbar] {
-    width: calc(100% - 20px) !important;
-    min-height: 54px !important;
-    padding: 7px 9px !important;
-    border-radius: 17px !important;
-    align-items: center !important;
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
   }
-  .nav[data-global-navbar] .brand { gap: 8px !important; font-size: 1.02rem !important; }
-  .nav[data-global-navbar] .brand-icon { width: 34px !important; height: 34px !important; border-radius: 11px !important; }
-  .nav[data-global-navbar] .mobile-menu-button {
-    display: grid !important;
-    place-content: center !important;
-    width: 36px !important;
-    height: 36px !important;
-    border-radius: 12px !important;
-    padding: 0 !important;
-  }
-  .nav[data-global-navbar] .mobile-menu-button span { width: 15px !important; height: 2px !important; margin: 2.5px auto !important; }
-  .nav[data-global-navbar] .mobile-menu-button.is-open span:nth-child(1) { transform: translateY(4.5px) rotate(45deg) !important; }
-  .nav[data-global-navbar] .mobile-menu-button.is-open span:nth-child(3) { transform: translateY(-4.5px) rotate(-45deg) !important; }
 
-  body.menu-open::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 45 !important;
-    display: block !important;
-    background: rgba(2, 6, 23, .62) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-    pointer-events: none;
-  }
-  :root[data-theme="light"] body.menu-open::after { background: rgba(15, 23, 42, .26) !important; }
-
-  .nav[data-global-navbar] .nav-links {
-    position: fixed !important;
-    top: 0 !important;
-    right: 0 !important;
-    left: auto !important;
-    bottom: 0 !important;
-    width: min(312px, 86vw) !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain !important;
-    z-index: 90 !important;
-    padding: 70px 12px 16px !important;
-    border-radius: 0 !important;
-    border: 0 !important;
-    border-left: 1px solid rgba(255,255,255,.1) !important;
-    gap: 6px !important;
-    transform: translateX(104%) !important;
-    opacity: 1 !important;
-    pointer-events: none !important;
-    transition: transform .24s cubic-bezier(.22,.61,.36,1) !important;
-    box-shadow: -24px 0 70px rgba(0,0,0,.48) !important;
-    background: rgba(8, 9, 19, .992) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-  .nav[data-global-navbar] .nav-links.is-open { transform: translateX(0) !important; pointer-events: auto !important; }
-  :root[data-theme="light"] .nav[data-global-navbar] .nav-links {
-    background: rgba(255,255,255,.992) !important;
-    border-left-color: rgba(15,23,42,.1) !important;
-  }
-  .nav[data-global-navbar] .nav-links a,
-  .nav[data-global-navbar] .auth-area > a,
-  .nav[data-global-navbar] .auth-loading {
-    min-height: 38px !important;
-    padding: 8px 10px !important;
-    border-radius: 11px !important;
-    font-size: .9rem !important;
-    background: transparent !important;
-    border-color: transparent !important;
-  }
-  .nav[data-global-navbar] .auth-area,
-  .nav[data-global-navbar] .mobile-account-panel { gap: 6px !important; }
-  .mobile-account-header { min-height: 40px !important; padding: 7px 8px !important; border-radius: 12px !important; }
-  .mobile-account-avatar { width: 30px !important; height: 30px !important; border-radius: 10px !important; }
-
-  .dashboard-app-root { padding-top: 12px !important; }
-  .dash-content {
-    width: calc(100% - 18px) !important;
-    max-width: none !important;
-    margin-inline: auto !important;
-    padding-top: 6px !important;
-    padding-bottom: 28px !important;
-  }
-  .dash-mobile-breadcrumb { margin-bottom: 8px !important; font-size: .8rem !important; }
-  .dash-server-title {
-    grid-template-columns: 42px minmax(0,1fr) !important;
-    gap: 9px !important;
-    padding: 12px !important;
-    border-radius: 18px !important;
-  }
-  .dash-title-icon { width: 42px !important; height: 42px !important; border-radius: 13px !important; }
-  .dash-server-title h1 { font-size: clamp(1.45rem, 8vw, 2rem) !important; }
-  .dash-server-title p { display: none !important; }
-  .dash-pills { margin-top: 5px !important; gap: 4px !important; }
-  .dash-pills span { min-height: 22px !important; padding: 0 7px !important; font-size: .66rem !important; }
-  .dash-tabs {
-    display: flex !important;
-    overflow-x: auto !important;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    margin: 0 -9px 10px !important;
-    padding: 0 9px 6px !important;
-    gap: 5px !important;
-  }
-  .dash-tabs::-webkit-scrollbar { display: none; }
-  .dash-tabs a { min-height: 30px !important; padding: 0 9px !important; font-size: .74rem !important; border-radius: 10px !important; white-space: nowrap !important; }
-  .dash-card { padding: 12px !important; border-radius: 17px !important; }
-  .dash-card h2 { font-size: 1.1rem !important; }
-  .dash-field select,
-  .dash-field input { min-height: 38px !important; }
-  .dash-save-btn { min-height: 40px !important; }
-  .dash-access-row { grid-template-columns: 34px minmax(0,1fr) auto; padding: 8px; gap: 8px; border-radius: 13px; }
-  .dash-access-avatar { width: 34px; height: 34px; border-radius: 11px; }
-  .dash-user-search-results { max-height: 210px; border-radius: 14px; }
-  .footer-card { margin-top: 18px !important; padding: 14px !important; }
-}
-
-/* ===== Mobile drawer overlay hardening 2026-07-07 =====
-   The shared global menu must behave like an overlay drawer on phones, not like
-   a layout column. Keep page width stable when the drawer opens. */
-html, body { max-width: 100%; overflow-x: hidden; }
-
-@media (max-width: 720px) {
   body.menu-open {
     overflow: hidden !important;
     touch-action: none;
   }
 
-  body.menu-open .dash-shell,
-  body.menu-open .dashboard-app-root,
-  body.menu-open .dashboard-app,
-  body.menu-open .dash-main,
-  body.menu-open .dash-content,
-  body.menu-open main,
-  body.menu-open .page-shell,
-  body.menu-open .container {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    transform: none !important;
-  }
-
   .nav[data-global-navbar] {
-    position: sticky !important;
-    top: 8px !important;
-    z-index: 1000 !important;
-    width: calc(100% - 20px) !important;
-    min-height: 52px !important;
-    margin: 8px auto 0 !important;
-    padding: 8px 10px !important;
-    border-radius: 16px !important;
+    width: min(calc(100% - clamp(.75rem, 3vw, 1.25rem)), 70rem) !important;
+    min-height: clamp(3.4rem, 7.5vh, 4.25rem) !important;
+    margin-top: clamp(.45rem, 1.6vh, .75rem) !important;
+    padding: clamp(.45rem, 1.5vw, .65rem) clamp(.55rem, 2.4vw, .85rem) !important;
+    border-radius: clamp(1rem, 4vw, 1.35rem) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: clamp(.55rem, 2vw, .85rem) !important;
   }
 
   .nav[data-global-navbar] .brand {
     min-width: 0 !important;
-    gap: 9px !important;
-    font-size: 1rem !important;
+    flex: 1 1 auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: clamp(.5rem, 2vw, .75rem) !important;
+    font-size: clamp(1rem, 5vw, 1.22rem) !important;
     line-height: 1 !important;
+    overflow: hidden !important;
+  }
+
+  .nav[data-global-navbar] .brand span:last-child {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
 
   .nav[data-global-navbar] .brand-icon {
-    width: 32px !important;
-    height: 32px !important;
-    min-width: 32px !important;
-    border-radius: 10px !important;
-    font-size: .82rem !important;
+    width: clamp(2rem, 9vw, 2.35rem) !important;
+    height: clamp(2rem, 9vw, 2.35rem) !important;
+    border-radius: clamp(.7rem, 3vw, .9rem) !important;
+    flex: 0 0 auto !important;
+    font-size: clamp(.8rem, 3.4vw, 1rem) !important;
   }
 
   .nav[data-global-navbar] .mobile-menu-button {
-    width: 34px !important;
-    height: 34px !important;
-    min-width: 34px !important;
-    border-radius: 11px !important;
-    z-index: 1003 !important;
+    width: clamp(2.2rem, 9.5vw, 2.6rem) !important;
+    height: clamp(2.2rem, 9.5vw, 2.6rem) !important;
+    border-radius: clamp(.75rem, 3vw, .95rem) !important;
+    flex: 0 0 auto !important;
+    display: grid !important;
+    place-content: center !important;
+    padding: 0 !important;
   }
 
   .nav[data-global-navbar] .mobile-menu-button span {
-    width: 15px !important;
-    height: 2px !important;
-    margin: 2.5px auto !important;
+    width: clamp(.95rem, 4.2vw, 1.1rem) !important;
+    margin: clamp(.12rem, .5vw, .18rem) auto !important;
   }
 
-  body.menu-open::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 1001;
-    background: rgba(2, 6, 18, .66);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    pointer-events: auto;
-  }
+  .nav[data-global-navbar] .mobile-menu-button.is-open span:nth-child(1) { transform: translateY(.32rem) rotate(45deg) !important; }
+  .nav[data-global-navbar] .mobile-menu-button.is-open span:nth-child(3) { transform: translateY(-.32rem) rotate(-45deg) !important; }
 
   .nav[data-global-navbar] .nav-links {
     position: fixed !important;
-    inset: 0 0 0 auto !important;
-    width: min(320px, 86vw) !important;
+    inset-block: 0 !important;
+    inset-inline-start: auto !important;
+    inset-inline-end: 0 !important;
+    width: min(21rem, 86vw) !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
-    padding: 82px 16px 18px !important;
-    border-radius: 0 !important;
-    border-width: 0 0 0 1px !important;
-    border-color: rgba(255,255,255,.08) !important;
-    background: rgba(7, 8, 18, .985) !important;
-    box-shadow: -24px 0 80px rgba(0,0,0,.55) !important;
-    backdrop-filter: blur(18px) !important;
-    -webkit-backdrop-filter: blur(18px) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 6px !important;
     overflow-y: auto !important;
     overscroll-behavior: contain !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    row-gap: clamp(.45rem, 1.25vh, .8rem) !important;
+    padding: clamp(4.75rem, 11vh, 6rem) clamp(.9rem, 4vw, 1.15rem) clamp(1rem, 3vh, 1.5rem) !important;
+    border-radius: 0 !important;
+    border-block: 0 !important;
+    border-inline-end: 0 !important;
+    border-inline-start: 1px solid var(--border) !important;
+    background: rgba(8, 9, 19, .985) !important;
+    box-shadow: -1.4rem 0 4rem rgba(0,0,0,.5) !important;
     transform: translateX(105%) !important;
     opacity: 1 !important;
     pointer-events: none !important;
-    z-index: 1002 !important;
-    transition: transform .22s ease !important;
+    transition: transform .24s ease !important;
+    z-index: 80 !important;
   }
 
   .nav[data-global-navbar] .nav-links.is-open {
@@ -5308,183 +5128,115 @@ html, body { max-width: 100%; overflow-x: hidden; }
     pointer-events: auto !important;
   }
 
-  .nav[data-global-navbar] .nav-links a,
+  .nav[data-global-navbar] .nav-links > a,
   .nav[data-global-navbar] .auth-area > a,
   .nav[data-global-navbar] .auth-loading,
   .nav[data-global-navbar] .mobile-account-panel a {
-    min-height: 40px !important;
-    padding: 0 12px !important;
-    border-radius: 11px !important;
+    width: 100% !important;
+    min-height: clamp(2.55rem, 6.2vh, 3rem) !important;
+    margin: 0 !important;
+    padding: clamp(.65rem, 1.8vh, .85rem) clamp(.8rem, 3.2vw, 1rem) !important;
+    border-radius: clamp(.75rem, 2.8vw, .95rem) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
     background: transparent !important;
-    border: 0 !important;
-    font-size: .88rem !important;
-    font-weight: 850 !important;
+    border: 1px solid transparent !important;
+    font-size: clamp(.9rem, 3.7vw, 1rem) !important;
+    line-height: 1.1 !important;
   }
 
-  .nav[data-global-navbar] .nav-links a.active,
-  .nav[data-global-navbar] .nav-links a:hover,
+  .nav[data-global-navbar] .nav-links > a.active,
+  .nav[data-global-navbar] .nav-links > a:hover,
+  .nav[data-global-navbar] .auth-area > a:hover,
   .nav[data-global-navbar] .mobile-account-panel a:hover {
-    background: rgba(139, 92, 246, .2) !important;
-    box-shadow: inset 0 0 0 1px rgba(139,92,246,.24) !important;
+    background: rgba(139, 92, 246, .16) !important;
+    border-color: rgba(139, 92, 246, .28) !important;
   }
 
   .nav[data-global-navbar] .auth-area {
+    margin-top: auto !important;
+    padding-top: clamp(.8rem, 2.2vh, 1rem) !important;
+    border-top: 1px solid var(--border) !important;
     display: grid !important;
-    gap: 6px !important;
+    gap: clamp(.45rem, 1.2vh, .65rem) !important;
     width: 100% !important;
-    margin: 0 !important;
   }
 
   .nav[data-global-navbar] .mobile-account-panel {
     display: grid !important;
-    gap: 6px !important;
-    margin-top: auto !important;
-    padding-top: 10px !important;
-    border-top: 1px solid rgba(255,255,255,.08) !important;
+    gap: clamp(.45rem, 1.2vh, .65rem) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
   }
 
-  .nav[data-global-navbar] .mobile-account-header {
-    min-height: 46px !important;
-    padding: 7px 9px !important;
-    border-radius: 11px !important;
-    background: rgba(255,255,255,.045) !important;
+  .mobile-account-header {
+    min-height: clamp(3rem, 7.2vh, 3.4rem) !important;
+    padding: clamp(.55rem, 1.7vh, .75rem) clamp(.6rem, 2.5vw, .85rem) !important;
+    border-radius: clamp(.8rem, 3vw, 1rem) !important;
     display: grid !important;
-    grid-template-columns: 30px minmax(0,1fr) !important;
-    gap: 8px !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
     align-items: center !important;
+    gap: clamp(.6rem, 2.4vw, .8rem) !important;
   }
 
-  .nav[data-global-navbar] .mobile-account-avatar {
-    width: 30px !important;
-    height: 30px !important;
-    border-radius: 9px !important;
+  .mobile-account-avatar {
+    width: clamp(1.85rem, 8vw, 2.2rem) !important;
+    height: clamp(1.85rem, 8vw, 2.2rem) !important;
+    border-radius: clamp(.6rem, 2.6vw, .8rem) !important;
   }
 
-  .nav[data-global-navbar] .mobile-account-header strong {
-    font-size: .84rem !important;
-    line-height: 1.1 !important;
+  .mobile-account-header strong,
+  .mobile-account-header span {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
 
-  .nav[data-global-navbar] .mobile-account-header span {
-    font-size: .74rem !important;
-    line-height: 1.15 !important;
-    margin-top: 1px !important;
+  body.menu-open::after {
+    content: "" !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 45 !important;
+    background: rgba(4,6,12,.48) !important;
+    backdrop-filter: blur(clamp(.25rem, 1.6vw, .55rem)) !important;
+    -webkit-backdrop-filter: blur(clamp(.25rem, 1.6vw, .55rem)) !important;
+    pointer-events: none !important;
   }
 
   .dashboard-app-root,
   .dash-shell,
   .dash-main,
-  .dash-content {
-    width: 100% !important;
+  .dash-content,
+  [data-server-detail],
+  .page-shell,
+  main {
     max-width: 100% !important;
     min-width: 0 !important;
   }
 
-  .dash-content {
-    padding-inline: 10px !important;
-  }
-
-  .dash-tabs {
-    margin: 0 -10px 12px !important;
-    padding: 0 10px 8px !important;
-    gap: 6px !important;
-    overflow-x: auto !important;
-    display: flex !important;
-    flex-wrap: nowrap !important;
-  }
-
-  .dash-tabs a {
-    min-height: 34px !important;
-    padding: 0 10px !important;
-    border-radius: 11px !important;
-    font-size: .78rem !important;
-    flex: 0 0 auto !important;
-  }
-
-  .dash-server-title,
-  .dash-page-title {
-    margin-top: 4px !important;
-    margin-bottom: 12px !important;
-  }
-
-  .dash-server-title {
-    grid-template-columns: 44px minmax(0,1fr) !important;
-    gap: 10px !important;
-  }
-
-  .dash-title-icon {
-    width: 44px !important;
-    height: 44px !important;
-    border-radius: 13px !important;
-  }
-
-  .dash-server-title h1,
-  .dash-page-title h1 {
-    font-size: clamp(1.9rem, 10vw, 2.7rem) !important;
-    line-height: .98 !important;
-  }
-
-  .dash-server-title p,
-  .dash-page-title p {
-    font-size: .86rem !important;
-    line-height: 1.3 !important;
-    margin-top: 5px !important;
-  }
-
-  .dash-pills {
-    display: flex !important;
-    gap: 5px !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    padding-bottom: 2px !important;
-  }
-
-  .dash-pills span,
-  .status-pill {
-    min-height: 24px !important;
-    padding: 0 8px !important;
-    border-radius: 999px !important;
-    font-size: .68rem !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    line-height: 1 !important;
-  }
-
-  .status-pill::before,
-  .status-dot,
-  .bot-status-dot {
-    align-self: center !important;
-    flex: 0 0 auto !important;
-  }
-
-  .dash-save-btn,
-  .welcome-save-button,
-  .button-primary {
-    min-height: 42px !important;
-    border-radius: 12px !important;
-    font-size: .88rem !important;
-  }
-
-  .footer-card {
-    padding: 14px !important;
-    border-radius: 18px !important;
-    font-size: .88rem !important;
+  body.menu-open .dash-content,
+  body.menu-open main,
+  body.menu-open .page-shell {
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
   }
 }
 
 @media (max-width: 420px) {
   .nav[data-global-navbar] .nav-links {
-    width: min(300px, 88vw) !important;
+    width: min(19.5rem, 88vw) !important;
+    padding-inline: clamp(.75rem, 4vw, 1rem) !important;
   }
 }
 
-:root[data-theme="light"] body.menu-open::after {
-  background: rgba(15, 23, 42, .26) !important;
-}
 :root[data-theme="light"] .nav[data-global-navbar] .nav-links {
-  background: rgba(255, 255, 255, .985) !important;
-  border-color: rgba(15, 23, 42, .08) !important;
-  box-shadow: -24px 0 80px rgba(15,23,42,.18) !important;
+  background: rgba(255,255,255,.985) !important;
+}
+:root[data-theme="light"] body.menu-open::after {
+  background: rgba(226,232,240,.54) !important;
 }

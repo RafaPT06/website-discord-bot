@@ -1,38 +1,13 @@
 [
   {
-    "version": "v1.10.1",
+    "version": "2026.07.07-mobile-fluid-drawer",
+    "title": "Fluid mobile drawer spacing",
     "date": "2026-07-07",
-    "changes": [
-      {
-        "type": "Fixed",
-        "text": "Converted the mobile menu into a true fixed right-side overlay drawer so opening it no longer compresses the dashboard content."
-      },
-      {
-        "type": "Improved",
-        "text": "Reduced mobile navbar, hamburger, server header, tabs and save button density for a cleaner dashboard experience."
-      },
-      {
-        "type": "Fixed",
-        "text": "Aligned status badges and locked page width while the drawer is open to prevent horizontal layout shifting."
-      }
-    ]
-  },
-  {
-    "version": "v1.10.0",
-    "date": "2026-07-07",
-    "changes": [
-      {
-        "type": "UI",
-        "text": "Added full skeleton loading states for dashboard, settings, server pages, access lists and homepage live stats."
-      },
-      {
-        "type": "Improved",
-        "text": "Tightened the mobile drawer into a full-height right-side panel with compact navigation and integrated account spacing."
-      },
-      {
-        "type": "Improved",
-        "text": "Reduced mobile dashboard content width waste, server header height, tab height and status badge alignment."
-      }
+    "type": "Fixed",
+    "items": [
+      "Reworked the mobile navigation drawer with responsive spacing instead of device-specific fixed gaps.",
+      "Kept menu links compact on tall phones while preserving comfortable touch targets on smaller screens.",
+      "Prevented the drawer overlay from compressing or shifting dashboard content while open."
     ]
   },
   {
