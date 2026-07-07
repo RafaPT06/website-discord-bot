@@ -1,33 +1,19 @@
 [
   {
-    "version": "v1.9.5",
-    "date": "2026-07-06",
-    "changes": [
-      {
-        "type": "Fixed",
-        "text": "Regenerated the Playwright package-lock entries so Railway and GitHub Actions download @playwright/test, playwright, playwright-core and fsevents from the public npm registry instead of an internal proxy URL."
-      },
-      {
-        "type": "Fixed",
-        "text": "Kept the npm monitor script and monitor files intact while repairing the lockfile source URLs used by npm ci."
-      }
-    ]
-  },
-  {
     "version": "v1.9.4",
     "date": "2026-07-06",
     "changes": [
       {
         "type": "Fixed",
-        "text": "Added @playwright/test as a development dependency so npm ci installs the monitor test runner before GitHub Actions runs npm run monitor."
-      },
-      {
-        "type": "Fixed",
-        "text": "Updated the monitor runner to use the local Playwright install instead of relying on an npx temporary package that could not be resolved by monitor.spec.js."
+        "text": "Demo routes now render a demo-specific loading state immediately instead of the shared Checking login placeholder."
       },
       {
         "type": "Improved",
-        "text": "Monitor screenshots now write to test-results/website-monitor, matching the GitHub Actions artifact upload path."
+        "text": "The shared navbar detects /demo pages before auth runs, keeping QA monitors from treating demo preview pages as login-gated."
+      },
+      {
+        "type": "Security",
+        "text": "Demo pages still bypass real Discord auth only with fake, read-only data and normal protected dashboard routes remain login-only."
       }
     ]
   },

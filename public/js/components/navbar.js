@@ -1,4 +1,5 @@
 import { MAIN_NAV_ITEMS } from './navConfig.js';
+import { isDemoRoute } from '../demoData.js';
 
 function navLink(item) {
   const authAttrs = item.auth ? ' data-auth-only hidden' : '';
@@ -6,6 +7,9 @@ function navLink(item) {
 }
 
 export function renderNavbar() {
+  const demo = isDemoRoute();
+  const initialAuthText = demo ? 'Loading demo...' : 'Checking login...';
+  const initialAuthClass = demo ? 'auth-area auth-loading is-demo' : 'auth-area auth-loading';
   return `
     <header class="nav" data-global-navbar>
       <a class="brand" href="/" aria-label="Meowz home">
@@ -17,7 +21,7 @@ export function renderNavbar() {
       </button>
       <nav class="nav-links" data-nav-links aria-label="Main navigation">
         ${MAIN_NAV_ITEMS.map(navLink).join('')}
-        <div class="auth-area auth-loading" data-auth-area>Checking login...</div>
+        <div class="${initialAuthClass}" data-auth-area>${initialAuthText}</div>
       </nav>
     </header>
   `;

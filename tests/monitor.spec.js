@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const BASE_URL = (process.env.MONITOR_URL || 'https://meowz.up.railway.app').replace(/\/$/, '');
-const ARTIFACT_DIR = path.join(process.cwd(), 'test-results', 'website-monitor');
+const ARTIFACT_DIR = path.join(process.cwd(), 'monitor-artifacts');
 fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
 
 function artifactName(route) {
