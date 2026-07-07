@@ -4625,3 +4625,298 @@ body.dashboard-signed-out .dash-top-actions .dash-owner-toggle {
     font-size: .82rem !important;
   }
 }
+
+/* ===== Mobile dashboard density pass 2026-07-07 =====
+   Keeps the current brand/style but makes mobile navigation and server settings
+   more efficient. Desktop layout is intentionally untouched. */
+@media (max-width: 720px) {
+  /* Global compact navbar */
+  .nav[data-global-navbar] {
+    width: min(100% - 20px, 1120px) !important;
+    margin-top: 10px !important;
+    padding: 8px 10px !important;
+    border-radius: 18px !important;
+    min-height: 56px !important;
+  }
+  .nav[data-global-navbar] .brand {
+    gap: 9px !important;
+    font-size: 1.08rem !important;
+    min-width: 0 !important;
+  }
+  .nav[data-global-navbar] .brand-icon {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 12px !important;
+    font-size: .95rem !important;
+  }
+  .nav[data-global-navbar] .mobile-menu-button {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 13px !important;
+    flex: 0 0 auto !important;
+  }
+  .nav[data-global-navbar] .mobile-menu-button span {
+    width: 16px !important;
+    height: 2px !important;
+    margin: 3px auto !important;
+  }
+  .nav[data-global-navbar] .mobile-menu-button.is-open span:nth-child(1) { transform: translateY(5px) rotate(45deg) !important; }
+  .nav[data-global-navbar] .mobile-menu-button.is-open span:nth-child(3) { transform: translateY(-5px) rotate(-45deg) !important; }
+
+  /* Right slide-out drawer instead of a large floating card. */
+  .nav[data-global-navbar] .nav-links {
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    width: min(286px, 84vw) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    padding: 76px 12px 14px !important;
+    border-radius: 0 !important;
+    border-top: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    gap: 6px !important;
+    transform: translateX(105%) !important;
+    transition: transform .24s ease, opacity .18s ease !important;
+    box-shadow: -26px 0 80px rgba(0,0,0,.46) !important;
+    background: rgba(8, 9, 19, .985) !important;
+  }
+  .nav[data-global-navbar] .nav-links.is-open {
+    transform: translateX(0) !important;
+  }
+  .nav[data-global-navbar] .nav-links a,
+  .nav[data-global-navbar] .auth-area > a,
+  .nav[data-global-navbar] .auth-loading {
+    min-height: 40px !important;
+    padding: 9px 11px !important;
+    border-radius: 12px !important;
+    font-size: .9rem !important;
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+  .nav[data-global-navbar] .nav-links a.active,
+  .nav[data-global-navbar] .nav-links a:hover,
+  .nav[data-global-navbar] .auth-area > a:hover {
+    background: rgba(139,92,246,.14) !important;
+    border-color: rgba(139,92,246,.22) !important;
+  }
+  .nav[data-global-navbar] .auth-area {
+    margin-top: 6px !important;
+    padding-top: 8px !important;
+    border-top: 1px solid var(--border) !important;
+    gap: 6px !important;
+  }
+  .nav[data-global-navbar] .mobile-account-panel {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    gap: 6px !important;
+  }
+  .mobile-account-header {
+    min-height: 42px !important;
+    padding: 7px 9px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,.045) !important;
+  }
+  .mobile-account-avatar { width: 32px !important; height: 32px !important; border-radius: 11px !important; }
+  .mobile-account-header strong { font-size: .9rem !important; }
+  .mobile-account-header span { font-size: .75rem !important; }
+  .mobile-account-panel a {
+    min-height: 38px !important;
+    padding: 8px 10px !important;
+    border-radius: 11px !important;
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+  body.menu-open::after { z-index: 44 !important; backdrop-filter: blur(4px) !important; }
+
+  /* Compact dashboard spacing */
+  .dashboard-app-root {
+    padding-top: 18px !important;
+  }
+  .dash-content {
+    padding-top: 8px !important;
+  }
+  .dash-mobile-breadcrumb {
+    margin: 0 0 10px !important;
+    min-height: 28px !important;
+    font-size: .82rem !important;
+  }
+  .dash-page-title,
+  .dash-server-title {
+    margin-bottom: 12px !important;
+  }
+  .dash-page-title > span,
+  .dash-server-title > div > span,
+  .dash-card > span,
+  .dash-card-head span {
+    font-size: .66rem !important;
+    letter-spacing: .14em !important;
+  }
+  .dash-page-title h1,
+  .dash-server-title h1 {
+    margin: 4px 0 5px !important;
+    font-size: clamp(1.7rem, 9vw, 2.45rem) !important;
+    line-height: 1 !important;
+  }
+  .dash-server-title {
+    display: grid !important;
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+  .dash-title-icon,
+  .dash-server-icon,
+  .dash-list-icon {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 15px !important;
+  }
+  .dash-server-title p,
+  .dash-page-title p {
+    font-size: .88rem !important;
+    line-height: 1.45 !important;
+  }
+  .dash-pills {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 5px !important;
+    margin-top: 7px !important;
+  }
+  .dash-pills span,
+  .dash-card-head > b,
+  .status {
+    min-height: 24px !important;
+    padding: 0 8px !important;
+    font-size: .7rem !important;
+  }
+
+  /* Smaller horizontal dashboard tabs. */
+  .dash-tabs {
+    gap: 6px !important;
+    margin: 0 -10px 12px !important;
+    padding: 0 10px 7px !important;
+    scroll-padding-inline: 10px !important;
+  }
+  .dash-tabs a {
+    min-height: 32px !important;
+    padding: 0 10px !important;
+    border-radius: 11px !important;
+    font-size: .78rem !important;
+    font-weight: 850 !important;
+    letter-spacing: 0 !important;
+  }
+
+  /* Card and form density. */
+  .dash-grid.two,
+  .dash-designer,
+  .dash-designer-wide,
+  .dashboard-section-stack {
+    gap: 12px !important;
+  }
+  .dash-grid.two + .dash-card,
+  .dash-card + .dash-card,
+  .dash-card + .dash-grid {
+    margin-top: 12px !important;
+  }
+  .dash-card {
+    padding: 14px !important;
+    border-radius: 18px !important;
+  }
+  .dash-card h2 {
+    margin: 5px 0 7px !important;
+    font-size: 1.18rem !important;
+  }
+  .dash-card p {
+    font-size: .88rem !important;
+    line-height: 1.45 !important;
+  }
+  .dash-card-head {
+    gap: 9px !important;
+    margin-bottom: 10px !important;
+  }
+  .dash-field {
+    gap: 5px !important;
+  }
+  .dash-field > span,
+  .dash-variable-row > span {
+    font-size: .86rem !important;
+  }
+  .dash-field input,
+  .dash-field select,
+  .dash-field textarea {
+    min-height: 40px !important;
+    border-radius: 11px !important;
+    font-size: .9rem !important;
+  }
+  .dash-field textarea {
+    min-height: 86px !important;
+    padding: 10px 12px !important;
+    line-height: 1.38 !important;
+  }
+  .dash-field small {
+    font-size: .72rem !important;
+  }
+  .dash-variable-row {
+    gap: 7px !important;
+    margin: 8px 0 !important;
+  }
+  .dash-variable-row > div {
+    gap: 6px !important;
+  }
+  .dash-variable-row button {
+    min-height: 30px !important;
+    padding: 0 8px !important;
+    border-radius: 10px !important;
+    font-size: .78rem !important;
+  }
+  .dash-switch {
+    min-height: 48px !important;
+    padding: 9px 10px !important;
+    border-radius: 14px !important;
+  }
+  .dash-switch span strong { font-size: .88rem !important; }
+  .dash-switch span small { font-size: .76rem !important; line-height: 1.35 !important; }
+  .dash-option-list {
+    gap: 8px !important;
+  }
+  .dash-save-btn,
+  .welcome-save-button {
+    min-height: 44px !important;
+    border-radius: 13px !important;
+    font-size: .9rem !important;
+  }
+  .dash-preview .dash-discord-card,
+  .phase-one-welcome-image {
+    max-height: 220px !important;
+  }
+  .demo-banner {
+    padding: 9px 11px !important;
+    border-radius: 14px !important;
+    gap: 5px !important;
+    margin-bottom: 12px !important;
+  }
+  .demo-banner span { font-size: .82rem !important; }
+}
+
+@media (max-width: 420px) {
+  .nav[data-global-navbar] .nav-links { width: min(270px, 86vw) !important; }
+  .dash-tabs a { font-size: .75rem !important; padding: 0 9px !important; }
+  .dash-card { padding: 13px !important; }
+}
+
+:root[data-theme="light"] .nav[data-global-navbar] .nav-links {
+  background: rgba(255,255,255,.985) !important;
+}
+:root[data-theme="light"] .nav[data-global-navbar] .nav-links a,
+:root[data-theme="light"] .nav[data-global-navbar] .auth-area > a,
+:root[data-theme="light"] .nav[data-global-navbar] .auth-loading,
+:root[data-theme="light"] .mobile-account-panel a {
+  background: transparent !important;
+}
+:root[data-theme="light"] .mobile-account-header {
+  background: rgba(15,23,42,.035) !important;
+}

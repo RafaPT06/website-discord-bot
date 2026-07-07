@@ -40,6 +40,8 @@ export const DEMO_DASHBOARD = Object.freeze({
 export const DEMO_CHANNELS = Object.freeze([
   { id: 'demo-ch-general', name: 'general', type: 'GUILD_TEXT' },
   { id: 'demo-ch-welcome', name: 'welcome', type: 'GUILD_TEXT' },
+  { id: 'demo-ch-goodbye', name: 'goodbye', type: 'GUILD_TEXT' },
+  { id: 'demo-ch-bye', name: 'bye', type: 'GUILD_TEXT' },
   { id: 'demo-ch-level-up', name: 'level-up', type: 'GUILD_TEXT' },
   { id: 'demo-ch-logs', name: 'logs', type: 'GUILD_TEXT' },
   { id: 'demo-ch-mod-logs', name: 'mod-logs', type: 'GUILD_TEXT' },

@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.9.8",
+    "date": "2026-07-07",
+    "changes": [
+      {
+        "type": "UI",
+        "text": "Compressed the mobile navbar, hamburger and right-side drawer so navigation takes less vertical space while keeping touch targets usable."
+      },
+      {
+        "type": "Improved",
+        "text": "Reduced mobile dashboard header, badges, tabs, cards and form spacing to show more server settings above the fold."
+      },
+      {
+        "type": "Improved",
+        "text": "Tightened Welcome/Goodbye message controls, smaller textareas and channel dropdown styling while keeping welcome and goodbye channels separate."
+      }
+    ]
+  },
+  {
     "version": "v1.9.7",
     "date": "2026-07-07",
     "changes": [

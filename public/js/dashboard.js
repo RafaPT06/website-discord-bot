@@ -353,7 +353,7 @@ function channelSelectField(server, name, label, value, fallbackName = 'general'
     const selected = channel.id === String(value) || normalizeChannelValue(channel.name) === current;
     return `<option value="${escapeHtml(channel.id)}" ${selected ? 'selected' : ''}>#${escapeHtml(channel.name)}</option>`;
   }).join('');
-  const custom = hasCurrent || !value ? '' : `<option value="${escapeHtml(String(value))}" selected>${escapeHtml(String(value))}</option>`;
+  const custom = hasCurrent || !value ? '' : `<option value="${escapeHtml(String(value))}" selected>#${escapeHtml(String(value).replace(/^#\s*/, ''))}</option>`;
   return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}">${custom}${options}</select></label>`;
 }
 function numberField(name, label, value, min=0) { return `<label class="dash-field"><span>${escapeHtml(label)}</span><input type="number" min="${Number(min)}" name="${escapeHtml(name)}" value="${escapeHtml(String(value ?? ''))}" /></label>`; }
