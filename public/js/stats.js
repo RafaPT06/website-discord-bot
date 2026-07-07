@@ -23,6 +23,7 @@ const statEls = {
 
 function clearSkeletons() {
   document.querySelectorAll('.skeleton-card').forEach((el) => el.classList.remove('skeleton-card'));
+  document.querySelectorAll('.bot-card .skeleton-line').forEach((el) => el.classList.remove('skeleton-line', 'strong', 'short'));
 }
 
 function setBotName(name) {

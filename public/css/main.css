@@ -5022,3 +5022,181 @@ body.dashboard-signed-out .dash-top-actions .dash-owner-toggle {
 :root[data-theme="light"] .dash-access-row {
   background: rgba(15, 23, 42, .025);
 }
+
+
+/* ===== Final mobile drawer, density and skeleton polish ===== */
+.dash-skeleton-wrap { display: grid; gap: 14px; }
+.dash-skeleton-stack { display: grid; gap: 14px; }
+.dash-skeleton-card, .dash-skeleton-server { overflow: hidden; }
+.dash-skeleton-kicker,
+.dash-skeleton-line,
+.dash-skeleton-block,
+.dash-skeleton-avatar,
+.dash-skeleton-tabs span,
+.dash-access-skeleton i {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, rgba(255,255,255,.055), rgba(255,255,255,.11), rgba(255,255,255,.055));
+  background-size: 220% 100%;
+  animation: meowz-skeleton 1.35s ease-in-out infinite;
+}
+:root[data-theme="light"] .dash-skeleton-kicker,
+:root[data-theme="light"] .dash-skeleton-line,
+:root[data-theme="light"] .dash-skeleton-block,
+:root[data-theme="light"] .dash-skeleton-avatar,
+:root[data-theme="light"] .dash-skeleton-tabs span,
+:root[data-theme="light"] .dash-access-skeleton i {
+  background: linear-gradient(90deg, rgba(15,23,42,.055), rgba(15,23,42,.11), rgba(15,23,42,.055));
+  background-size: 220% 100%;
+}
+@keyframes meowz-skeleton { 0% { background-position: 180% 0; } 100% { background-position: -80% 0; } }
+.dash-skeleton-kicker { width: 82px; height: 10px; border-radius: 999px; margin-bottom: 8px; }
+.dash-skeleton-line { width: var(--sk-width, 100%); height: 13px; border-radius: 999px; margin-top: 9px; }
+.dash-skeleton-line.strong { height: 20px; }
+.dash-skeleton-block { height: 74px; border-radius: 18px; margin-top: 14px; }
+.dash-skeleton-block.short { height: 54px; }
+.dash-skeleton-avatar { width: 52px; height: 52px; border-radius: 17px; }
+.dash-skeleton-avatar.small { width: 38px; height: 38px; border-radius: 13px; }
+.dash-skeleton-server { display: grid; grid-template-columns: 52px minmax(0,1fr); gap: 14px; align-items: center; }
+.dash-skeleton-tabs { display: flex !important; gap: 8px; overflow: hidden; padding: 0 !important; border: 0 !important; background: transparent !important; }
+.dash-skeleton-tabs span { width: 92px; height: 34px; flex: 0 0 auto; border-radius: 999px; }
+.dash-user-search-loading { display:grid; grid-template-columns:34px minmax(0,1fr); align-items:center; gap:10px; padding:8px; }
+.dash-access-skeleton .dash-access-row { pointer-events: none; }
+.dash-access-skeleton .dash-access-row > span:nth-child(2) { display:block; min-width:0; }
+.dash-access-skeleton i { width:58px; height:32px; border-radius:10px; }
+
+.status-pill,
+.status,
+.dash-log-status,
+.dash-card-head > b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.status-pill { align-self: flex-start; }
+.status-pill .pulse { flex: 0 0 auto; }
+
+@media (max-width: 720px) {
+  .nav[data-global-navbar] {
+    width: calc(100% - 20px) !important;
+    min-height: 54px !important;
+    padding: 7px 9px !important;
+    border-radius: 17px !important;
+    align-items: center !important;
+  }
+  .nav[data-global-navbar] .brand { gap: 8px !important; font-size: 1.02rem !important; }
+  .nav[data-global-navbar] .brand-icon { width: 34px !important; height: 34px !important; border-radius: 11px !important; }
+  .nav[data-global-navbar] .mobile-menu-button {
+    display: grid !important;
+    place-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+  }
+  .nav[data-global-navbar] .mobile-menu-button span { width: 15px !important; height: 2px !important; margin: 2.5px auto !important; }
+  .nav[data-global-navbar] .mobile-menu-button.is-open span:nth-child(1) { transform: translateY(4.5px) rotate(45deg) !important; }
+  .nav[data-global-navbar] .mobile-menu-button.is-open span:nth-child(3) { transform: translateY(-4.5px) rotate(-45deg) !important; }
+
+  body.menu-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 45 !important;
+    display: block !important;
+    background: rgba(2, 6, 23, .62) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    pointer-events: none;
+  }
+  :root[data-theme="light"] body.menu-open::after { background: rgba(15, 23, 42, .26) !important; }
+
+  .nav[data-global-navbar] .nav-links {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    bottom: 0 !important;
+    width: min(312px, 86vw) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    z-index: 90 !important;
+    padding: 70px 12px 16px !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+    border-left: 1px solid rgba(255,255,255,.1) !important;
+    gap: 6px !important;
+    transform: translateX(104%) !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    transition: transform .24s cubic-bezier(.22,.61,.36,1) !important;
+    box-shadow: -24px 0 70px rgba(0,0,0,.48) !important;
+    background: rgba(8, 9, 19, .992) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .nav[data-global-navbar] .nav-links.is-open { transform: translateX(0) !important; pointer-events: auto !important; }
+  :root[data-theme="light"] .nav[data-global-navbar] .nav-links {
+    background: rgba(255,255,255,.992) !important;
+    border-left-color: rgba(15,23,42,.1) !important;
+  }
+  .nav[data-global-navbar] .nav-links a,
+  .nav[data-global-navbar] .auth-area > a,
+  .nav[data-global-navbar] .auth-loading {
+    min-height: 38px !important;
+    padding: 8px 10px !important;
+    border-radius: 11px !important;
+    font-size: .9rem !important;
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+  .nav[data-global-navbar] .auth-area,
+  .nav[data-global-navbar] .mobile-account-panel { gap: 6px !important; }
+  .mobile-account-header { min-height: 40px !important; padding: 7px 8px !important; border-radius: 12px !important; }
+  .mobile-account-avatar { width: 30px !important; height: 30px !important; border-radius: 10px !important; }
+
+  .dashboard-app-root { padding-top: 12px !important; }
+  .dash-content {
+    width: calc(100% - 18px) !important;
+    max-width: none !important;
+    margin-inline: auto !important;
+    padding-top: 6px !important;
+    padding-bottom: 28px !important;
+  }
+  .dash-mobile-breadcrumb { margin-bottom: 8px !important; font-size: .8rem !important; }
+  .dash-server-title {
+    grid-template-columns: 42px minmax(0,1fr) !important;
+    gap: 9px !important;
+    padding: 12px !important;
+    border-radius: 18px !important;
+  }
+  .dash-title-icon { width: 42px !important; height: 42px !important; border-radius: 13px !important; }
+  .dash-server-title h1 { font-size: clamp(1.45rem, 8vw, 2rem) !important; }
+  .dash-server-title p { display: none !important; }
+  .dash-pills { margin-top: 5px !important; gap: 4px !important; }
+  .dash-pills span { min-height: 22px !important; padding: 0 7px !important; font-size: .66rem !important; }
+  .dash-tabs {
+    display: flex !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -9px 10px !important;
+    padding: 0 9px 6px !important;
+    gap: 5px !important;
+  }
+  .dash-tabs::-webkit-scrollbar { display: none; }
+  .dash-tabs a { min-height: 30px !important; padding: 0 9px !important; font-size: .74rem !important; border-radius: 10px !important; white-space: nowrap !important; }
+  .dash-card { padding: 12px !important; border-radius: 17px !important; }
+  .dash-card h2 { font-size: 1.1rem !important; }
+  .dash-field select,
+  .dash-field input { min-height: 38px !important; }
+  .dash-save-btn { min-height: 40px !important; }
+  .dash-access-row { grid-template-columns: 34px minmax(0,1fr) auto; padding: 8px; gap: 8px; border-radius: 13px; }
+  .dash-access-avatar { width: 34px; height: 34px; border-radius: 11px; }
+  .dash-user-search-results { max-height: 210px; border-radius: 14px; }
+  .footer-card { margin-top: 18px !important; padding: 14px !important; }
+}

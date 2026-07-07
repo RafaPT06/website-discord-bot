@@ -307,7 +307,7 @@ async function renderDashboardHome() {
   els.home.hidden = false;
   if (els.detail) els.detail.hidden = true;
   document.title = 'Dashboard — Meowz';
-  els.home.innerHTML = shell({ content: loadingCard('Loading dashboard...') });
+  els.home.innerHTML = shell({ content: loadingCard('Loading dashboard...', 'dashboard') });
   try {
     const data = await getDashboardGuilds(viewMode);
     els.home.innerHTML = shell({ active: 'Dashboard', section: 'dashboard', showOwnerToggle: true, isOwner: Boolean(data.isOwner), content: dashboardHomeContent(data) });
@@ -319,7 +319,30 @@ async function renderDashboardHome() {
   }
 }
 
-function loadingCard(text) { return `<div class="dash-card dash-loading">${escapeHtml(text)}</div>`; }
+function loadingCard(text, type = 'generic') {
+  const label = escapeHtml(text || 'Loading...');
+  return `<div class="dash-skeleton-wrap" aria-busy="true" aria-label="${label}">${skeletonFor(type)}</div>`;
+}
+function skeletonLine(width = '100%', extra = '') { return `<span class="dash-skeleton-line ${extra}" style="--sk-width:${escapeHtml(width)}"></span>`; }
+function skeletonBlock(extra = '') { return `<span class="dash-skeleton-block ${extra}"></span>`; }
+function skeletonCard(lines = ['70%', '45%'], extra = '') {
+  return `<article class="dash-card dash-skeleton-card ${extra}"><span class="dash-skeleton-kicker"></span>${lines.map((w, index) => skeletonLine(w, index === 0 ? 'strong' : '')).join('')}${skeletonBlock('short')}</article>`;
+}
+function skeletonFor(type = 'generic') {
+  if (type === 'settings') {
+    return `<section class="dash-skeleton-stack">${skeletonCard(['48%','80%'])}${skeletonCard(['38%','65%'])}${skeletonCard(['44%','72%'])}</section>`;
+  }
+  if (type === 'server') {
+    return `<section class="dash-skeleton-stack"><section class="dash-card dash-skeleton-server"><span class="dash-skeleton-avatar"></span><div>${skeletonLine('42%', 'strong')}${skeletonLine('62%')}${skeletonLine('78%')}</div></section><nav class="dash-tabs dash-skeleton-tabs"><span></span><span></span><span></span><span></span></nav><section class="dash-grid two">${skeletonCard(['50%','75%'])}${skeletonCard(['46%','70%'])}</section>${skeletonCard(['36%','82%'], 'wide')}</section>`;
+  }
+  if (type === 'dashboard') {
+    return `<section class="dash-skeleton-stack"><section class="dash-grid two">${skeletonCard(['48%','68%'])}${skeletonCard(['42%','72%'])}</section><section class="dash-grid two">${skeletonCard(['34%','78%'])}${skeletonCard(['38%','65%'])}</section></section>`;
+  }
+  return skeletonCard(['52%', '74%']);
+}
+function skeletonAccessList() {
+  return `<div class="dash-access-list dash-access-skeleton" aria-busy="true"><div class="dash-access-row"><span class="dash-skeleton-avatar small"></span><span>${skeletonLine('68%', 'strong')}${skeletonLine('44%')}</span><i></i></div><div class="dash-access-row"><span class="dash-skeleton-avatar small"></span><span>${skeletonLine('58%', 'strong')}${skeletonLine('50%')}</span><i></i></div><div class="dash-access-row"><span class="dash-skeleton-avatar small"></span><span>${skeletonLine('62%', 'strong')}${skeletonLine('36%')}</span><i></i></div></div>`;
+}
 function errorCard(title, text) { return `<div class="dash-empty dash-error"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
 function pillRow(server) {
   const members = typeof server.memberCount === 'number' ? `${formatNumber(server.memberCount)} members` : 'Members unavailable';
@@ -473,13 +496,13 @@ function logStatus(label, enabled) { return `<div class="dash-log-status ${enabl
 function logExample(title, text, type) { return `<div class="dash-log-example ${type}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
 function moderationPage(server) {
   const s = readSettings(server.id, 'moderation', { enabled:false, warningsEnabled:true, automodEnabled:false, antiSpam:false, linkFilter:false, inviteFilter:false, modLogChannelId:'demo-ch-mod-logs', blockedWords:'' }, server);
-  return `${serverHeader(server,'moderation')}<form class="dash-designer" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls used by the bot.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>${channelSelectField(server,'modLogChannelId','Mod log channel',s.modLogChannelId ?? s.channel,'mod-logs')}${switchField('warningsEnabled',s.warningsEnabled ?? s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('automodEnabled',s.automodEnabled,'Blocked words','Enable blocked word checks.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('linkFilter',s.linkFilter ?? s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('inviteFilter',s.inviteFilter ?? s.antiInvites,'Invite filter','Block Discord invite links.')}${textareaField('blockedWords','Blocked words',s.blockedWords || '',500)}${saveBtn()}</article><article class="dash-card dash-form-card" data-moderation-access><span>Bypass Access</span><h2>Trusted users</h2><p>Bot owner and users with Manage Server bypass moderation filters by default. Add extra trusted users by username search or Discord ID.</p>${userAccessForm('moderation', 'Search user or paste ID')}<div data-moderation-access-list>${emptyState('Loading bypass list...', 'Please wait.')}</div></article><article class="dash-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article></form>`;
+  return `${serverHeader(server,'moderation')}<form class="dash-designer" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls used by the bot.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>${channelSelectField(server,'modLogChannelId','Mod log channel',s.modLogChannelId ?? s.channel,'mod-logs')}${switchField('warningsEnabled',s.warningsEnabled ?? s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('automodEnabled',s.automodEnabled,'Blocked words','Enable blocked word checks.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('linkFilter',s.linkFilter ?? s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('inviteFilter',s.inviteFilter ?? s.antiInvites,'Invite filter','Block Discord invite links.')}${textareaField('blockedWords','Blocked words',s.blockedWords || '',500)}${saveBtn()}</article><article class="dash-card dash-form-card" data-moderation-access><span>Bypass Access</span><h2>Trusted users</h2><p>Bot owner and users with Manage Server bypass moderation filters by default. Add extra trusted users by username search or Discord ID.</p>${userAccessForm('moderation', 'Search user or paste ID')}<div data-moderation-access-list>${skeletonAccessList()}</div></article><article class="dash-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article></form>`;
 }
 function userAccessForm(kind, title = 'Add user access') {
   return `<form class="dash-inline-form dash-user-search-form" data-access-form="${escapeHtml(kind)}" autocomplete="off"><label class="dash-field dash-user-search-field"><span>${escapeHtml(title)}</span><input name="userSearch" placeholder="Search username or paste Discord ID" data-user-search="${escapeHtml(kind)}" /><input type="hidden" name="userId" data-user-id="${escapeHtml(kind)}"/><div class="dash-user-search-results" data-user-search-results="${escapeHtml(kind)}" hidden></div></label><button class="dash-save-btn" type="submit">Add user</button></form>`;
 }
 function aiPage(server) {
-  return `${serverHeader(server,'ai')}<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>${userAccessForm('ai', 'Search user or paste ID')}<small class="preview-note">Bot owner and users with Manage Server permission have access by default. Manual users can be added by username search or Discord ID.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article></section>`;
+  return `${serverHeader(server,'ai')}<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>${userAccessForm('ai', 'Search user or paste ID')}<small class="preview-note">Bot owner and users with Manage Server permission have access by default. Manual users can be added by username search or Discord ID.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${skeletonAccessList()}</div></article></section>`;
 }
 function accessUserRow(user, removable = false, type = 'Manual') {
   const name = user.displayName || user.name || user.label || user.username || user.id || user.userId || 'Unknown user';
@@ -541,6 +564,8 @@ function attachUserSearch(form, server) {
     clearTimeout(timer);
     if (value.length < 2) { results.hidden = true; results.innerHTML = ''; return; }
     timer = setTimeout(async () => {
+      results.innerHTML = '<div class="dash-user-search-loading"><span class="dash-skeleton-avatar small"></span><div><span class="dash-skeleton-line strong" style="--sk-width:66%"></span><span class="dash-skeleton-line" style="--sk-width:42%"></span></div></div>';
+      results.hidden = false;
       try {
         const data = await searchGuildUsers(server.id, value, 8);
         const users = Array.isArray(data.users) ? data.users : [];
@@ -775,7 +800,7 @@ async function renderSettingsPage() {
   if (els.detail) els.detail.hidden = true;
   document.title = isDemoMode() ? 'Demo Settings — Meowz' : 'Settings — Meowz';
   const authenticated = isAuthenticated();
-  els.home.innerHTML = shell({ active: 'Settings', section: 'settings', content: loadingCard('Loading settings...') });
+  els.home.innerHTML = shell({ active: 'Settings', section: 'settings', content: loadingCard('Loading settings...', 'settings') });
 
   if (isDemoMode()) {
     const data = await getDashboardGuilds(viewMode);
@@ -839,7 +864,7 @@ async function renderServerPage(id, section = 'overview') {
   if (els.home) els.home.hidden = true;
   els.detail.hidden = false;
   const active = VALID_SECTIONS.has(section) ? section : 'overview';
-  els.detailContent.innerHTML = shell({ active: sectionTitle(active), section: active, content: loadingCard('Loading server...') });
+  els.detailContent.innerHTML = shell({ active: sectionTitle(active), section: active, content: loadingCard('Loading server...', 'server') });
   try {
     const payload = await getDashboardServer(id);
     const server = await hydrateServerForSection(payload.server, active);
