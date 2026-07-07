@@ -1,4 +1,4 @@
-import { DEMO_BOT_STATS, DEMO_DASHBOARD, DEMO_IMAGE_ACCESS, DEMO_SERVER_SETTINGS, DEMO_ROLES, demoServerById, isDemoRoute } from './demoData.js';
+import { DEMO_BOT_STATS, DEMO_DASHBOARD, DEMO_IMAGE_ACCESS, DEMO_MODERATION_ACCESS, DEMO_SERVER_SETTINGS, DEMO_ROLES, demoServerById, isDemoRoute } from './demoData.js';
 
 const memoryCache = new Map();
 
@@ -52,6 +52,21 @@ export function getDashboardServer(guildId) {
   return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}`, { cacheKey: `dashboard-server:${guildId}`, cacheMs: 10000 });
 }
 
+
+export function searchGuildUsers(guildId, query, limit = 8) {
+  const q = String(query || '').trim();
+  if (isDemoRoute()) {
+    const haystack = [...(DEMO_MODERATION_ACCESS.defaultUsers || []), ...(DEMO_MODERATION_ACCESS.users || []), ...(DEMO_IMAGE_ACCESS.defaultUsers || []), ...(DEMO_IMAGE_ACCESS.users || [])];
+    const users = haystack
+      .filter((user, index, arr) => arr.findIndex((item) => (item.userId || item.id) === (user.userId || user.id)) === index)
+      .filter((user) => !q || String(user.displayName || user.username || user.userId || user.id || '').toLowerCase().includes(q.toLowerCase()) || String(user.userId || user.id || '').includes(q))
+      .slice(0, limit)
+      .map((user) => ({ userId: user.userId || user.id, username: user.username || null, displayName: user.displayName || user.label || user.username || user.id, avatarUrl: user.avatarUrl || null }));
+    return Promise.resolve({ ok: true, users, demo: true });
+  }
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/users/search?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(limit)}`);
+}
+
 export function getImageAccess(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ...DEMO_IMAGE_ACCESS });
   return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/image-access`, { cacheKey: `image-access:${guildId}`, cacheMs: 15000 });
@@ -73,6 +88,31 @@ export async function removeImageAccessUser(guildId, userId) {
     method: 'DELETE',
   });
   memoryCache.delete(`image-access:${guildId}`);
+  return data;
+}
+
+
+export function getModerationAccess(guildId) {
+  if (isDemoRoute()) return Promise.resolve({ ...DEMO_MODERATION_ACCESS });
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation-access`, { cacheKey: `moderation-access:${guildId}`, cacheMs: 15000 });
+}
+
+export async function addModerationAccessUser(guildId, userId) {
+  if (isDemoRoute()) throw new Error('Demo mode is read-only. Real changes are disabled in preview mode.');
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation-access`, {
+    method: 'POST',
+    body: JSON.stringify({ userId }),
+  });
+  memoryCache.delete(`moderation-access:${guildId}`);
+  return data;
+}
+
+export async function removeModerationAccessUser(guildId, userId) {
+  if (isDemoRoute()) throw new Error('Demo mode is read-only. Real changes are disabled in preview mode.');
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation-access/${encodeURIComponent(userId)}`, {
+    method: 'DELETE',
+  });
+  memoryCache.delete(`moderation-access:${guildId}`);
   return data;
 }
 

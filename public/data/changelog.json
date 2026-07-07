@@ -1,5 +1,15 @@
 [
   {
+    "date": "2026-07-07",
+    "title": "Moderation bypass and mobile polish",
+    "items": [
+      "Added moderation bypass access management with default bot owner and Manage Server users.",
+      "Added username search/autocomplete for AI image access and moderation bypass user pickers.",
+      "Kept Discord ID entry for manual user additions.",
+      "Tightened the mobile hamburger button and aligned dashboard switches."
+    ]
+  },
+  {
     "version": "v1.9.9",
     "date": "2026-07-07",
     "changes": [

@@ -429,6 +429,30 @@ router.put('/dashboard/servers/:guildId/moderation', requireAuth, requireManagea
   await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation`, { method: 'PUT', body: JSON.stringify(req.body || {}) });
 });
 
+
+router.get('/dashboard/servers/:guildId/users/search', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  const query = String(req.query.q || req.query.query || '').trim();
+  const limit = String(req.query.limit || '10');
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/users/search?q=${encodeURIComponent(query)}&limit=${encodeURIComponent(limit)}`);
+});
+
+router.get('/dashboard/servers/:guildId/moderation-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation-access`);
+});
+
+router.post('/dashboard/servers/:guildId/moderation-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation-access`, {
+    method: 'POST',
+    body: JSON.stringify({ userId: req.body?.userId }),
+  });
+});
+
+router.delete('/dashboard/servers/:guildId/moderation-access/:userId', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation-access/${encodeURIComponent(req.params.userId)}`, {
+    method: 'DELETE',
+  });
+});
+
 router.get('/dashboard/servers/:guildId/image-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
   try {
     const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/image-access`);

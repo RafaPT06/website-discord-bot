@@ -10,6 +10,10 @@ import {
   getLevelRewards,
   saveLevelReward,
   deleteLevelReward,
+  searchGuildUsers,
+  getModerationAccess,
+  addModerationAccessUser,
+  removeModerationAccessUser,
 } from './api.js';
 import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
@@ -469,16 +473,33 @@ function logStatus(label, enabled) { return `<div class="dash-log-status ${enabl
 function logExample(title, text, type) { return `<div class="dash-log-example ${type}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
 function moderationPage(server) {
   const s = readSettings(server.id, 'moderation', { enabled:false, warningsEnabled:true, automodEnabled:false, antiSpam:false, linkFilter:false, inviteFilter:false, modLogChannelId:'demo-ch-mod-logs', blockedWords:'' }, server);
-  return `${serverHeader(server,'moderation')}<form class="dash-designer" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls used by the bot.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>${channelSelectField(server,'modLogChannelId','Mod log channel',s.modLogChannelId ?? s.channel,'mod-logs')}${switchField('warningsEnabled',s.warningsEnabled ?? s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('automodEnabled',s.automodEnabled,'Blocked words','Enable blocked word checks.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('linkFilter',s.linkFilter ?? s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('inviteFilter',s.inviteFilter ?? s.antiInvites,'Invite filter','Block Discord invite links.')}${textareaField('blockedWords','Blocked words',s.blockedWords || '',500)}${saveBtn()}</article><article class="dash-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article></form>`;
+  return `${serverHeader(server,'moderation')}<form class="dash-designer" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls used by the bot.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>${channelSelectField(server,'modLogChannelId','Mod log channel',s.modLogChannelId ?? s.channel,'mod-logs')}${switchField('warningsEnabled',s.warningsEnabled ?? s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('automodEnabled',s.automodEnabled,'Blocked words','Enable blocked word checks.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('linkFilter',s.linkFilter ?? s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('inviteFilter',s.inviteFilter ?? s.antiInvites,'Invite filter','Block Discord invite links.')}${textareaField('blockedWords','Blocked words',s.blockedWords || '',500)}${saveBtn()}</article><article class="dash-card dash-form-card" data-moderation-access><span>Bypass Access</span><h2>Trusted users</h2><p>Bot owner and users with Manage Server bypass moderation filters by default. Add extra trusted users by username search or Discord ID.</p>${userAccessForm('moderation', 'Search user or paste ID')}<div data-moderation-access-list>${emptyState('Loading bypass list...', 'Please wait.')}</div></article><article class="dash-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article></form>`;
+}
+function userAccessForm(kind, title = 'Add user access') {
+  return `<form class="dash-inline-form dash-user-search-form" data-access-form="${escapeHtml(kind)}" autocomplete="off"><label class="dash-field dash-user-search-field"><span>${escapeHtml(title)}</span><input name="userSearch" placeholder="Search username or paste Discord ID" data-user-search="${escapeHtml(kind)}" /><input type="hidden" name="userId" data-user-id="${escapeHtml(kind)}"/><div class="dash-user-search-results" data-user-search-results="${escapeHtml(kind)}" hidden></div></label><button class="dash-save-btn" type="submit">Add user</button></form>`;
 }
 function aiPage(server) {
-  return `${serverHeader(server,'ai')}<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p><form class="dash-inline-form" data-ai-form><label class="dash-field"><span>Discord user ID</span><input name="userId" placeholder="123456789012345678" /></label><button class="dash-save-btn" type="submit">Add user</button></form><small class="preview-note">Users with Manage Server permission and the bot owner have access by default.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article></section>`;
+  return `${serverHeader(server,'ai')}<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>${userAccessForm('ai', 'Search user or paste ID')}<small class="preview-note">Bot owner and users with Manage Server permission have access by default. Manual users can be added by username search or Discord ID.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article></section>`;
 }
 function accessUserRow(user, removable = false, type = 'Manual') {
-  const name = user.name || user.username || user.displayName || user.id || 'Unknown user';
-  const id = user.id || user.userId || '';
+  const name = user.displayName || user.name || user.label || user.username || user.id || user.userId || 'Unknown user';
+  const id = user.userId || user.id || '';
   const img = user.avatarUrl ? `<img src="${escapeHtml(user.avatarUrl)}" alt=""/>` : escapeHtml(name.slice(0,1).toUpperCase());
-  return `<div class="dash-access-row"><span class="dash-access-avatar">${img}</span><span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(type)}${id ? ` · ${escapeHtml(id)}` : ''}</small></span><button type="button" ${removable ? `data-remove-ai-user="${escapeHtml(id)}" data-remove-ai-label="${escapeHtml(name)}"` : 'disabled'}>${removable ? 'Remove' : 'Default'}</button></div>`;
+  return `<div class="dash-access-row"><span class="dash-access-avatar">${img}</span><span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(type)}${user.username ? ` · ${escapeHtml(user.username)}` : (id ? ` · ${escapeHtml(id)}` : '')}</small></span><button type="button" ${removable ? `data-remove-ai-user="${escapeHtml(id)}" data-remove-ai-label="${escapeHtml(name)}"` : 'disabled'}>${removable ? 'Remove' : 'Default'}</button></div>`;
+}
+function normalizeAccessPayload(data = {}) {
+  const defaultUsers = Array.isArray(data.defaultUsers) ? data.defaultUsers : [
+    ...(data.owner ? [data.owner] : []),
+    ...(Array.isArray(data.manageServerUsers) ? data.manageServerUsers : []),
+  ];
+  const manual = Array.isArray(data.allowedUsers) ? data.allowedUsers : (Array.isArray(data.users) ? data.users : []);
+  return { defaultUsers, manual };
+}
+function renderAccessList(data, manualEmpty = 'No manually added users.') {
+  const { defaultUsers, manual } = normalizeAccessPayload(data);
+  const owner = defaultUsers.filter((user) => ['bot_owner', 'owner'].includes(String(user.source || user.type || '').toLowerCase()));
+  const managers = defaultUsers.filter((user) => !owner.includes(user));
+  return `<div class="dash-access-list"><div class="dash-note"><strong>Default access</strong><span>Bot owner and users with Manage Server are included automatically and cannot be removed.</span></div>${owner.map(u => accessUserRow(u, false, 'Bot Owner')).join('')}${managers.map(u => accessUserRow(u, false, 'Manage Server')).join('')}${manual.length ? `<h3>Manual access</h3>${manual.map(u => accessUserRow(u, true, 'Manual')).join('')}` : emptyState(manualEmpty, 'Search by username or paste a Discord ID to add someone.')}</div>`;
 }
 async function loadAiAccess(guildId) {
   const holder = document.querySelector('[data-ai-access-list]');
@@ -486,26 +507,81 @@ async function loadAiAccess(guildId) {
   holder.innerHTML = emptyState('Loading access list...', 'Please wait.');
   try {
     const data = await getImageAccess(guildId);
-    const owner = data.owner ? [data.owner] : (Array.isArray(data.defaultUsers) ? data.defaultUsers.filter(u => u.type === 'owner') : []);
-    const managers = Array.isArray(data.manageServerUsers) ? data.manageServerUsers : (Array.isArray(data.defaultUsers) ? data.defaultUsers.filter(u => u.type !== 'owner') : []);
-    const manual = Array.isArray(data.allowedUsers) ? data.allowedUsers : (Array.isArray(data.users) ? data.users : []);
-    holder.innerHTML = `<div class="dash-access-list"><div class="dash-note"><strong>Default access</strong><span>Bot owner and users with Manage Server can use this command by default.</span></div>${owner.map(u => accessUserRow(u, false, 'Bot Owner')).join('')}${managers.map(u => accessUserRow(u, false, 'Manage Server')).join('')}${manual.length ? `<h3>Manual access</h3>${manual.map(u => accessUserRow(u, true, 'Manual')).join('')}` : emptyState('No manually added users.', 'Add a Discord user ID to grant command access.')}</div>`;
+    holder.innerHTML = renderAccessList(data, 'No manually added users.');
   } catch (err) {
     holder.innerHTML = errorCard('Could not load access list.', err.message || 'Try again later.');
   }
+}
+async function loadModerationAccess(guildId) {
+  const holder = document.querySelector('[data-moderation-access-list]');
+  if (!holder) return;
+  holder.innerHTML = emptyState('Loading bypass list...', 'Please wait.');
+  try {
+    const data = await getModerationAccess(guildId);
+    holder.innerHTML = renderAccessList(data, 'No manual moderation bypass users.');
+  } catch (err) {
+    holder.innerHTML = errorCard('Could not load moderation bypass list.', err.message || 'Try again later.');
+  }
+}
+function userSuggestionRow(user) {
+  const name = user.displayName || user.username || user.userId || 'Unknown user';
+  const username = user.username && user.username !== name ? user.username : user.userId;
+  const avatar = user.avatarUrl ? `<img src="${escapeHtml(user.avatarUrl)}" alt=""/>` : escapeHtml(String(name).slice(0,1).toUpperCase());
+  return `<button type="button" data-user-suggestion data-user-id="${escapeHtml(user.userId || user.id || '')}" data-user-label="${escapeHtml(name)}"><span class="dash-access-avatar">${avatar}</span><span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(username || '')}</small></span></button>`;
+}
+function attachUserSearch(form, server) {
+  const input = form.querySelector('[data-user-search]');
+  const hidden = form.querySelector('[data-user-id]');
+  const results = form.querySelector('[data-user-search-results]');
+  if (!input || !hidden || !results) return;
+  let timer = null;
+  input.addEventListener('input', () => {
+    const value = String(input.value || '').trim();
+    hidden.value = /^\d{15,25}$/.test(value) ? value : '';
+    clearTimeout(timer);
+    if (value.length < 2) { results.hidden = true; results.innerHTML = ''; return; }
+    timer = setTimeout(async () => {
+      try {
+        const data = await searchGuildUsers(server.id, value, 8);
+        const users = Array.isArray(data.users) ? data.users : [];
+        results.innerHTML = users.length ? users.map(userSuggestionRow).join('') : '<div class="dash-user-search-empty">No users found. You can paste a Discord ID manually.</div>';
+        results.hidden = false;
+      } catch (err) {
+        results.innerHTML = `<div class="dash-user-search-empty">${escapeHtml(err.message || 'Search failed.')}</div>`;
+        results.hidden = false;
+      }
+    }, 220);
+  });
+  results.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-user-suggestion]');
+    if (!btn) return;
+    hidden.value = btn.dataset.userId || '';
+    input.value = btn.dataset.userLabel ? `${btn.dataset.userLabel} (${hidden.value})` : hidden.value;
+    results.hidden = true;
+  });
+  document.addEventListener('click', (event) => {
+    if (!form.contains(event.target)) results.hidden = true;
+  });
+}
+function readUserIdFromAccessForm(form) {
+  const hidden = form.querySelector('input[name="userId"]');
+  const raw = String(hidden?.value || form.querySelector('input[name="userSearch"]')?.value || '').trim();
+  const match = raw.match(/\d{15,25}/);
+  return match ? match[0] : raw;
 }
 function attachAiPage(server) {
   const page = document.querySelector('[data-ai-page]');
   if (!page) return;
   loadAiAccess(server.id);
-  page.querySelector('[data-ai-form]')?.addEventListener('submit', async (e) => {
+  const form = page.querySelector('[data-access-form="ai"]');
+  if (form) attachUserSearch(form, server);
+  form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const input = e.currentTarget.querySelector('input[name="userId"]');
-    const userId = String(input.value || '').trim();
-    if (!/^\d{15,25}$/.test(userId)) return showStatusToast('error', 'Invalid user ID', 'Paste a valid Discord user ID.');
-    const btn = e.currentTarget.querySelector('button');
+    const userId = readUserIdFromAccessForm(e.currentTarget);
+    if (!/^\d{15,25}$/.test(userId)) return showStatusToast('error', 'Invalid user ID', 'Search a user or paste a valid Discord user ID.');
+    const btn = e.currentTarget.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Adding...';
-    try { await addImageAccessUser(server.id, userId); input.value = ''; showStatusToast('success', 'Access updated', 'User was added.'); await loadAiAccess(server.id); }
+    try { await addImageAccessUser(server.id, userId); e.currentTarget.reset(); e.currentTarget.querySelector('input[name="userId"]').value = ''; showStatusToast('success', 'Access updated', 'User was added.'); await loadAiAccess(server.id); }
     catch (err) { showStatusToast('error', 'Could not add user', err.message || 'Try again later.'); }
     finally { btn.disabled = false; btn.textContent = 'Add user'; }
   });
@@ -516,6 +592,33 @@ function attachAiPage(server) {
     if (!confirm(`Remove access from ${btn.dataset.removeAiLabel || userId}?`)) return;
     btn.disabled = true; btn.textContent = 'Removing...';
     try { await removeImageAccessUser(server.id, userId); showStatusToast('success', 'Access updated', 'User was removed.'); await loadAiAccess(server.id); }
+    catch (err) { showStatusToast('error', 'Could not remove user', err.message || 'Try again later.'); btn.disabled = false; btn.textContent = 'Remove'; }
+  });
+}
+function attachModerationAccess(server) {
+  const form = document.querySelector('[data-access-form="moderation"]');
+  if (!form) return;
+  loadModerationAccess(server.id);
+  attachUserSearch(form, server);
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (isDemoMode()) { readOnlyDemoToast(); return; }
+    const userId = readUserIdFromAccessForm(e.currentTarget);
+    if (!/^\d{15,25}$/.test(userId)) return showStatusToast('error', 'Invalid user ID', 'Search a user or paste a valid Discord user ID.');
+    const btn = e.currentTarget.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = 'Adding...';
+    try { await addModerationAccessUser(server.id, userId); e.currentTarget.reset(); e.currentTarget.querySelector('input[name="userId"]').value = ''; showStatusToast('success', 'Moderation bypass updated', 'User was added.'); await loadModerationAccess(server.id); }
+    catch (err) { showStatusToast('error', 'Could not add user', err.message || 'Try again later.'); }
+    finally { btn.disabled = false; btn.textContent = 'Add user'; }
+  });
+  const list = document.querySelector('[data-moderation-access-list]');
+  list?.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-remove-ai-user]');
+    if (!btn) return;
+    const userId = btn.dataset.removeAiUser;
+    if (!confirm(`Remove moderation bypass from ${btn.dataset.removeAiLabel || userId}?`)) return;
+    btn.disabled = true; btn.textContent = 'Removing...';
+    try { await removeModerationAccessUser(server.id, userId); showStatusToast('success', 'Moderation bypass updated', 'User was removed.'); await loadModerationAccess(server.id); }
     catch (err) { showStatusToast('error', 'Could not remove user', err.message || 'Try again later.'); btn.disabled = false; btn.textContent = 'Remove'; }
   });
 }
@@ -745,6 +848,7 @@ async function renderServerPage(id, section = 'overview') {
     wireShell(els.detailContent);
     attachSettingsForm(server, active);
     if (active === 'ai') attachAiPage(server);
+    if (active === 'moderation') attachModerationAccess(server);
   } catch (err) {
     showStatusToast('error', 'Server failed to load', err.message || 'Could not open server.');
     els.detailContent.innerHTML = shell({ active: 'Server unavailable', content: errorCard('Could not open this server.', err.message || 'Try again later.') });

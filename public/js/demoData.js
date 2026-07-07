@@ -112,9 +112,25 @@ export const DEMO_LEVELING = Object.freeze({
 
 export const DEMO_IMAGE_ACCESS = Object.freeze({
   ok: true,
+  defaultUsers: [
+    { userId: '111111111111111111', username: 'Rafa#0001', displayName: 'Rafa', source: 'bot_owner', removable: false },
+    { userId: '333333333333333333', username: 'Server Manager#0001', displayName: 'Server Manager', source: 'manage_server', removable: false },
+  ],
   users: [
-    { id: '111111111111111111', username: 'Rafa', label: 'Rafa', addedAt: 'Demo data' },
-    { id: '222222222222222222', username: 'Trusted Tester', label: 'Trusted Tester', addedAt: 'Demo data' },
+    { userId: '222222222222222222', username: 'Trusted Tester#0001', displayName: 'Trusted Tester', source: 'manual', removable: true },
+  ],
+  demo: true,
+});
+
+
+export const DEMO_MODERATION_ACCESS = Object.freeze({
+  ok: true,
+  defaultUsers: [
+    { userId: '111111111111111111', username: 'Rafa#0001', displayName: 'Rafa', source: 'bot_owner', removable: false },
+    { userId: '333333333333333333', username: 'Server Manager#0001', displayName: 'Server Manager', source: 'manage_server', removable: false },
+  ],
+  users: [
+    { userId: '444444444444444444', username: 'Trusted Mod#0001', displayName: 'Trusted Mod', source: 'manual', removable: true },
   ],
   demo: true,
 });
