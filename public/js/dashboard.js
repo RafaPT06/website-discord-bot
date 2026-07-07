@@ -4,6 +4,12 @@ import {
   getImageAccess,
   addImageAccessUser,
   removeImageAccessUser,
+  getServerSettings,
+  saveServerSettings,
+  getGuildRoles,
+  getLevelRewards,
+  saveLevelReward,
+  deleteLevelReward,
 } from './api.js';
 import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
@@ -99,7 +105,9 @@ function sectionPath(server, section = 'overview') {
   const base = `${dashboardBase()}/server/${encodeURIComponent(server.id)}`;
   return section === 'overview' ? base : `${base}/${encodeURIComponent(section)}`;
 }
-function readSettings(guildId, section, defaults = {}) {
+function readSettings(guildId, section, defaults = {}, server = null) {
+  const live = server?.settings?.[section];
+  if (live) return { ...defaults, ...live };
   try {
     const all = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}');
     return { ...defaults, ...(all[guildId]?.[section] || {}) };
@@ -356,6 +364,18 @@ function channelSelectField(server, name, label, value, fallbackName = 'general'
   const custom = hasCurrent || !value ? '' : `<option value="${escapeHtml(String(value))}" selected>#${escapeHtml(String(value).replace(/^#\s*/, ''))}</option>`;
   return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}">${custom}${options}</select></label>`;
 }
+function guildRoles(server) {
+  const roles = Array.isArray(server?.roles) ? server.roles : [];
+  return roles
+    .filter((role) => role && role.id && role.name && role.editable !== false && role.managed !== true)
+    .map((role) => ({ id: String(role.id), name: String(role.name) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+function roleSelectField(server, name, label, value) {
+  const roles = guildRoles(server);
+  if (!roles.length) return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}" disabled><option>No editable roles available</option></select></label>`;
+  return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}"><option value="">Select role</option>${roles.map((role) => `<option value="${escapeHtml(role.id)}" ${role.id === String(value || '') ? 'selected' : ''}>@${escapeHtml(role.name)}</option>`).join('')}</select></label>`;
+}
 function numberField(name, label, value, min=0) { return `<label class="dash-field"><span>${escapeHtml(label)}</span><input type="number" min="${Number(min)}" name="${escapeHtml(name)}" value="${escapeHtml(String(value ?? ''))}" /></label>`; }
 function textareaField(name, label, value, max=200) { return `<label class="dash-field"><span>${escapeHtml(label)}</span><textarea name="${escapeHtml(name)}" maxlength="${Number(max)}">${escapeHtml(value ?? '')}</textarea><small><b data-count-for="${escapeHtml(name)}">${String(value ?? '').length}</b>/${Number(max)}</small></label>`; }
 function variableButtons(target = 'welcomeMessage', label = 'Insert Variable') { return `<div class="dash-variable-row"><span>${escapeHtml(label)}</span><div>${['{user}','{server}','{memberCount}'].map(v => `<button type="button" data-insert-variable="${v}" data-insert-target="${escapeHtml(target)}">${v}</button>`).join('')}</div></div>`; }
@@ -364,29 +384,27 @@ function saveBtn() { return `<button class="dash-save-btn" type="submit">Save Ch
 function welcomePage(server) {
   const s = readSettings(server.id, 'welcome', {
     welcomeEnabled: true,
-    welcomeChannel: 'demo-ch-welcome',
+    welcomeChannelId: 'demo-ch-welcome',
     welcomeStyle: 'Custom Card (Modern)',
     welcomeMessage: 'WELCOME {user}\nTO\n{server}',
     goodbyeEnabled: false,
-    goodbyeChannel: 'demo-ch-goodbye',
+    goodbyeChannelId: 'demo-ch-goodbye',
     goodbyeStyle: 'Text only',
     goodbyeMessage: 'Goodbye {user}. We hope to see you again soon.',
     showMember: true,
     showAvatar: true,
-  });
-
-  // Backwards compatibility with the old single welcome form keys.
-  s.welcomeEnabled = s.welcomeEnabled ?? s.enabled ?? true;
-  s.welcomeChannel = s.welcomeChannel ?? s.channel ?? 'demo-ch-welcome';
-  s.welcomeStyle = s.welcomeStyle ?? s.style ?? 'Custom Card (Modern)';
-  s.goodbyeMessage = s.goodbyeMessage ?? s.leaveMessage ?? 'Goodbye {user}. We hope to see you again soon.';
+  }, server);
+  s.welcomeChannelId = s.welcomeChannelId ?? s.welcomeChannel ?? s.channel ?? 'demo-ch-welcome';
+  s.goodbyeChannelId = s.goodbyeChannelId ?? s.goodbyeChannel ?? 'demo-ch-goodbye';
+  s.welcomeStyle = s.welcomeStyle ?? 'Custom Card (Modern)';
+  s.goodbyeStyle = s.goodbyeStyle ?? 'Text only';
 
   return `${serverHeader(server,'welcome')}<form class="dash-designer dash-designer-wide" data-settings-form="welcome" data-guild-id="${escapeHtml(server.id)}">
     <article class="dash-card dash-form-card">
       <div class="dash-card-head"><div><span>Welcome Messages</span><h2>Welcome Messages</h2><p>Configure the message Meowz sends when someone joins ${escapeHtml(server.name)}.</p></div><b class="status ${s.welcomeEnabled?'enabled':''}">${s.welcomeEnabled?'Enabled':'Disabled'}</b></div>
       ${switchField('welcomeEnabled',s.welcomeEnabled,'Enable welcome messages','Send a message when someone joins the server.')}
       <hr/>
-      ${channelSelectField(server,'welcomeChannel','Welcome Channel',s.welcomeChannel,'welcome')}
+      ${channelSelectField(server,'welcomeChannelId','Welcome Channel',s.welcomeChannelId,'welcome')}
       <label class="dash-field"><span>Welcome Style</span><select name="welcomeStyle"><option ${s.welcomeStyle === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option><option ${s.welcomeStyle === 'Text only' ? 'selected' : ''}>Text only</option></select></label>
       ${variableButtons('welcomeMessage')}
       ${textareaField('welcomeMessage','Welcome Message',s.welcomeMessage,200)}
@@ -397,11 +415,11 @@ function welcomePage(server) {
       <div class="dash-card-head"><div><span>Goodbye Messages</span><h2>Goodbye Messages</h2><p>Configure the separate leave message and destination channel.</p></div><b class="status ${s.goodbyeEnabled?'enabled':''}">${s.goodbyeEnabled?'Enabled':'Disabled'}</b></div>
       ${switchField('goodbyeEnabled',s.goodbyeEnabled,'Enable goodbye messages','Send a message when someone leaves the server.')}
       <hr/>
-      ${channelSelectField(server,'goodbyeChannel','Goodbye Channel',s.goodbyeChannel,'bye')}
+      ${channelSelectField(server,'goodbyeChannelId','Goodbye Channel',s.goodbyeChannelId,'bye')}
       <label class="dash-field"><span>Goodbye Style</span><select name="goodbyeStyle"><option ${s.goodbyeStyle === 'Text only' ? 'selected' : ''}>Text only</option><option ${s.goodbyeStyle === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option></select></label>
       ${variableButtons('goodbyeMessage')}
       ${textareaField('goodbyeMessage','Goodbye Message',s.goodbyeMessage,200)}
-      <small class="preview-note">Welcome and goodbye channels are saved separately, matching the bot commands.</small>
+      <small class="preview-note">Welcome and goodbye channels are saved through the bot API as separate Discord settings.</small>
       ${saveBtn()}
     </article>
     ${welcomePreview(server,s)}
@@ -428,7 +446,7 @@ function selectedChannelName(server, channelId, fallback) {
 function welcomePreview(server, settings) {
   const welcomeText = messagePreviewLine(server, settings.welcomeMessage, `Welcome {user} to {server}!`);
   const goodbyeText = messagePreviewLine(server, settings.goodbyeMessage, `Goodbye {user}.`);
-  return `<article class="dash-card dash-preview" data-welcome-preview><span>Live Preview</span><h2>Discord preview</h2><p>Welcome and goodbye are separate bot settings.</p><div class="dash-discord-stack"><div class="dash-discord-message"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.welcomeChannel, 'welcome')}</small></div><p>${escapeHtml(welcomeText)}</p>${settings.welcomeStyle === 'Text only' ? '' : welcomeCard(server, settings)}</div></div><div class="dash-discord-message goodbye"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.goodbyeChannel, 'bye')}</small></div><p>${escapeHtml(goodbyeText)}</p></div></div></div><small class="preview-note">This is a preview. The actual Discord message can look slightly different depending on device size.</small></article>`;
+  return `<article class="dash-card dash-preview" data-welcome-preview><span>Live Preview</span><h2>Discord preview</h2><p>Welcome and goodbye are separate bot settings.</p><div class="dash-discord-stack"><div class="dash-discord-message"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.welcomeChannelId, 'welcome')}</small></div><p>${escapeHtml(welcomeText)}</p>${settings.welcomeStyle === 'Text only' ? '' : welcomeCard(server, settings)}</div></div><div class="dash-discord-message goodbye"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.goodbyeChannelId, 'bye')}</small></div><p>${escapeHtml(goodbyeText)}</p></div></div></div><small class="preview-note">This is a preview. The actual Discord message can look slightly different depending on device size.</small></article>`;
 }
 function updateWelcomePreview(server, form) {
   const preview = document.querySelector('[data-welcome-preview]');
@@ -438,23 +456,20 @@ function updateWelcomePreview(server, form) {
 }
 
 function levelingPage(server) {
-  const s = readSettings(server.id, 'leveling', { enabled:true, xp:15, cooldown:60, channel:'demo-ch-level-up', stackRoles:true });
-  const roles = [
-    { level: 5, role: 'Lv5' },
-    { level: 10, role: 'Lv10' },
-    { level: 20, role: 'Lv20' },
-  ];
-  return `${serverHeader(server,'leveling')}<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xp','XP per message',s.xp,1)}${numberField('cooldown','Cooldown seconds',s.cooldown,5)}${channelSelectField(server,'channel','Level-up channel',s.channel,'level-up')}${switchField('stackRoles',s.stackRoles,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><div class="dash-level-preview"><strong>${isDemoMode() ? `Demo rank #${DEMO_LEVELING.rank} · Level ${DEMO_LEVELING.level}` : 'Rafa reached Level 12'}</strong><span>${isDemoMode() ? `${formatNumber(DEMO_LEVELING.xp)} / ${formatNumber(DEMO_LEVELING.nextLevelXp)} XP` : '1,240 / 1,500 XP'}</span><div><i style="width:${isDemoMode() ? Math.min(100, Math.round((DEMO_LEVELING.xp / DEMO_LEVELING.nextLevelXp) * 100)) : 82}%"></i></div></div><div class="dash-role-table"><div class="dash-role-table-head"><strong>Reward roles</strong><button type="button" disabled>Add Role</button></div>${roles.map((r) => `<div class="dash-role-row"><span>Level ${r.level}</span><strong>${escapeHtml(r.role)}</strong></div>`).join('')}</div><small class="preview-note">Role editing can be connected to the API later. The layout is ready.</small></article></form>`;
+  const s = readSettings(server.id, 'leveling', { enabled:true, xpPerMessage:15, cooldownSeconds:60, channelId:'demo-ch-level-up', stackRoles:true }, server);
+  const rewards = Array.isArray(server?.settings?.levelRewards) ? server.settings.levelRewards : [];
+  const firstRole = guildRoles(server)[0]?.id || '';
+  return `${serverHeader(server,'leveling')}<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xpPerMessage','XP per message',s.xpPerMessage ?? s.xp,1)}${numberField('cooldownSeconds','Cooldown seconds',s.cooldownSeconds ?? s.cooldown,5)}${channelSelectField(server,'channelId','Level-up channel',s.channelId ?? s.channel,'level-up')}${switchField('stackRoles',s.stackRoles !== false,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><div class="dash-level-preview"><strong>${isDemoMode() ? `Demo rank #${DEMO_LEVELING.rank} · Level ${DEMO_LEVELING.level}` : 'Level reward preview'}</strong><span>${isDemoMode() ? `${formatNumber(DEMO_LEVELING.xp)} / ${formatNumber(DEMO_LEVELING.nextLevelXp)} XP` : `${formatNumber(s.xpPerMessage || 15)} XP/message · ${formatNumber(s.cooldownSeconds || 60)}s cooldown`}</span><div><i style="width:${isDemoMode() ? Math.min(100, Math.round((DEMO_LEVELING.xp / DEMO_LEVELING.nextLevelXp) * 100)) : 82}%"></i></div></div><div class="dash-role-table" data-level-rewards><div class="dash-role-table-head"><strong>Reward roles</strong></div><div class="dash-inline-form dash-reward-editor">${numberField('rewardLevel','Reward level',5,1)}${roleSelectField(server,'rewardRoleId','Reward role',firstRole)}<button type="button" class="dash-save-btn" data-add-level-reward>Add Role</button></div>${rewards.length ? rewards.map((r) => `<div class="dash-role-row"><span>Level ${escapeHtml(r.level)}</span><strong>@${escapeHtml(r.roleName || r.role || r.roleId)}</strong><button type="button" data-remove-level-reward="${escapeHtml(r.level)}">Remove</button></div>`).join('') : emptyState('No reward roles configured.', 'Add a level and role above to make level rewards real.')}</div><small class="preview-note">Reward roles are now loaded from and saved through the bot API.</small></article></form>`;
 }
 function logsPage(server) {
-  const s = readSettings(server.id, 'logs', { enabled:true, channel:'demo-ch-logs', messages:false, members:true, moderation:true, voice:false });
-  return `${serverHeader(server,'logs')}<form class="dash-designer" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Logs</span><h2>Logs</h2><p>Configure log channels and event tracking for ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable logs','Send selected events to a log channel.')}<hr/>${channelSelectField(server,'channel','Log channel',s.channel,'logs')}${switchField('messages',s.messages,'Message logs','Track message delete and edit events.')}${switchField('members',s.members,'Member logs','Track joins and leaves.')}${switchField('moderation',s.moderation,'Moderation logs','Track warnings, bans and mutes.')}${switchField('voice',s.voice,'Voice logs','Track voice channel joins and leaves.')}${saveBtn()}</article><article class="dash-card"><span>Live examples</span><h2>Tracked activity</h2><div class="dash-log-status-grid">${logStatus('Message Logs', s.messages)}${logStatus('Member Logs', s.members)}${logStatus('Voice Logs', s.voice)}${logStatus('Moderation Logs', s.moderation)}</div>${logExample('Member joined','Rafa joined the server.','success')}${logExample('Message deleted','A message was removed in #general.','warn')}${logExample('Moderation action','Zen warned a member.','mod')}</article></form>`;
+  const s = readSettings(server.id, 'logs', { enabled:false, channelId:'demo-ch-logs', messageEvents:true, memberEvents:true, moderationEvents:true, voiceEvents:false }, server);
+  return `${serverHeader(server,'logs')}<form class="dash-designer" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Logs</span><h2>Logs</h2><p>Configure real bot log channels and event tracking for ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable logs','Send selected events to a log channel.')}<hr/>${channelSelectField(server,'channelId','Log channel',s.channelId ?? s.channel,'logs')}${switchField('messageEvents',s.messageEvents ?? s.messages,'Message logs','Track message delete and edit events.')}${switchField('memberEvents',s.memberEvents ?? s.members,'Member logs','Track joins and leaves.')}${switchField('moderationEvents',s.moderationEvents ?? s.moderation,'Moderation logs','Track warnings, bans and automod actions.')}${switchField('voiceEvents',s.voiceEvents ?? s.voice,'Voice logs','Track voice channel joins and leaves.')}${saveBtn()}</article><article class="dash-card"><span>Live examples</span><h2>Tracked activity</h2><div class="dash-log-status-grid">${logStatus('Message Logs', s.messageEvents ?? s.messages)}${logStatus('Member Logs', s.memberEvents ?? s.members)}${logStatus('Voice Logs', s.voiceEvents ?? s.voice)}${logStatus('Moderation Logs', s.moderationEvents ?? s.moderation)}</div>${logExample('Member joined','A real member join event can be logged by the bot.','success')}${logExample('Message deleted','Deleted and edited messages are logged when enabled.','warn')}${logExample('Moderation action','Automod actions are sent to logs when enabled.','mod')}</article></form>`;
 }
 function logStatus(label, enabled) { return `<div class="dash-log-status ${enabled ? 'on' : 'off'}"><span>${escapeHtml(label)}</span><strong>${enabled ? 'Enabled' : 'Disabled'}</strong></div>`; }
 function logExample(title, text, type) { return `<div class="dash-log-example ${type}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
 function moderationPage(server) {
-  const s = readSettings(server.id, 'moderation', { enabled:false, warnings:true, antiSpam:false, antiLinks:false, antiInvites:false, channel:'demo-ch-mod-logs' });
-  return `${serverHeader(server,'moderation')}<form class="dash-designer" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>${channelSelectField(server,'channel','Mod log channel',s.channel,'mod-logs')}${switchField('warnings',s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('antiLinks',s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('antiInvites',s.antiInvites,'Invite filter','Block Discord invite links.')}${saveBtn()}</article><article class="dash-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Configurable preset.</span></div>`).join('')}</div></article></form>`;
+  const s = readSettings(server.id, 'moderation', { enabled:false, warningsEnabled:true, automodEnabled:false, antiSpam:false, linkFilter:false, inviteFilter:false, modLogChannelId:'demo-ch-mod-logs', blockedWords:'' }, server);
+  return `${serverHeader(server,'moderation')}<form class="dash-designer" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls used by the bot.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>${channelSelectField(server,'modLogChannelId','Mod log channel',s.modLogChannelId ?? s.channel,'mod-logs')}${switchField('warningsEnabled',s.warningsEnabled ?? s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('automodEnabled',s.automodEnabled,'Blocked words','Enable blocked word checks.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('linkFilter',s.linkFilter ?? s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('inviteFilter',s.inviteFilter ?? s.antiInvites,'Invite filter','Block Discord invite links.')}${textareaField('blockedWords','Blocked words',s.blockedWords || '',500)}${saveBtn()}</article><article class="dash-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article></form>`;
 }
 function aiPage(server) {
   return `${serverHeader(server,'ai')}<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p><form class="dash-inline-form" data-ai-form><label class="dash-field"><span>Discord user ID</span><input name="userId" placeholder="123456789012345678" /></label><button class="dash-save-btn" type="submit">Add user</button></form><small class="preview-note">Users with Manage Server permission and the bot owner have access by default.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article></section>`;
@@ -510,6 +525,50 @@ function getFormValues(form) {
   form.querySelectorAll('input[type="checkbox"]').forEach(input => { values[input.name] = input.checked; });
   return values;
 }
+function payloadForSection(section, values) {
+  if (section === 'welcome') {
+    return {
+      welcomeEnabled: Boolean(values.welcomeEnabled),
+      goodbyeEnabled: Boolean(values.goodbyeEnabled),
+      welcomeChannelId: values.welcomeChannelId || null,
+      goodbyeChannelId: values.goodbyeChannelId || null,
+      welcomeMessage: values.welcomeMessage || '',
+      goodbyeMessage: values.goodbyeMessage || '',
+    };
+  }
+  if (section === 'leveling') {
+    return {
+      enabled: Boolean(values.enabled),
+      channelId: values.channelId || null,
+      xpPerMessage: Number(values.xpPerMessage || values.xp || 15),
+      cooldownSeconds: Number(values.cooldownSeconds || values.cooldown || 60),
+      stackRoles: Boolean(values.stackRoles),
+    };
+  }
+  if (section === 'logs') {
+    return {
+      enabled: Boolean(values.enabled),
+      channelId: values.channelId || null,
+      messageEvents: Boolean(values.messageEvents),
+      memberEvents: Boolean(values.memberEvents),
+      moderationEvents: Boolean(values.moderationEvents),
+      voiceEvents: Boolean(values.voiceEvents),
+    };
+  }
+  if (section === 'moderation') {
+    return {
+      enabled: Boolean(values.enabled),
+      warningsEnabled: Boolean(values.warningsEnabled),
+      automodEnabled: Boolean(values.automodEnabled),
+      antiSpam: Boolean(values.antiSpam),
+      linkFilter: Boolean(values.linkFilter),
+      inviteFilter: Boolean(values.inviteFilter),
+      modLogChannelId: values.modLogChannelId || null,
+      blockedWords: values.blockedWords || '',
+    };
+  }
+  return values;
+}
 function attachSettingsForm(server, section) {
   const form = document.querySelector(`[data-settings-form="${section}"]`);
   if (!form) return;
@@ -535,12 +594,42 @@ function attachSettingsForm(server, section) {
       textarea.dispatchEvent(new Event('input', { bubbles:true }));
     });
   });
+  form.querySelector('[data-add-level-reward]')?.addEventListener('click', async () => {
+    if (isDemoMode()) { readOnlyDemoToast(); return; }
+    const level = form.querySelector('input[name="rewardLevel"]')?.value;
+    const roleId = form.querySelector('select[name="rewardRoleId"]')?.value;
+    if (!level || !roleId) return showStatusToast('error', 'Missing reward data', 'Choose a level and an editable role.');
+    try {
+      await saveLevelReward(server.id, level, roleId);
+      showStatusToast('success', 'Reward role saved', 'The level reward was updated.');
+      renderServerPage(server.id, 'leveling');
+    } catch (err) {
+      showStatusToast('error', 'Reward save failed', err.message || 'Could not save reward role.');
+    }
+  });
+  form.querySelectorAll('[data-remove-level-reward]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (isDemoMode()) { readOnlyDemoToast(); return; }
+      try {
+        await deleteLevelReward(server.id, btn.dataset.removeLevelReward);
+        showStatusToast('success', 'Reward role removed', 'The level reward was removed.');
+        renderServerPage(server.id, 'leveling');
+      } catch (err) {
+        showStatusToast('error', 'Remove failed', err.message || 'Could not remove reward role.');
+      }
+    });
+  });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (isDemoMode()) { readOnlyDemoToast(); return; }
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Saving...';
-    try { writeSettings(server.id, section, getFormValues(form)); showStatusToast('success', `${sectionTitle(section)} saved`, 'Your settings were saved.'); }
+    try {
+      const values = getFormValues(form);
+      await saveServerSettings(server.id, section, payloadForSection(section, values));
+      writeSettings(server.id, section, values);
+      showStatusToast('success', `${sectionTitle(section)} saved`, 'Your settings were saved to the bot.');
+    }
     catch (err) { showStatusToast('error', 'Save failed', err.message || 'Could not save settings.'); }
     finally { setTimeout(() => { btn.disabled = false; btn.textContent = 'Save Changes'; }, 500); }
   });
@@ -612,6 +701,27 @@ async function renderSettingsPage() {
     showStatusToast('error', 'Settings loaded with limited access', err.message || 'Could not verify owner mode.');
   }
 }
+async function hydrateServerForSection(server, section) {
+  const copy = { ...server, settings: { ...(server.settings || {}) } };
+  if (['welcome', 'leveling', 'logs', 'moderation'].includes(section)) {
+    try {
+      const data = await getServerSettings(server.id, section);
+      copy.settings[section] = data.settings || {};
+    } catch (err) {
+      showStatusToast('error', `${sectionTitle(section)} settings unavailable`, err.message || 'Using local preview values.');
+    }
+  }
+  if (section === 'leveling') {
+    try {
+      const [roles, rewards] = await Promise.all([getGuildRoles(server.id), getLevelRewards(server.id)]);
+      copy.roles = Array.isArray(roles.roles) ? roles.roles : [];
+      copy.settings.levelRewards = Array.isArray(rewards.rewards) ? rewards.rewards : [];
+    } catch (err) {
+      showStatusToast('error', 'Role data unavailable', err.message || 'Reward role editing may be limited.');
+    }
+  }
+  return copy;
+}
 function serverContent(server, section) {
   const active = VALID_SECTIONS.has(section) ? section : 'overview';
   if (active === 'welcome') return welcomePage(server);
@@ -629,7 +739,7 @@ async function renderServerPage(id, section = 'overview') {
   els.detailContent.innerHTML = shell({ active: sectionTitle(active), section: active, content: loadingCard('Loading server...') });
   try {
     const payload = await getDashboardServer(id);
-    const server = payload.server;
+    const server = await hydrateServerForSection(payload.server, active);
     document.title = `${server.name} — ${sectionTitle(active)} — Meowz`;
     els.detailContent.innerHTML = shell({ server, active: sectionTitle(active), section: active, content: serverContent(server, active) });
     wireShell(els.detailContent);

@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.9.9",
+    "date": "2026-07-07",
+    "changes": [
+      {
+        "type": "Backend",
+        "text": "Connected Welcome/Goodbye, Leveling, Logs and Moderation dashboard forms to protected bot API endpoints instead of local preview storage only."
+      },
+      {
+        "type": "Improved",
+        "text": "Level reward roles now load real guild roles, save reward mappings through the API and remove the old placeholder Add Role state."
+      },
+      {
+        "type": "Improved",
+        "text": "Logs and moderation tabs now use API-backed settings with channel dropdowns and real bot-side event handlers where supported."
+      }
+    ]
+  },
+  {
     "version": "v1.9.8",
     "date": "2026-07-07",
     "changes": [

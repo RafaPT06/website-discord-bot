@@ -370,6 +370,65 @@ router.get('/dashboard/servers/:guildId/channels', requireAuth, requireManageabl
   });
 });
 
+
+async function proxyBotGuildSetting(req, res, botPath, options = {}) {
+  try {
+    const data = await requestBotApi(botPath, options);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not reach the bot API.' });
+  }
+}
+
+
+router.get('/dashboard/servers/:guildId/roles', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/roles`);
+});
+
+router.get('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/welcome`);
+});
+
+router.put('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/welcome`, { method: 'PUT', body: JSON.stringify(req.body || {}) });
+});
+
+router.get('/dashboard/servers/:guildId/leveling', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/leveling`);
+});
+
+router.put('/dashboard/servers/:guildId/leveling', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/leveling`, { method: 'PUT', body: JSON.stringify(req.body || {}) });
+});
+
+router.get('/dashboard/servers/:guildId/level-rewards', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/level-rewards`);
+});
+
+router.post('/dashboard/servers/:guildId/level-rewards', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/level-rewards`, { method: 'POST', body: JSON.stringify(req.body || {}) });
+});
+
+router.delete('/dashboard/servers/:guildId/level-rewards/:level', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/level-rewards/${encodeURIComponent(req.params.level)}`, { method: 'DELETE' });
+});
+
+router.get('/dashboard/servers/:guildId/logs', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/logs`);
+});
+
+router.put('/dashboard/servers/:guildId/logs', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/logs`, { method: 'PUT', body: JSON.stringify(req.body || {}) });
+});
+
+router.get('/dashboard/servers/:guildId/moderation', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation`);
+});
+
+router.put('/dashboard/servers/:guildId/moderation', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation`, { method: 'PUT', body: JSON.stringify(req.body || {}) });
+});
+
 router.get('/dashboard/servers/:guildId/image-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
   try {
     const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/image-access`);

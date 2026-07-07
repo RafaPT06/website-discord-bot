@@ -48,6 +48,56 @@ export const DEMO_CHANNELS = Object.freeze([
   { id: 'demo-ch-media', name: 'media', type: 'GUILD_TEXT' },
 ]);
 
+
+export const DEMO_ROLES = Object.freeze([
+  { id: 'demo-role-5', name: 'Lv5', editable: true, managed: false, position: 5 },
+  { id: 'demo-role-10', name: 'Lv10', editable: true, managed: false, position: 10 },
+  { id: 'demo-role-20', name: 'Lv20', editable: true, managed: false, position: 20 },
+  { id: 'demo-role-vip', name: 'VIP', editable: true, managed: false, position: 30 },
+  { id: 'demo-role-staff', name: 'Staff', editable: false, managed: false, position: 50 },
+]);
+
+export const DEMO_SERVER_SETTINGS = Object.freeze({
+  welcome: {
+    welcomeEnabled: true,
+    goodbyeEnabled: true,
+    welcomeChannelId: 'demo-ch-welcome',
+    goodbyeChannelId: 'demo-ch-bye',
+    welcomeMessage: 'WELCOME {user}\nTO\n{server}',
+    goodbyeMessage: 'Goodbye {user}. We hope to see you again soon.',
+  },
+  leveling: {
+    enabled: true,
+    channelId: 'demo-ch-level-up',
+    xpPerMessage: 15,
+    cooldownSeconds: 60,
+    stackRoles: true,
+  },
+  levelRewards: [
+    { level: 5, roleId: 'demo-role-5', roleName: 'Lv5', exists: true },
+    { level: 10, roleId: 'demo-role-10', roleName: 'Lv10', exists: true },
+    { level: 20, roleId: 'demo-role-20', roleName: 'Lv20', exists: true },
+  ],
+  logs: {
+    enabled: true,
+    channelId: 'demo-ch-logs',
+    messageEvents: false,
+    memberEvents: true,
+    moderationEvents: true,
+    voiceEvents: false,
+  },
+  moderation: {
+    enabled: false,
+    warningsEnabled: true,
+    automodEnabled: false,
+    modLogChannelId: 'demo-ch-mod-logs',
+    antiSpam: false,
+    linkFilter: false,
+    inviteFilter: false,
+    blockedWords: '',
+  },
+});
+
 export const DEMO_LEVELING = Object.freeze({
   rank: 3,
   level: 24,
