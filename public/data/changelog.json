@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.9.6",
+    "date": "2026-07-07",
+    "changes": [
+      {
+        "type": "Backend",
+        "text": "Added a real dashboard channel API fallback so server channel dropdowns can load from the bot API or directly from Discord with DISCORD_BOT_TOKEN."
+      },
+      {
+        "type": "Improved",
+        "text": "Server dashboard responses now include channel source metadata and clearer channel API errors for unavailable channel lists."
+      },
+      {
+        "type": "Security",
+        "text": "Channel lookup remains protected by the existing dashboard access guard, while demo mode continues using isolated fake channels only."
+      }
+    ]
+  },
+  {
     "version": "v1.9.5",
     "date": "2026-07-07",
     "changes": [

@@ -4,6 +4,12 @@ const { readSession } = require('../authSession');
 
 const router = express.Router();
 const DISCORD_API = 'https://discord.com/api/v10';
+const DISCORD_CHANNEL_TYPES = Object.freeze({
+  GUILD_TEXT: 0,
+  GUILD_ANNOUNCEMENT: 5,
+  GUILD_FORUM: 15,
+  GUILD_MEDIA: 16,
+});
 const MANAGE_GUILD = 0x20n;
 const ADMINISTRATOR = 0x8n;
 const USER_GUILDS_CACHE_MS = 45 * 1000;
@@ -156,23 +162,91 @@ async function getDashboardGuildData(session, options = {}) {
 
 function normalizeDiscordChannel(channel) {
   if (!channel) return null;
-  const type = String(channel.type ?? channel.channelType ?? '').toUpperCase();
-  const isText = !type || type === '0' || type === 'GUILD_TEXT' || type === 'TEXT' || type === '5' || type === 'GUILD_ANNOUNCEMENT' || type === 'ANNOUNCEMENT';
+  const rawType = channel.type ?? channel.channelType;
+  const numericType = Number(rawType);
+  const textTypes = new Set([
+    DISCORD_CHANNEL_TYPES.GUILD_TEXT,
+    DISCORD_CHANNEL_TYPES.GUILD_ANNOUNCEMENT,
+    DISCORD_CHANNEL_TYPES.GUILD_FORUM,
+    DISCORD_CHANNEL_TYPES.GUILD_MEDIA,
+  ]);
+  const stringType = String(rawType ?? '').toUpperCase();
+  const isText = textTypes.has(numericType)
+    || !stringType
+    || ['0', 'TEXT', 'GUILD_TEXT', '5', 'ANNOUNCEMENT', 'GUILD_ANNOUNCEMENT', '15', 'FORUM', 'GUILD_FORUM', '16', 'MEDIA', 'GUILD_MEDIA'].includes(stringType);
   if (!isText) return null;
+
   const id = channel.id || channel.channelId;
   const name = channel.name || channel.label;
   if (!id || !name) return null;
-  return { id: String(id), name: String(name), type: type || 'GUILD_TEXT' };
+
+  const typeName = numericType === DISCORD_CHANNEL_TYPES.GUILD_ANNOUNCEMENT ? 'GUILD_ANNOUNCEMENT'
+    : numericType === DISCORD_CHANNEL_TYPES.GUILD_FORUM ? 'GUILD_FORUM'
+    : numericType === DISCORD_CHANNEL_TYPES.GUILD_MEDIA ? 'GUILD_MEDIA'
+    : stringType || 'GUILD_TEXT';
+
+  return {
+    id: String(id),
+    name: String(name).replace(/^#\s*/, ''),
+    type: typeName,
+    position: Number.isFinite(Number(channel.position)) ? Number(channel.position) : 0,
+  };
+}
+
+function getDiscordBotToken() {
+  return process.env.DISCORD_BOT_TOKEN || process.env.BOT_TOKEN || process.env.DISCORD_TOKEN || '';
+}
+
+async function requestDiscordGuildChannels(guildId) {
+  const token = getDiscordBotToken();
+  if (!token) {
+    const error = new Error('No Discord bot token is configured for channel lookup. Set DISCORD_BOT_TOKEN on the website service or expose /api/guilds/:guildId/channels from BOT_API_URL.');
+    error.statusCode = 503;
+    throw error;
+  }
+
+  const response = await fetch(`${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/channels`, {
+    headers: { authorization: `Bot ${token}` },
+  });
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const error = new Error(data?.message || `Discord channel API returned ${response.status}`);
+    error.statusCode = response.status;
+    throw error;
+  }
+
+  return Array.isArray(data) ? data : [];
+}
+
+function sortDashboardChannels(channels) {
+  return channels
+    .map(normalizeDiscordChannel)
+    .filter(Boolean)
+    .sort((a, b) => (a.position - b.position) || a.name.localeCompare(b.name));
 }
 
 async function getDashboardServerChannels(guildId) {
+  const errors = [];
+
   try {
     const data = await requestBotApi(`/api/guilds/${encodeURIComponent(guildId)}/channels`);
     const raw = Array.isArray(data?.channels) ? data.channels : (Array.isArray(data) ? data : []);
-    return raw.map(normalizeDiscordChannel).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
-  } catch {
-    return [];
+    const channels = sortDashboardChannels(raw);
+    if (channels.length) return { channels, source: 'bot-api', errors };
+  } catch (err) {
+    errors.push(`BOT_API_URL channel route: ${err.message || 'unavailable'}`);
   }
+
+  try {
+    const raw = await requestDiscordGuildChannels(guildId);
+    const channels = sortDashboardChannels(raw);
+    return { channels, source: 'discord-api', errors };
+  } catch (err) {
+    errors.push(`Discord channel API: ${err.message || 'unavailable'}`);
+  }
+
+  return { channels: [], source: null, errors };
 }
 
 function botGuildToDashboardServer(guild, session, manageableIds = new Set()) {
@@ -274,13 +348,26 @@ router.get('/dashboard/guilds', requireAuth, async (req, res) => {
 });
 
 router.get('/dashboard/servers/:guildId', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  const channels = await getDashboardServerChannels(req.params.guildId);
-  res.json({ ok: true, server: { ...req.dashboardServer, channels }, updatedAt: new Date().toISOString() });
+  const channelData = await getDashboardServerChannels(req.params.guildId);
+  res.json({
+    ok: true,
+    server: { ...req.dashboardServer, channels: channelData.channels, channelSource: channelData.source },
+    channelSource: channelData.source,
+    channelErrors: channelData.errors,
+    updatedAt: new Date().toISOString(),
+  });
 });
 
 router.get('/dashboard/servers/:guildId/channels', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  const channels = await getDashboardServerChannels(req.params.guildId);
-  res.json({ ok: true, channels, updatedAt: new Date().toISOString() });
+  const channelData = await getDashboardServerChannels(req.params.guildId);
+  const status = channelData.channels.length ? 200 : 502;
+  res.status(status).json({
+    ok: channelData.channels.length > 0,
+    channels: channelData.channels,
+    source: channelData.source,
+    errors: channelData.errors,
+    updatedAt: new Date().toISOString(),
+  });
 });
 
 router.get('/dashboard/servers/:guildId/image-access', requireAuth, requireManageableInstalledServer, async (req, res) => {

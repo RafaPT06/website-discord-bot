@@ -346,7 +346,7 @@ function channelSelectField(server, name, label, value, fallbackName = 'general'
   const channels = textChannels(server);
   const current = normalizeChannelValue(value || fallbackName);
   if (!channels.length) {
-    return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}" disabled><option>Channel list unavailable</option></select><small>Channel dropdowns need the bot channel API for this server.</small></label>`;
+    return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}" disabled><option>Channel list unavailable</option></select><small>No text channels were returned by the channel API for this server.</small></label>`;
   }
   const hasCurrent = channels.some((channel) => channel.id === String(value) || normalizeChannelValue(channel.name) === current);
   const options = channels.map((channel) => {
