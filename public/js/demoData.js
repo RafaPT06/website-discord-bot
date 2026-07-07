@@ -40,27 +40,11 @@ export const DEMO_DASHBOARD = Object.freeze({
 export const DEMO_CHANNELS = Object.freeze([
   { id: 'demo-ch-general', name: 'general', type: 'GUILD_TEXT' },
   { id: 'demo-ch-welcome', name: 'welcome', type: 'GUILD_TEXT' },
-  { id: 'demo-ch-goodbye', name: 'goodbye', type: 'GUILD_TEXT' },
   { id: 'demo-ch-level-up', name: 'level-up', type: 'GUILD_TEXT' },
   { id: 'demo-ch-logs', name: 'logs', type: 'GUILD_TEXT' },
   { id: 'demo-ch-mod-logs', name: 'mod-logs', type: 'GUILD_TEXT' },
   { id: 'demo-ch-media', name: 'media', type: 'GUILD_TEXT' },
 ]);
-
-
-export const DEMO_WELCOME_SETTINGS = Object.freeze({
-  ok: true,
-  settings: {
-    welcomeEnabled: true,
-    goodbyeEnabled: true,
-    welcomeChannelId: 'demo-ch-welcome',
-    goodbyeChannelId: 'demo-ch-goodbye',
-    welcomeMessage: 'WELCOME {user}\nTO\n{server}',
-    goodbyeMessage: 'Goodbye {user}. We hope to see you again soon.',
-    updatedAt: 'Demo data',
-  },
-  updatedAt: new Date().toISOString(),
-});
 
 export const DEMO_LEVELING = Object.freeze({
   rank: 3,

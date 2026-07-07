@@ -4,8 +4,6 @@ import {
   getImageAccess,
   addImageAccessUser,
   removeImageAccessUser,
-  getWelcomeSettings,
-  saveWelcomeSettings,
 } from './api.js';
 import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
@@ -24,7 +22,7 @@ const SETTINGS_STORAGE_KEY = 'meowzServerSettings';
 const DASHBOARD_PREFS_KEY = 'meowzDashboardPreferences';
 const VALID_THEMES = new Set(['dark', 'light']);
 const VALID_LANGUAGES = new Set(['en', 'pt', 'es', 'de', 'fr']);
-const VALID_SECTIONS = new Set(['overview', 'welcome', 'goodbye', 'leveling', 'ai', 'logs', 'moderation']);
+const VALID_SECTIONS = new Set(['overview', 'welcome', 'leveling', 'ai', 'logs', 'moderation']);
 let viewMode = localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner' ? 'owner' : 'user';
 
 function isDemoMode() { return isDemoRoute(); }
@@ -95,7 +93,7 @@ function serverIcon(server, className = 'dash-server-icon') {
   return `<span class="${className} ${className}-fallback">${initial(server?.name || 'M')}</span>`;
 }
 function sectionTitle(section) {
-  return ({ overview: 'Overview', welcome: 'Welcome Messages', goodbye: 'Goodbye Messages', leveling: 'Leveling System', ai: 'AI Image Access', logs: 'Logs', moderation: 'Moderation', settings: 'Settings' })[section] || 'Overview';
+  return ({ overview: 'Overview', welcome: 'Welcome Messages', leveling: 'Leveling System', ai: 'AI Image Access', logs: 'Logs', moderation: 'Moderation', settings: 'Settings' })[section] || 'Overview';
 }
 function sectionPath(server, section = 'overview') {
   const base = `${dashboardBase()}/server/${encodeURIComponent(server.id)}`;
@@ -147,7 +145,7 @@ function navLink(href, key, active, label) {
 function sidebarNav(server, active) {
   if (server) {
     const settings = [
-      ['overview', 'Overview'], ['welcome', 'Welcome Messages'], ['goodbye', 'Goodbye Messages'], ['leveling', 'Leveling System'], ['ai', 'AI Image Access'], ['logs', 'Logs'], ['moderation', 'Moderation'],
+      ['overview', 'Overview'], ['welcome', 'Welcome / Goodbye'], ['leveling', 'Leveling System'], ['ai', 'AI Image Access'], ['logs', 'Logs'], ['moderation', 'Moderation'],
     ].map(([key, label]) => navLink(sectionPath(server, key), key, active, label)).join('');
     const resources = `${navLink('/docs', 'docs', active, 'Documentation')}${navLink('/changelog', 'changelog', active, 'Changelog')}`;
     const account = navLink(settingsPath(), 'settings', active, 'Settings');
@@ -174,8 +172,7 @@ function ownerToggle() {
 function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwner = false) {
   const dashboardLinks = server ? [
     ['Overview', sectionPath(server)],
-    ['Welcome Messages', sectionPath(server, 'welcome')],
-    ['Goodbye Messages', sectionPath(server, 'goodbye')],
+    ['Welcome/Goodbye', sectionPath(server, 'welcome')],
     ['Leveling', sectionPath(server, 'leveling')],
     ['AI Image Access', sectionPath(server, 'ai')],
     ['Logs', sectionPath(server, 'logs')],
@@ -317,13 +314,13 @@ function pillRow(server) {
   return `<div class="dash-pills"><span>${escapeHtml(members)}</span><span>${escapeHtml(server.accessLabel || 'Manage Server')}</span><span>Bot Installed</span></div>`;
 }
 function serverHeader(server, active) {
-  const tabs = [['overview','Overview'],['welcome','Welcome Messages'],['goodbye','Goodbye Messages'],['leveling','Leveling'],['ai','AI Image Access'],['logs','Logs'],['moderation','Moderation']];
+  const tabs = [['overview','Overview'],['welcome','Welcome / Goodbye'],['leveling','Leveling'],['ai','AI Image Access'],['logs','Logs'],['moderation','Moderation']];
   return `<section class="dash-server-title">${serverIcon(server, 'dash-title-icon')}<div><span>Server Dashboard</span><h1>${escapeHtml(server.name)}</h1><p>Manage Meowz features for this server.</p>${pillRow(server)}</div></section><nav class="dash-tabs">${tabs.map(([key,label]) => `<a class="${key===active?'is-active':''}" href="${escapeHtml(sectionPath(server,key))}">${escapeHtml(label)}</a>`).join('')}</nav>`;
 }
 function infoRow(label, value) { return `<div class="dash-info-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`; }
 
 function overviewPage(server) {
-  return `${serverHeader(server,'overview')}<section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome Messages','Member join messages.'],['goodbye','Goodbye Messages','Member leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section>`;
+  return `${serverHeader(server,'overview')}<section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome / Goodbye','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section>`;
 }
 
 function switchField(name, checked, label, desc) { return `<label class="dash-switch"><input type="checkbox" name="${escapeHtml(name)}" ${checked ? 'checked' : ''}/><i></i><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(desc)}</small></span></label>`; }
@@ -356,41 +353,59 @@ function channelSelectField(server, name, label, value, fallbackName = 'general'
     const selected = channel.id === String(value) || normalizeChannelValue(channel.name) === current;
     return `<option value="${escapeHtml(channel.id)}" ${selected ? 'selected' : ''}>#${escapeHtml(channel.name)}</option>`;
   }).join('');
-  const customLabel = String(value || '').startsWith('#') ? String(value) : `#${String(value || '').replace(/^#\s*/, '')}`;
-  const custom = hasCurrent || !value ? '' : `<option value="${escapeHtml(String(value))}" selected>${escapeHtml(customLabel)}</option>`;
+  const custom = hasCurrent || !value ? '' : `<option value="${escapeHtml(String(value))}" selected>${escapeHtml(String(value))}</option>`;
   return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}">${custom}${options}</select></label>`;
 }
 function numberField(name, label, value, min=0) { return `<label class="dash-field"><span>${escapeHtml(label)}</span><input type="number" min="${Number(min)}" name="${escapeHtml(name)}" value="${escapeHtml(String(value ?? ''))}" /></label>`; }
 function textareaField(name, label, value, max=200) { return `<label class="dash-field"><span>${escapeHtml(label)}</span><textarea name="${escapeHtml(name)}" maxlength="${Number(max)}">${escapeHtml(value ?? '')}</textarea><small><b data-count-for="${escapeHtml(name)}">${String(value ?? '').length}</b>/${Number(max)}</small></label>`; }
-function variableButtons(target = 'welcomeMessage') { return `<div class="dash-variable-row"><span>Insert Variable</span><div>${['{user}','{server}','{memberCount}'].map(v => `<button type="button" data-insert-variable="${v}" data-variable-target="${escapeHtml(target)}">${v}</button>`).join('')}</div></div>`; }
+function variableButtons(target = 'welcomeMessage', label = 'Insert Variable') { return `<div class="dash-variable-row"><span>${escapeHtml(label)}</span><div>${['{user}','{server}','{memberCount}'].map(v => `<button type="button" data-insert-variable="${v}" data-insert-target="${escapeHtml(target)}">${v}</button>`).join('')}</div></div>`; }
 function saveBtn() { return `<button class="dash-save-btn" type="submit">Save Changes</button>`; }
 
-function normalizeWelcomeSettings(payload = {}) {
-  const settings = payload.settings || payload.welcomeSettings || payload || {};
-  return {
-    welcomeEnabled: settings.welcomeEnabled !== false,
-    goodbyeEnabled: settings.goodbyeEnabled !== false,
-    welcomeChannelId: settings.welcomeChannelId || settings.welcome_channel_id || 'demo-ch-welcome',
-    goodbyeChannelId: settings.goodbyeChannelId || settings.goodbye_channel_id || 'demo-ch-goodbye',
-    welcomeMessage: settings.welcomeMessage || settings.welcome_message || 'WELCOME {user}\nTO\n{server}',
-    goodbyeMessage: settings.goodbyeMessage || settings.goodbye_message || 'Goodbye {user}. We hope to see you again soon.',
-    style: settings.style || 'Custom Card (Modern)',
-    showMember: settings.showMember !== false,
-    showAvatar: settings.showAvatar !== false,
-  };
-}
-function welcomeSettingsFor(server) {
-  const apiSettings = normalizeWelcomeSettings(server.welcomeSettings || {});
-  const local = readSettings(server.id, 'welcome', {});
-  return { ...apiSettings, ...local };
-}
 function welcomePage(server) {
-  const s = welcomeSettingsFor(server);
-  return `${serverHeader(server,'welcome')}<form class="dash-designer" data-settings-form="welcome" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Welcome Messages</span><h2>Welcome Messages</h2><p>Customize how Meowz welcomes new members to ${escapeHtml(server.name)}.</p></div><b class="status ${s.welcomeEnabled?'enabled':''}">${s.welcomeEnabled?'Enabled':'Disabled'}</b></div>${switchField('welcomeEnabled',s.welcomeEnabled,'Enable welcome messages','Send a message when someone joins the server.')}<hr/>${channelSelectField(server,'welcomeChannelId','Welcome Channel',s.welcomeChannelId,'welcome')}<label class="dash-field"><span>Message Style</span><select name="style"><option ${s.style === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option><option ${s.style === 'Text only' ? 'selected' : ''}>Text only</option></select></label>${variableButtons('welcomeMessage')}${textareaField('welcomeMessage','Welcome Message',s.welcomeMessage,200)}<div class="dash-option-list">${switchField('showMember',s.showMember,'Show member number on the card','Display the member position in the server.')}${switchField('showAvatar',s.showAvatar,'Show avatar on the card','Display the member avatar on the welcome card.')}</div>${saveBtn()}</article>${welcomePreview(server,s)}</form>`;
-}
-function goodbyePage(server) {
-  const s = welcomeSettingsFor(server);
-  return `${serverHeader(server,'goodbye')}<form class="dash-designer" data-settings-form="goodbye" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Goodbye Messages</span><h2>Goodbye Messages</h2><p>Customize how Meowz says goodbye when members leave ${escapeHtml(server.name)}.</p></div><b class="status ${s.goodbyeEnabled?'enabled':''}">${s.goodbyeEnabled?'Enabled':'Disabled'}</b></div>${switchField('goodbyeEnabled',s.goodbyeEnabled,'Enable goodbye messages','Send a message when someone leaves the server.')}<hr/>${channelSelectField(server,'goodbyeChannelId','Goodbye Channel',s.goodbyeChannelId,'goodbye')}<label class="dash-field"><span>Message Style</span><select name="style"><option ${s.style === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option><option ${s.style === 'Text only' ? 'selected' : ''}>Text only</option></select></label>${variableButtons('goodbyeMessage')}${textareaField('goodbyeMessage','Goodbye Message',s.goodbyeMessage,200)}<div class="dash-option-list">${switchField('showMember',s.showMember,'Show member number on the card','Display the member position in the server.')}${switchField('showAvatar',s.showAvatar,'Show avatar on the card','Display the member avatar on the goodbye card.')}</div>${saveBtn()}</article>${goodbyePreview(server,s)}</form>`;
+  const s = readSettings(server.id, 'welcome', {
+    welcomeEnabled: true,
+    welcomeChannel: 'demo-ch-welcome',
+    welcomeStyle: 'Custom Card (Modern)',
+    welcomeMessage: 'WELCOME {user}\nTO\n{server}',
+    goodbyeEnabled: false,
+    goodbyeChannel: 'demo-ch-goodbye',
+    goodbyeStyle: 'Text only',
+    goodbyeMessage: 'Goodbye {user}. We hope to see you again soon.',
+    showMember: true,
+    showAvatar: true,
+  });
+
+  // Backwards compatibility with the old single welcome form keys.
+  s.welcomeEnabled = s.welcomeEnabled ?? s.enabled ?? true;
+  s.welcomeChannel = s.welcomeChannel ?? s.channel ?? 'demo-ch-welcome';
+  s.welcomeStyle = s.welcomeStyle ?? s.style ?? 'Custom Card (Modern)';
+  s.goodbyeMessage = s.goodbyeMessage ?? s.leaveMessage ?? 'Goodbye {user}. We hope to see you again soon.';
+
+  return `${serverHeader(server,'welcome')}<form class="dash-designer dash-designer-wide" data-settings-form="welcome" data-guild-id="${escapeHtml(server.id)}">
+    <article class="dash-card dash-form-card">
+      <div class="dash-card-head"><div><span>Welcome Messages</span><h2>Welcome Messages</h2><p>Configure the message Meowz sends when someone joins ${escapeHtml(server.name)}.</p></div><b class="status ${s.welcomeEnabled?'enabled':''}">${s.welcomeEnabled?'Enabled':'Disabled'}</b></div>
+      ${switchField('welcomeEnabled',s.welcomeEnabled,'Enable welcome messages','Send a message when someone joins the server.')}
+      <hr/>
+      ${channelSelectField(server,'welcomeChannel','Welcome Channel',s.welcomeChannel,'welcome')}
+      <label class="dash-field"><span>Welcome Style</span><select name="welcomeStyle"><option ${s.welcomeStyle === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option><option ${s.welcomeStyle === 'Text only' ? 'selected' : ''}>Text only</option></select></label>
+      ${variableButtons('welcomeMessage')}
+      ${textareaField('welcomeMessage','Welcome Message',s.welcomeMessage,200)}
+      <div class="dash-option-list">${switchField('showMember',s.showMember,'Show member number on the card','Display the member position in the server.')}${switchField('showAvatar',s.showAvatar,'Show avatar on the card','Display the member avatar on the welcome card.')}</div>
+    </article>
+
+    <article class="dash-card dash-form-card">
+      <div class="dash-card-head"><div><span>Goodbye Messages</span><h2>Goodbye Messages</h2><p>Configure the separate leave message and destination channel.</p></div><b class="status ${s.goodbyeEnabled?'enabled':''}">${s.goodbyeEnabled?'Enabled':'Disabled'}</b></div>
+      ${switchField('goodbyeEnabled',s.goodbyeEnabled,'Enable goodbye messages','Send a message when someone leaves the server.')}
+      <hr/>
+      ${channelSelectField(server,'goodbyeChannel','Goodbye Channel',s.goodbyeChannel,'bye')}
+      <label class="dash-field"><span>Goodbye Style</span><select name="goodbyeStyle"><option ${s.goodbyeStyle === 'Text only' ? 'selected' : ''}>Text only</option><option ${s.goodbyeStyle === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option></select></label>
+      ${variableButtons('goodbyeMessage')}
+      ${textareaField('goodbyeMessage','Goodbye Message',s.goodbyeMessage,200)}
+      <small class="preview-note">Welcome and goodbye channels are saved separately, matching the bot commands.</small>
+      ${saveBtn()}
+    </article>
+    ${welcomePreview(server,s)}
+  </form>`;
 }
 function renderTemplate(template, server) {
   return String(template || '').replaceAll('{user}', 'Rafa').replaceAll('{server}', server.name).replaceAll('{memberCount}', '11');
@@ -402,23 +417,23 @@ function welcomeCard(server, settings) {
   const third = text[2] || server.name;
   return `<div class="dash-discord-card"><div class="bg"></div>${settings.showMember ? `<div class="member">MEMBER #11</div>` : ''}${settings.showAvatar ? `<div class="big-avatar">R</div>` : ''}<div class="card-text"><strong>${escapeHtml(first.toUpperCase())}</strong><span>${escapeHtml(second.toUpperCase())}</span><b>${escapeHtml(third.toUpperCase())}</b></div></div>`;
 }
+function messagePreviewLine(server, template, fallback) {
+  return renderTemplate(template || fallback, server).split('\n').map(x => x.trim()).filter(Boolean).join(' ');
+}
+function selectedChannelName(server, channelId, fallback) {
+  const channels = textChannels(server);
+  const found = channels.find((channel) => channel.id === String(channelId) || normalizeChannelValue(channel.name) === normalizeChannelValue(channelId));
+  return `#${escapeHtml((found?.name || fallback || 'channel').replace(/^#\s*/, ''))}`;
+}
 function welcomePreview(server, settings) {
-  return `<article class="dash-card dash-preview" data-welcome-preview><span>Live Preview</span><h2>Discord preview</h2><p>This is how the welcome message will look in Discord.</p><div class="dash-discord-message"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>Today at 9:30 PM</small></div><p>Welcome <mark>@Rafa</mark> to <strong>${escapeHtml(server.name)}</strong>!</p>${welcomeCard(server, settings)}</div></div><small class="preview-note">This is a preview. The actual Discord message can look slightly different depending on device size.</small></article>`;
+  const welcomeText = messagePreviewLine(server, settings.welcomeMessage, `Welcome {user} to {server}!`);
+  const goodbyeText = messagePreviewLine(server, settings.goodbyeMessage, `Goodbye {user}.`);
+  return `<article class="dash-card dash-preview" data-welcome-preview><span>Live Preview</span><h2>Discord preview</h2><p>Welcome and goodbye are separate bot settings.</p><div class="dash-discord-stack"><div class="dash-discord-message"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.welcomeChannel, 'welcome')}</small></div><p>${escapeHtml(welcomeText)}</p>${settings.welcomeStyle === 'Text only' ? '' : welcomeCard(server, settings)}</div></div><div class="dash-discord-message goodbye"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.goodbyeChannel, 'bye')}</small></div><p>${escapeHtml(goodbyeText)}</p></div></div></div><small class="preview-note">This is a preview. The actual Discord message can look slightly different depending on device size.</small></article>`;
 }
-function goodbyePreview(server, settings) {
-  return `<article class="dash-card dash-preview" data-goodbye-preview><span>Live Preview</span><h2>Discord preview</h2><p>This is how the goodbye message will look in Discord.</p><div class="dash-discord-message"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>Today at 9:30 PM</small></div><p>${escapeHtml(renderTemplate(settings.goodbyeMessage, server))}</p><small class="preview-note">Goodbye messages use the dedicated goodbye channel and settings.</small></div></div></article>`;
-}
-function updateGoodbyePreview(server, form) {
-  const preview = document.querySelector('[data-goodbye-preview]');
-  if (!preview) return;
-  const settings = { ...welcomeSettingsFor(server), ...getFormValues(form) };
-  preview.outerHTML = goodbyePreview(server, settings);
-}
-
 function updateWelcomePreview(server, form) {
   const preview = document.querySelector('[data-welcome-preview]');
   if (!preview) return;
-  const settings = { ...welcomeSettingsFor(server), ...getFormValues(form) };
+  const settings = getFormValues(form);
   preview.outerHTML = welcomePreview(server, settings);
 }
 
@@ -495,33 +510,22 @@ function getFormValues(form) {
   form.querySelectorAll('input[type="checkbox"]').forEach(input => { values[input.name] = input.checked; });
   return values;
 }
-function buildWelcomePayload(server) {
-  const settings = welcomeSettingsFor(server);
-  return {
-    welcomeEnabled: Boolean(settings.welcomeEnabled),
-    goodbyeEnabled: Boolean(settings.goodbyeEnabled),
-    welcomeChannelId: settings.welcomeChannelId || null,
-    goodbyeChannelId: settings.goodbyeChannelId || null,
-    welcomeMessage: settings.welcomeMessage || '',
-    goodbyeMessage: settings.goodbyeMessage || '',
-  };
-}
-
 function attachSettingsForm(server, section) {
   const form = document.querySelector(`[data-settings-form="${section}"]`);
   if (!form) return;
-  form.addEventListener('input', () => {
+  const refreshFormPreview = () => {
     form.querySelectorAll('textarea[maxlength]').forEach((textarea) => {
       const counter = form.querySelector(`[data-count-for="${textarea.name}"]`);
       if (counter) counter.textContent = textarea.value.length;
     });
     if (section === 'welcome') updateWelcomePreview(server, form);
-    if (section === 'goodbye') updateGoodbyePreview(server, form);
-  });
+  };
+  form.addEventListener('input', refreshFormPreview);
+  form.addEventListener('change', refreshFormPreview);
   form.querySelectorAll('[data-insert-variable]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const targetName = btn.dataset.variableTarget || (section === 'goodbye' ? 'goodbyeMessage' : 'welcomeMessage');
-      const textarea = form.querySelector(`textarea[name="${targetName}"]`);
+      const target = btn.dataset.insertTarget || 'welcomeMessage';
+      const textarea = form.querySelector(`textarea[name="${CSS.escape(target)}"]`);
       if (!textarea) return;
       const v = btn.dataset.insertVariable || '';
       const start = textarea.selectionStart || textarea.value.length;
@@ -536,17 +540,7 @@ function attachSettingsForm(server, section) {
     if (isDemoMode()) { readOnlyDemoToast(); return; }
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Saving...';
-    try {
-      const values = getFormValues(form);
-      if (section === 'welcome' || section === 'goodbye') {
-        writeSettings(server.id, 'welcome', values);
-        server.welcomeSettings = { settings: buildWelcomePayload(server) };
-        await saveWelcomeSettings(server.id, buildWelcomePayload(server));
-      } else {
-        writeSettings(server.id, section, values);
-      }
-      showStatusToast('success', `${sectionTitle(section)} saved`, 'Your settings were saved.');
-    }
+    try { writeSettings(server.id, section, getFormValues(form)); showStatusToast('success', `${sectionTitle(section)} saved`, 'Your settings were saved.'); }
     catch (err) { showStatusToast('error', 'Save failed', err.message || 'Could not save settings.'); }
     finally { setTimeout(() => { btn.disabled = false; btn.textContent = 'Save Changes'; }, 500); }
   });
@@ -621,7 +615,6 @@ async function renderSettingsPage() {
 function serverContent(server, section) {
   const active = VALID_SECTIONS.has(section) ? section : 'overview';
   if (active === 'welcome') return welcomePage(server);
-  if (active === 'goodbye') return goodbyePage(server);
   if (active === 'leveling') return levelingPage(server);
   if (active === 'ai') return aiPage(server);
   if (active === 'logs') return logsPage(server);
@@ -637,10 +630,6 @@ async function renderServerPage(id, section = 'overview') {
   try {
     const payload = await getDashboardServer(id);
     const server = payload.server;
-    if (active === 'welcome' || active === 'goodbye') {
-      try { server.welcomeSettings = await getWelcomeSettings(id); }
-      catch (err) { server.welcomeSettingsError = err.message || 'Could not load welcome settings.'; }
-    }
     document.title = `${server.name} — ${sectionTitle(active)} — Meowz`;
     els.detailContent.innerHTML = shell({ server, active: sectionTitle(active), section: active, content: serverContent(server, active) });
     wireShell(els.detailContent);

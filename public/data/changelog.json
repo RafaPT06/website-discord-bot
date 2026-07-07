@@ -5,15 +5,15 @@
     "changes": [
       {
         "type": "Improved",
-        "text": "Split server welcome and goodbye configuration into separate dashboard tabs so each feature has its own enable toggle, channel dropdown and message editor."
-      },
-      {
-        "type": "Backend",
-        "text": "Added website proxy routes for loading and saving welcome/goodbye settings through the bot API instead of only saving preview data locally."
+        "text": "Split the server Welcome Messages tab into separate welcome and goodbye settings with independent enable toggles, channel dropdowns and message fields."
       },
       {
         "type": "Improved",
-        "text": "Made the global mobile menu more compact with smaller spacing, a narrower drawer and a lighter backdrop blur."
+        "text": "The Discord preview now shows both join and leave messages with their selected channels so they are no longer treated as one shared setting."
+      },
+      {
+        "type": "UI",
+        "text": "Reduced the mobile navigation drawer size with tighter spacing and a right-side compact layout for easier one-handed use."
       }
     ]
   },

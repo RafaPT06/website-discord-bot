@@ -4545,69 +4545,83 @@ body.dashboard-signed-out .dash-top-actions .dash-owner-toggle {
   }
 }
 
-/* ===== Compact mobile global menu + welcome/goodbye polish 2026-07-07 ===== */
-@media (max-width: 720px) {
-  .nav[data-global-navbar] .nav-links {
-    top: 88px !important;
-    left: auto !important;
-    right: 16px !important;
-    width: min(320px, calc(100vw - 32px)) !important;
-    max-height: calc(100dvh - 106px) !important;
-    gap: 8px !important;
-    padding: 14px !important;
-    border-radius: 22px !important;
-  }
+/* ===== Welcome/Goodbye split + compact mobile drawer ===== */
+.dash-designer-wide {
+  align-items: start;
+}
+.dash-discord-stack {
+  display: grid;
+  gap: 14px;
+}
+.dash-discord-message.goodbye {
+  opacity: .92;
+}
+.dash-discord-message.goodbye p {
+  margin: 0;
+}
 
+@media (max-width: 720px) {
+  .nav[data-global-navbar] {
+    padding: 12px 14px !important;
+    border-radius: 24px !important;
+  }
+  .nav[data-global-navbar] .brand {
+    font-size: 1.35rem !important;
+    gap: 12px !important;
+  }
+  .nav[data-global-navbar] .brand-icon {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 16px !important;
+    font-size: 1.15rem !important;
+  }
+  .nav[data-global-navbar] .mobile-menu-button {
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 16px !important;
+  }
+  .nav[data-global-navbar] .nav-links {
+    left: auto !important;
+    right: 14px !important;
+    top: 92px !important;
+    width: min(310px, calc(100vw - 28px)) !important;
+    max-height: calc(100dvh - 110px) !important;
+    padding: 14px !important;
+    gap: 8px !important;
+    border-radius: 22px !important;
+    transform: translateX(18px) scale(.98) !important;
+  }
+  .nav[data-global-navbar] .nav-links.is-open {
+    transform: translateX(0) scale(1) !important;
+  }
   .nav[data-global-navbar] .nav-links a,
   .nav[data-global-navbar] .auth-area > a,
   .nav[data-global-navbar] .auth-loading {
-    min-height: 46px !important;
-    padding: 11px 13px !important;
+    min-height: 44px !important;
+    padding: 10px 12px !important;
     border-radius: 14px !important;
-    font-size: .94rem !important;
+    font-size: .95rem !important;
   }
-
-  .nav[data-global-navbar] .auth-area,
-  .nav[data-global-navbar] .mobile-account-panel {
+  .nav[data-global-navbar] .auth-area {
     gap: 8px !important;
   }
-
-  .nav[data-global-navbar] .mobile-account-panel {
-    padding: 10px !important;
-    border-radius: 16px !important;
-    background: rgba(255,255,255,.045) !important;
-    border: 1px solid var(--border) !important;
+  .mobile-account-panel {
+    gap: 8px !important;
+    padding-top: 8px !important;
+    margin-top: 4px !important;
+    border-top: 1px solid var(--border) !important;
   }
-
-  .nav[data-global-navbar] .mobile-account-header {
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-    min-height: 0 !important;
-    padding: 0 2px 8px !important;
+  .mobile-account-header {
+    min-height: 44px !important;
+    padding: 8px 10px !important;
+    border-radius: 14px !important;
   }
-
-  .nav[data-global-navbar] .mobile-account-avatar {
-    width: 34px !important;
-    height: 34px !important;
+  .mobile-account-avatar {
+    width: 38px !important;
+    height: 38px !important;
     border-radius: 12px !important;
-    font-size: .9rem !important;
   }
-
-  .nav[data-global-navbar] .mobile-account-header strong,
-  .nav[data-global-navbar] .mobile-account-header span {
-    line-height: 1.15 !important;
-  }
-
-  .nav[data-global-navbar] .mobile-account-header strong { font-size: .95rem !important; }
-  .nav[data-global-navbar] .mobile-account-header span { font-size: .78rem !important; opacity: .72 !important; }
-
-  .nav[data-global-navbar] .mobile-account-panel .logout-link {
-    min-height: 42px !important;
-    padding: 10px 12px !important;
-  }
-
-  body.menu-open::after {
-    backdrop-filter: blur(5px) !important;
+  .mobile-account-header span {
+    font-size: .82rem !important;
   }
 }
