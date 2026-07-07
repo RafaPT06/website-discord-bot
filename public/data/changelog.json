@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.10.1",
+    "date": "2026-07-07",
+    "changes": [
+      {
+        "type": "Fixed",
+        "text": "Converted the mobile menu into a true fixed right-side overlay drawer so opening it no longer compresses the dashboard content."
+      },
+      {
+        "type": "Improved",
+        "text": "Reduced mobile navbar, hamburger, server header, tabs and save button density for a cleaner dashboard experience."
+      },
+      {
+        "type": "Fixed",
+        "text": "Aligned status badges and locked page width while the drawer is open to prevent horizontal layout shifting."
+      }
+    ]
+  },
+  {
     "version": "v1.10.0",
     "date": "2026-07-07",
     "changes": [
