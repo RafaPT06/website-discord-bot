@@ -37,6 +37,15 @@ export const DEMO_DASHBOARD = Object.freeze({
   ],
 });
 
+export const DEMO_CHANNELS = Object.freeze([
+  { id: 'demo-ch-general', name: 'general', type: 'GUILD_TEXT' },
+  { id: 'demo-ch-welcome', name: 'welcome', type: 'GUILD_TEXT' },
+  { id: 'demo-ch-level-up', name: 'level-up', type: 'GUILD_TEXT' },
+  { id: 'demo-ch-logs', name: 'logs', type: 'GUILD_TEXT' },
+  { id: 'demo-ch-mod-logs', name: 'mod-logs', type: 'GUILD_TEXT' },
+  { id: 'demo-ch-media', name: 'media', type: 'GUILD_TEXT' },
+]);
+
 export const DEMO_LEVELING = Object.freeze({
   rank: 3,
   level: 24,
@@ -64,5 +73,5 @@ export function isDemoRoute(pathname = window.location.pathname) {
 
 export function demoServerById(id) {
   const server = DEMO_DASHBOARD.installed.find((guild) => guild.id === id) || DEMO_DASHBOARD.installed[0];
-  return { ...server, manageUrl: `/demo/server/${server.id}`, demo: true };
+  return { ...server, manageUrl: `/demo/server/${server.id}`, channels: DEMO_CHANNELS.map((channel) => ({ ...channel })), demo: true };
 }

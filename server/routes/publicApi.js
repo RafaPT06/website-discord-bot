@@ -153,6 +153,28 @@ async function getDashboardGuildData(session, options = {}) {
   return { installed, available, botGuilds, manageable, isOwner: isBotOwner(session), ownerMode };
 }
 
+
+function normalizeDiscordChannel(channel) {
+  if (!channel) return null;
+  const type = String(channel.type ?? channel.channelType ?? '').toUpperCase();
+  const isText = !type || type === '0' || type === 'GUILD_TEXT' || type === 'TEXT' || type === '5' || type === 'GUILD_ANNOUNCEMENT' || type === 'ANNOUNCEMENT';
+  if (!isText) return null;
+  const id = channel.id || channel.channelId;
+  const name = channel.name || channel.label;
+  if (!id || !name) return null;
+  return { id: String(id), name: String(name), type: type || 'GUILD_TEXT' };
+}
+
+async function getDashboardServerChannels(guildId) {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(guildId)}/channels`);
+    const raw = Array.isArray(data?.channels) ? data.channels : (Array.isArray(data) ? data : []);
+    return raw.map(normalizeDiscordChannel).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+  } catch {
+    return [];
+  }
+}
+
 function botGuildToDashboardServer(guild, session, manageableIds = new Set()) {
   return {
     id: guild.id,
@@ -251,8 +273,14 @@ router.get('/dashboard/guilds', requireAuth, async (req, res) => {
   }
 });
 
-router.get('/dashboard/servers/:guildId', requireAuth, requireManageableInstalledServer, (req, res) => {
-  res.json({ ok: true, server: req.dashboardServer, updatedAt: new Date().toISOString() });
+router.get('/dashboard/servers/:guildId', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  const channels = await getDashboardServerChannels(req.params.guildId);
+  res.json({ ok: true, server: { ...req.dashboardServer, channels }, updatedAt: new Date().toISOString() });
+});
+
+router.get('/dashboard/servers/:guildId/channels', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  const channels = await getDashboardServerChannels(req.params.guildId);
+  res.json({ ok: true, channels, updatedAt: new Date().toISOString() });
 });
 
 router.get('/dashboard/servers/:guildId/image-access', requireAuth, requireManageableInstalledServer, async (req, res) => {

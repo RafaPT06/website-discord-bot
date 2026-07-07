@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.9.5",
+    "date": "2026-07-07",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Server dashboard channel settings now use Discord channel dropdowns instead of manual text inputs."
+      },
+      {
+        "type": "Improved",
+        "text": "Welcome, leveling, logs and moderation tabs share the same channel selector component with demo channels in preview mode."
+      },
+      {
+        "type": "Backend",
+        "text": "Dashboard server responses can now include real text channels from the bot API while demo mode stays fake-data only and read-only."
+      }
+    ]
+  },
+  {
     "version": "v1.9.4",
     "date": "2026-07-06",
     "changes": [
