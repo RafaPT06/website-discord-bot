@@ -1,5 +1,23 @@
 [
   {
+    "version": "v1.9.7",
+    "date": "2026-07-07",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Split server welcome and goodbye configuration into separate dashboard tabs so each feature has its own enable toggle, channel dropdown and message editor."
+      },
+      {
+        "type": "Backend",
+        "text": "Added website proxy routes for loading and saving welcome/goodbye settings through the bot API instead of only saving preview data locally."
+      },
+      {
+        "type": "Improved",
+        "text": "Made the global mobile menu more compact with smaller spacing, a narrower drawer and a lighter backdrop blur."
+      }
+    ]
+  },
+  {
     "version": "v1.9.6",
     "date": "2026-07-07",
     "changes": [

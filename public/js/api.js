@@ -1,4 +1,4 @@
-import { DEMO_BOT_STATS, DEMO_DASHBOARD, DEMO_IMAGE_ACCESS, demoServerById, isDemoRoute } from './demoData.js';
+import { DEMO_BOT_STATS, DEMO_DASHBOARD, DEMO_IMAGE_ACCESS, DEMO_WELCOME_SETTINGS, demoServerById, isDemoRoute } from './demoData.js';
 
 const memoryCache = new Map();
 
@@ -50,6 +50,23 @@ export function getDashboardGuilds(mode = 'user') {
 export function getDashboardServer(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ok: true, server: demoServerById(guildId), updatedAt: new Date().toISOString(), demo: true });
   return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}`, { cacheKey: `dashboard-server:${guildId}`, cacheMs: 10000 });
+}
+
+
+export function getWelcomeSettings(guildId) {
+  if (isDemoRoute()) return Promise.resolve({ ...DEMO_WELCOME_SETTINGS, demo: true });
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/welcome`, { cacheKey: `welcome-settings:${guildId}`, cacheMs: 8000 });
+}
+
+export async function saveWelcomeSettings(guildId, settings) {
+  if (isDemoRoute()) throw new Error('Demo mode is read-only. Real changes are disabled in preview mode.');
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/welcome`, {
+    method: 'PUT',
+    body: JSON.stringify(settings || {}),
+  });
+  memoryCache.delete(`welcome-settings:${guildId}`);
+  memoryCache.delete(`dashboard-server:${guildId}`);
+  return data;
 }
 
 export function getImageAccess(guildId) {

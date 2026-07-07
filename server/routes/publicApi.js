@@ -370,6 +370,36 @@ router.get('/dashboard/servers/:guildId/channels', requireAuth, requireManageabl
   });
 });
 
+
+router.get('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/welcome`);
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load welcome/goodbye settings.' });
+  }
+});
+
+router.put('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const body = req.body || {};
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/welcome`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        welcomeEnabled: Boolean(body.welcomeEnabled),
+        goodbyeEnabled: Boolean(body.goodbyeEnabled),
+        welcomeChannelId: body.welcomeChannelId || null,
+        goodbyeChannelId: body.goodbyeChannelId || null,
+        welcomeMessage: body.welcomeMessage || '',
+        goodbyeMessage: body.goodbyeMessage || '',
+      }),
+    });
+    res.json(data);
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save welcome/goodbye settings.' });
+  }
+});
+
 router.get('/dashboard/servers/:guildId/image-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
   try {
     const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/image-access`);

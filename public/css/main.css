@@ -4544,3 +4544,70 @@ body.dashboard-signed-out .dash-top-actions .dash-owner-toggle {
     align-items: start;
   }
 }
+
+/* ===== Compact mobile global menu + welcome/goodbye polish 2026-07-07 ===== */
+@media (max-width: 720px) {
+  .nav[data-global-navbar] .nav-links {
+    top: 88px !important;
+    left: auto !important;
+    right: 16px !important;
+    width: min(320px, calc(100vw - 32px)) !important;
+    max-height: calc(100dvh - 106px) !important;
+    gap: 8px !important;
+    padding: 14px !important;
+    border-radius: 22px !important;
+  }
+
+  .nav[data-global-navbar] .nav-links a,
+  .nav[data-global-navbar] .auth-area > a,
+  .nav[data-global-navbar] .auth-loading {
+    min-height: 46px !important;
+    padding: 11px 13px !important;
+    border-radius: 14px !important;
+    font-size: .94rem !important;
+  }
+
+  .nav[data-global-navbar] .auth-area,
+  .nav[data-global-navbar] .mobile-account-panel {
+    gap: 8px !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-panel {
+    padding: 10px !important;
+    border-radius: 16px !important;
+    background: rgba(255,255,255,.045) !important;
+    border: 1px solid var(--border) !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-height: 0 !important;
+    padding: 0 2px 8px !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-avatar {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 12px !important;
+    font-size: .9rem !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-header strong,
+  .nav[data-global-navbar] .mobile-account-header span {
+    line-height: 1.15 !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-header strong { font-size: .95rem !important; }
+  .nav[data-global-navbar] .mobile-account-header span { font-size: .78rem !important; opacity: .72 !important; }
+
+  .nav[data-global-navbar] .mobile-account-panel .logout-link {
+    min-height: 42px !important;
+    padding: 10px 12px !important;
+  }
+
+  body.menu-open::after {
+    backdrop-filter: blur(5px) !important;
+  }
+}
