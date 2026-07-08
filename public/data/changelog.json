@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-08",
+    "title": "Responsive Tailwind-style mobile menu rework",
+    "items": [
+      "Rebuilt the mobile navigation drawer as a flexible slide-over with compact rows, clear menu/account hierarchy and no giant active cards.",
+      "Improved mobile drawer behavior with responsive width, safe-area-aware spacing, dimmed page overlay and a clearer close control.",
+      "Fixed changelog rendering so entries using title/items display properly and empty date-only cards are hidden."
+    ]
+  },
+  {
+    "date": "2026-07-08",
     "title": "Mobile drawer and loading polish",
     "items": [
       "Refined the mobile navigation drawer with compact responsive rows, a clearer active state and a bottom anchored account section.",
