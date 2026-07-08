@@ -219,6 +219,117 @@ async function requestDiscordGuildChannels(guildId) {
   return Array.isArray(data) ? data : [];
 }
 
+
+async function requestDiscordGuildRoles(guildId) {
+  const token = getDiscordBotToken();
+  if (!token) {
+    const error = new Error('No Discord bot token is configured for role lookup.');
+    error.statusCode = 503;
+    throw error;
+  }
+  const response = await fetch(`${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/roles`, {
+    headers: { authorization: `Bot ${token}` },
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = new Error(data?.message || `Discord role API returned ${response.status}`);
+    error.statusCode = response.status;
+    throw error;
+  }
+  return Array.isArray(data) ? data : [];
+}
+
+function normalizeDiscordRole(role) {
+  if (!role?.id || !role?.name || role.name === '@everyone') return null;
+  return {
+    id: String(role.id),
+    name: String(role.name),
+    color: role.color || 0,
+    position: Number.isFinite(Number(role.position)) ? Number(role.position) : 0,
+    managed: Boolean(role.managed),
+    editable: !role.managed,
+  };
+}
+
+function sortDashboardRoles(roles) {
+  return roles
+    .map(normalizeDiscordRole)
+    .filter(Boolean)
+    .sort((a, b) => (b.position - a.position) || a.name.localeCompare(b.name));
+}
+
+async function getDashboardServerRoles(guildId) {
+  const errors = [];
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(guildId)}/roles`);
+    const raw = Array.isArray(data?.roles) ? data.roles : (Array.isArray(data) ? data : []);
+    const roles = sortDashboardRoles(raw);
+    return { roles, source: 'bot-api', errors };
+  } catch (err) {
+    errors.push(`BOT_API_URL role route: ${err.message || 'unavailable'}`);
+  }
+  try {
+    const raw = await requestDiscordGuildRoles(guildId);
+    return { roles: sortDashboardRoles(raw), source: 'discord-api', errors };
+  } catch (err) {
+    errors.push(`Discord role API: ${err.message || 'unavailable'}`);
+  }
+  return { roles: [], source: null, errors };
+}
+
+async function requestDiscordGuildUserSearch(guildId, query, limit = 8) {
+  const token = getDiscordBotToken();
+  if (!token) {
+    const error = new Error('No Discord bot token is configured for user search.');
+    error.statusCode = 503;
+    throw error;
+  }
+  const trimmed = String(query || '').trim();
+  if (!trimmed) return [];
+  const looksLikeId = /^\d{15,22}$/.test(trimmed);
+  const endpoint = looksLikeId
+    ? `${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/members/${encodeURIComponent(trimmed)}`
+    : `${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/members/search?query=${encodeURIComponent(trimmed)}&limit=${encodeURIComponent(Math.max(1, Math.min(25, Number(limit) || 8)))}`;
+  const response = await fetch(endpoint, { headers: { authorization: `Bot ${token}` } });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = new Error(data?.message || `Discord member API returned ${response.status}`);
+    error.statusCode = response.status;
+    throw error;
+  }
+  return Array.isArray(data) ? data : (data ? [data] : []);
+}
+
+function normalizeMemberSearchResult(member) {
+  const user = member?.user || member;
+  if (!user?.id) return null;
+  const avatar = user.avatar
+    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${String(user.avatar).startsWith('a_') ? 'gif' : 'png'}?size=96`
+    : null;
+  return {
+    userId: String(user.id),
+    username: user.username ? `@${user.username}` : null,
+    displayName: member?.nick || user.global_name || user.globalName || user.username || String(user.id),
+    avatarUrl: avatar,
+  };
+}
+
+function fallbackAccessPayload(req, kind = 'moderation') {
+  const ownerId = getOwnerId();
+  const defaultUsers = [];
+  if (ownerId) defaultUsers.push({ userId: ownerId, displayName: 'Bot Owner', username: null, source: 'bot_owner' });
+  if (req.sessionData?.user?.id) {
+    defaultUsers.push({
+      userId: req.sessionData.user.id,
+      displayName: req.sessionData.user.globalName || req.sessionData.user.username || 'Current Manager',
+      username: req.sessionData.user.username ? `@${req.sessionData.user.username}` : null,
+      avatarUrl: null,
+      source: 'manage_server',
+    });
+  }
+  return { ok: true, defaultUsers, users: [], allowedUsers: [], fallback: true, kind };
+}
+
 function sortDashboardChannels(channels) {
   return channels
     .map(normalizeDiscordChannel)
@@ -382,7 +493,14 @@ async function proxyBotGuildSetting(req, res, botPath, options = {}) {
 
 
 router.get('/dashboard/servers/:guildId/roles', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/roles`);
+  const roleData = await getDashboardServerRoles(req.params.guildId);
+  res.status(roleData.roles.length ? 200 : 200).json({
+    ok: true,
+    roles: roleData.roles,
+    source: roleData.source,
+    errors: roleData.errors,
+    updatedAt: new Date().toISOString(),
+  });
 });
 
 router.get('/dashboard/servers/:guildId/welcome', requireAuth, requireManageableInstalledServer, async (req, res) => {
@@ -402,7 +520,13 @@ router.put('/dashboard/servers/:guildId/leveling', requireAuth, requireManageabl
 });
 
 router.get('/dashboard/servers/:guildId/level-rewards', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/level-rewards`);
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/level-rewards`);
+    res.json(data);
+  } catch (err) {
+    if (err.statusCode === 404) return res.json({ ok: true, rewards: [], fallback: true, warning: 'Level reward API is not available yet.' });
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not reach the bot API.' });
+  }
 });
 
 router.post('/dashboard/servers/:guildId/level-rewards', requireAuth, requireManageableInstalledServer, async (req, res) => {
@@ -432,12 +556,29 @@ router.put('/dashboard/servers/:guildId/moderation', requireAuth, requireManagea
 
 router.get('/dashboard/servers/:guildId/users/search', requireAuth, requireManageableInstalledServer, async (req, res) => {
   const query = String(req.query.q || req.query.query || '').trim();
-  const limit = String(req.query.limit || '10');
-  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/users/search?q=${encodeURIComponent(query)}&limit=${encodeURIComponent(limit)}`);
+  const limit = Math.max(1, Math.min(25, Number(req.query.limit || '10') || 10));
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/users/search?q=${encodeURIComponent(query)}&limit=${encodeURIComponent(limit)}`);
+    return res.json(data);
+  } catch (err) {
+    try {
+      const members = await requestDiscordGuildUserSearch(req.params.guildId, query, limit);
+      const users = members.map(normalizeMemberSearchResult).filter(Boolean);
+      return res.json({ ok: true, users, source: 'discord-api', fallback: true });
+    } catch (fallbackErr) {
+      return res.status(fallbackErr.statusCode || err.statusCode || 502).json({ ok: false, error: fallbackErr.message || err.message || 'Could not search users.' });
+    }
+  }
 });
 
 router.get('/dashboard/servers/:guildId/moderation-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation-access`);
+  try {
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation-access`);
+    res.json(data);
+  } catch (err) {
+    if (err.statusCode === 404) return res.json(fallbackAccessPayload(req, 'moderation'));
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load moderation access.' });
+  }
 });
 
 router.post('/dashboard/servers/:guildId/moderation-access', requireAuth, requireManageableInstalledServer, async (req, res) => {

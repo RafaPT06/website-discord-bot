@@ -1,5 +1,27 @@
 [
   {
+    "version": "v1.15.0",
+    "date": "2026-07-08",
+    "changes": [
+      {
+        "type": "Improved",
+        "text": "Remodeled the mobile drawer into one compact reusable navigation component with consistent active rows and bottom account controls."
+      },
+      {
+        "type": "Fixed",
+        "text": "Removed legacy dashboard mobile drawer behavior so the global drawer no longer blurs or competes with the page layout."
+      },
+      {
+        "type": "Improved",
+        "text": "Added safer website fallbacks for guild roles, level rewards, user search, and moderation bypass data when newer bot API routes are not available yet."
+      },
+      {
+        "type": "Improved",
+        "text": "Tightened mobile dashboard density for headers, tabs, cards, forms, selects, and footer spacing."
+      }
+    ]
+  },
+  {
     "date": "2026-07-08",
     "title": "Component structure and mobile drawer refactor",
     "items": [

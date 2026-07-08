@@ -17,8 +17,18 @@ function closeMobileMenu() {
   const { toggle, links } = getNavEls();
   toggle?.classList.remove('is-open');
   links?.classList.remove('is-open');
+  links?.setAttribute('aria-hidden', 'true');
   toggle?.setAttribute('aria-expanded', 'false');
   document.body.classList.remove('menu-open');
+}
+
+function openMobileMenu() {
+  const { toggle, links } = getNavEls();
+  toggle?.classList.add('is-open');
+  links?.classList.add('is-open');
+  links?.setAttribute('aria-hidden', 'false');
+  toggle?.setAttribute('aria-expanded', 'true');
+  document.body.classList.add('menu-open');
 }
 
 function setActiveRoute() {
@@ -32,10 +42,8 @@ export function initNavigation() {
   setActiveRoute();
   const { toggle, links } = getNavEls();
   toggle?.addEventListener('click', () => {
-    const isOpen = links?.classList.toggle('is-open');
-    toggle.classList.toggle('is-open', Boolean(isOpen));
-    toggle.setAttribute('aria-expanded', String(Boolean(isOpen)));
-    document.body.classList.toggle('menu-open', Boolean(isOpen));
+    if (links?.classList.contains('is-open')) closeMobileMenu();
+    else openMobileMenu();
   });
 
   document.querySelectorAll('[data-nav-link]').forEach((link) => link.addEventListener('click', closeMobileMenu));
