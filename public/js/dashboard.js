@@ -34,6 +34,8 @@ const VALID_THEMES = new Set(['dark', 'light']);
 const VALID_LANGUAGES = new Set(['en', 'pt', 'es', 'de', 'fr']);
 const VALID_SECTIONS = new Set(['overview', 'welcome', 'leveling', 'ai', 'logs', 'moderation']);
 let viewMode = localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner' ? 'owner' : 'user';
+const serverPageCache = new Map();
+const tabDataCache = new Map();
 
 function isDemoMode() { return isDemoRoute(); }
 function dashboardBase() { return isDemoMode() ? '/demo/dashboard' : '/dashboard'; }
@@ -64,13 +66,20 @@ function applyTheme(theme = readDashboardPrefs().theme) {
 }
 applyTheme();
 
+function hashSection(defaultSection = 'overview') {
+  const raw = String(window.location.hash || '').replace(/^#/, '').trim();
+  return VALID_SECTIONS.has(raw) ? raw : defaultSection;
+}
 function routeInfo() {
   if (isDemoMode()) {
     const path = window.location.pathname;
     if (/^\/demo\/settings\/?$/.test(path)) return { settings: true };
     if (/^\/demo(?:\/dashboard)?\/?$/.test(path)) return { home: true };
     const demoServerMatch = path.match(/^\/demo\/server\/([^/]+)(?:\/([^/]+))?\/?$/);
-    if (demoServerMatch) return { id: decodeURIComponent(demoServerMatch[1]), section: decodeURIComponent(demoServerMatch[2] || 'overview') };
+    if (demoServerMatch) {
+      const fallback = decodeURIComponent(demoServerMatch[2] || 'overview');
+      return { id: decodeURIComponent(demoServerMatch[1]), section: hashSection(VALID_SECTIONS.has(fallback) ? fallback : 'overview') };
+    }
     return { home: true };
   }
   const base = 'dashboard';
@@ -78,7 +87,9 @@ function routeInfo() {
   if (settingsRe.test(window.location.pathname)) return { settings: true };
   const serverRe = new RegExp(`^/${base}/server/([^/]+)(?:/([^/]+))?/?$`);
   const match = window.location.pathname.match(serverRe);
-  return match ? { id: decodeURIComponent(match[1]), section: decodeURIComponent(match[2] || 'overview') } : null;
+  if (!match) return null;
+  const fallback = decodeURIComponent(match[2] || 'overview');
+  return { id: decodeURIComponent(match[1]), section: hashSection(VALID_SECTIONS.has(fallback) ? fallback : 'overview') };
 }
 
 function activeUser() { return getActiveUser?.() || null; }
@@ -107,7 +118,7 @@ function sectionTitle(section) {
 }
 function sectionPath(server, section = 'overview') {
   const base = `${dashboardBase()}/server/${encodeURIComponent(server.id)}`;
-  return section === 'overview' ? base : `${base}/${encodeURIComponent(section)}`;
+  return `${base}#${encodeURIComponent(section || 'overview')}`;
 }
 function readSettings(guildId, section, defaults = {}, server = null) {
   const live = server?.settings?.[section];
@@ -816,6 +827,8 @@ async function renderSettingsPage() {
   }
 }
 async function hydrateServerForSection(server, section) {
+  const cacheKey = `${server.id}:${section}`;
+  if (tabDataCache.has(cacheKey)) return { ...server, ...tabDataCache.get(cacheKey), settings: { ...(server.settings || {}), ...(tabDataCache.get(cacheKey).settings || {}) } };
   const copy = { ...server, settings: { ...(server.settings || {}) } };
   if (['welcome', 'leveling', 'logs', 'moderation'].includes(section)) {
     try {
@@ -834,6 +847,7 @@ async function hydrateServerForSection(server, section) {
       showStatusToast('error', 'Role data unavailable', err.message || 'Reward role editing may be limited.');
     }
   }
+  tabDataCache.set(cacheKey, { roles: copy.roles, settings: copy.settings });
   return copy;
 }
 function serverContent(server, section) {
@@ -852,7 +866,11 @@ async function renderServerPage(id, section = 'overview') {
   const active = VALID_SECTIONS.has(section) ? section : 'overview';
   els.detailContent.innerHTML = shell({ active: sectionTitle(active), section: active, content: loadingCard('Loading server...') });
   try {
-    const payload = await getDashboardServer(id);
+    let payload = serverPageCache.get(id);
+    if (!payload) {
+      payload = await getDashboardServer(id);
+      serverPageCache.set(id, payload);
+    }
     const server = await hydrateServerForSection(payload.server, active);
     document.title = `${server.name} — ${sectionTitle(active)} — Meowz`;
     els.detailContent.innerHTML = shell({ server, active: sectionTitle(active), section: active, content: serverContent(server, active) });
@@ -866,8 +884,25 @@ async function renderServerPage(id, section = 'overview') {
     wireShell(els.detailContent);
   }
 }
+function handleHashTabNavigation(event) {
+  const link = event.target.closest('a[href*="/server/"][href*="#"]');
+  if (!link) return;
+  const url = new URL(link.href, window.location.origin);
+  if (url.pathname !== window.location.pathname) return;
+  const next = String(url.hash || '#overview').slice(1) || 'overview';
+  if (!VALID_SECTIONS.has(next)) return;
+  event.preventDefault();
+  if (window.location.hash !== `#${next}`) history.pushState(null, '', `#${next}`);
+  const info = routeInfo();
+  if (info?.id) renderServerPage(info.id, next);
+}
+
 export function initDashboard() {
   if (!els.home && !els.detail) return;
+  document.removeEventListener('click', handleHashTabNavigation);
+  document.addEventListener('click', handleHashTabNavigation);
+  window.onpopstate = () => { const info = routeInfo(); if (info?.id) renderServerPage(info.id, info.section); else initDashboard(); };
+  window.onhashchange = () => { const info = routeInfo(); if (info?.id) renderServerPage(info.id, info.section); };
   const route = routeInfo();
   if (route?.settings) {
     renderSettingsPage();

@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-07-08",
+    "title": "Server dashboard tabs and API reliability",
+    "items": [
+      "Refactored server tab links to use one server route with URL hashes so switching tabs does not reload the whole dashboard page.",
+      "Added in-memory tab data caching so tab API data is lazy-loaded when opened and reused when switching back.",
+      "Improved mobile navigation drawer into a compact slide-over with row-based active states and better menu/account hierarchy.",
+      "Improved moderation bypass loading/error states and spacing for automation cards.",
+      "Connected level reward role APIs to real bot endpoints so role data no longer returns 404 when the bot update is deployed."
+    ]
+  },
+  {
+    "date": "2026-07-08",
     "title": "Responsive Tailwind-style mobile menu rework",
     "items": [
       "Rebuilt the mobile navigation drawer as a flexible slide-over with compact rows, clear menu/account hierarchy and no giant active cards.",
