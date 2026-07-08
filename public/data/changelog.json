@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-07",
+    "title": "Mobile drawer spacing fix",
+    "items": [
+      "Grouped mobile menu links with fluid spacing.",
+      "Prevented active drawer items from expanding into oversized cards.",
+      "Kept the account block anchored at the bottom of the drawer."
+    ]
+  },
+  {
     "version": "2026.07.07-mobile-fluid-drawer",
     "title": "Fluid mobile drawer spacing",
     "date": "2026-07-07",

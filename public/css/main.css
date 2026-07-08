@@ -5240,3 +5240,125 @@ body.dashboard-signed-out .dash-top-actions .dash-owner-toggle {
 :root[data-theme="light"] body.menu-open::after {
   background: rgba(226,232,240,.54) !important;
 }
+
+
+/* ===== Final mobile drawer correction 2026-07-07 =====
+   Keep the drawer fluid, but force nav links to stay grouped and prevent
+   active links from growing into card-sized blocks on tall mobile screens. */
+@media (max-width: 720px) {
+  body.menu-open {
+    overflow: hidden !important;
+    touch-action: none !important;
+  }
+
+  .nav[data-global-navbar] {
+    z-index: 90 !important;
+  }
+
+  .nav[data-global-navbar] .brand {
+    overflow: visible !important;
+  }
+
+  .nav[data-global-navbar] .brand span:last-child {
+    max-width: 10rem !important;
+  }
+
+  .nav[data-global-navbar] .nav-links {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    width: min(20rem, 84vw) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: clamp(.5rem, 1.1vh, .75rem) !important;
+    padding: clamp(4.25rem, 9.5vh, 5.25rem) clamp(.85rem, 3.5vw, 1.1rem) clamp(1rem, 2.5vh, 1.35rem) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    border-radius: 0 !important;
+    border-top: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    border-left: 1px solid var(--border) !important;
+    transform: translateX(105%) !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    transition: transform .24s ease !important;
+  }
+
+  .nav[data-global-navbar] .nav-links.is-open {
+    transform: translateX(0) !important;
+    pointer-events: auto !important;
+  }
+
+  .nav[data-global-navbar] .nav-links > a,
+  .nav[data-global-navbar] .auth-area > a,
+  .nav[data-global-navbar] .auth-loading,
+  .nav[data-global-navbar] .mobile-account-panel a {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-height: clamp(2.55rem, 5.7vh, 2.95rem) !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding-block: clamp(.65rem, 1.45vh, .82rem) !important;
+    padding-inline: clamp(.85rem, 3vw, 1rem) !important;
+    border-radius: clamp(.75rem, 2.6vw, .9rem) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    font-size: clamp(.9rem, 3.4vw, .98rem) !important;
+    line-height: 1.15 !important;
+    aspect-ratio: auto !important;
+  }
+
+  .nav[data-global-navbar] .nav-links > a.active,
+  .nav[data-global-navbar] .nav-links > a:hover,
+  .nav[data-global-navbar] .auth-area > a:hover,
+  .nav[data-global-navbar] .mobile-account-panel a:hover {
+    min-height: clamp(2.55rem, 5.7vh, 2.95rem) !important;
+    padding-block: clamp(.65rem, 1.45vh, .82rem) !important;
+    background: rgba(139, 92, 246, .16) !important;
+    border-color: rgba(139, 92, 246, .28) !important;
+  }
+
+  .nav[data-global-navbar] .auth-area {
+    flex: 0 0 auto !important;
+    margin-top: auto !important;
+    padding-top: clamp(.75rem, 2vh, 1rem) !important;
+    border-top: 1px solid var(--border) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: clamp(.45rem, 1vh, .65rem) !important;
+    width: 100% !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: clamp(.45rem, 1vh, .65rem) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-header {
+    flex: 0 0 auto !important;
+    min-height: clamp(3rem, 6.6vh, 3.35rem) !important;
+    padding: clamp(.55rem, 1.5vh, .7rem) clamp(.65rem, 2.7vw, .85rem) !important;
+    border-radius: clamp(.85rem, 2.8vw, 1rem) !important;
+  }
+
+  body.menu-open::after {
+    z-index: 45 !important;
+    pointer-events: none !important;
+  }
+}
