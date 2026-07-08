@@ -17,6 +17,9 @@ import {
 } from './api.js';
 import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
+import { emptyState, errorCard, loadingCard } from './components/feedback.js';
+import { switchField, textField, numberField, textareaField, variableButtons, saveBtn, channelSelectField, roleSelectField } from './components/forms.js';
+import { userAccessForm, renderAccessList, userSuggestionRow } from './components/accessList.js';
 import { getActiveUser } from './auth.js';
 import { DEMO_LEVELING, isDemoRoute } from './demoData.js';
 import { applyTheme as applyStoredTheme, setStoredTheme } from './components/theme.js';
@@ -311,8 +314,6 @@ function dashboardHomeContent(data) {
       <article class="dash-card"><div class="dash-card-head"><div><span>Available servers</span><h2>Invite Meowz</h2><p>Servers where you can add Meowz will appear here.</p></div><b>${available.length} server${available.length === 1 ? '' : 's'}</b></div><div class="dash-list">${available.length ? available.map((s) => serverRow(s, 'available')).join('') : emptyState('No available servers found.', 'Meowz is already installed in all servers available to this view.')}</div></article>
     </section>`;
 }
-function emptyState(title, text) { return `<div class="dash-empty"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
-
 async function renderDashboardHome() {
   if (!els.home) return;
   els.home.hidden = false;
@@ -330,19 +331,6 @@ async function renderDashboardHome() {
   }
 }
 
-function loadingCard(text) {
-  const safe = escapeHtml(text || 'Loading');
-  return `<div class="dash-card dash-loading skeleton-panel" aria-busy="true" aria-live="polite">
-    <span>${safe}</span>
-    <div class="skeleton-stack" aria-hidden="true">
-      <i class="skeleton-line"></i>
-      <i class="skeleton-line short"></i>
-      <i class="skeleton-line"></i>
-      <i class="skeleton-block"></i>
-    </div>
-  </div>`;
-}
-function errorCard(title, text) { return `<div class="dash-empty dash-error"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
 function pillRow(server) {
   const members = typeof server.memberCount === 'number' ? `${formatNumber(server.memberCount)} members` : 'Members unavailable';
   return `<div class="dash-pills"><span>${escapeHtml(members)}</span><span>${escapeHtml(server.accessLabel || 'Manage Server')}</span><span>Bot Installed</span></div>`;
@@ -357,55 +345,6 @@ function overviewPage(server) {
   return `${serverHeader(server,'overview')}<section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome / Goodbye','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section>`;
 }
 
-function switchField(name, checked, label, desc) { return `<label class="dash-switch"><input type="checkbox" name="${escapeHtml(name)}" ${checked ? 'checked' : ''}/><i></i><span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(desc)}</small></span></label>`; }
-function textField(name, label, value, placeholder='') { return `<label class="dash-field"><span>${escapeHtml(label)}</span><input name="${escapeHtml(name)}" value="${escapeHtml(value ?? '')}" placeholder="${escapeHtml(placeholder)}" /></label>`; }
-function normalizeChannelValue(value) {
-  return String(value ?? '').trim().replace(/^#\s*/, '').toLowerCase();
-}
-function textChannels(server) {
-  const channels = Array.isArray(server?.channels) ? server.channels : [];
-  return channels
-    .filter((channel) => {
-      const type = String(channel.type ?? channel.channelType ?? '').toUpperCase();
-      return !type || type === '0' || type === 'GUILD_TEXT' || type === 'TEXT' || type === 'ANNOUNCEMENT' || type === 'GUILD_ANNOUNCEMENT';
-    })
-    .map((channel) => ({
-      id: String(channel.id ?? channel.value ?? channel.name ?? ''),
-      name: String(channel.name ?? channel.label ?? channel.id ?? 'channel').replace(/^#\s*/, ''),
-    }))
-    .filter((channel) => channel.id && channel.name)
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
-function channelSelectField(server, name, label, value, fallbackName = 'general') {
-  const channels = textChannels(server);
-  const current = normalizeChannelValue(value || fallbackName);
-  if (!channels.length) {
-    return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}" disabled><option>Channel list unavailable</option></select><small>No text channels were returned by the channel API for this server.</small></label>`;
-  }
-  const hasCurrent = channels.some((channel) => channel.id === String(value) || normalizeChannelValue(channel.name) === current);
-  const options = channels.map((channel) => {
-    const selected = channel.id === String(value) || normalizeChannelValue(channel.name) === current;
-    return `<option value="${escapeHtml(channel.id)}" ${selected ? 'selected' : ''}>#${escapeHtml(channel.name)}</option>`;
-  }).join('');
-  const custom = hasCurrent || !value ? '' : `<option value="${escapeHtml(String(value))}" selected>#${escapeHtml(String(value).replace(/^#\s*/, ''))}</option>`;
-  return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}">${custom}${options}</select></label>`;
-}
-function guildRoles(server) {
-  const roles = Array.isArray(server?.roles) ? server.roles : [];
-  return roles
-    .filter((role) => role && role.id && role.name && role.editable !== false && role.managed !== true)
-    .map((role) => ({ id: String(role.id), name: String(role.name) }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
-function roleSelectField(server, name, label, value) {
-  const roles = guildRoles(server);
-  if (!roles.length) return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}" disabled><option>No editable roles available</option></select></label>`;
-  return `<label class="dash-field"><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}"><option value="">Select role</option>${roles.map((role) => `<option value="${escapeHtml(role.id)}" ${role.id === String(value || '') ? 'selected' : ''}>@${escapeHtml(role.name)}</option>`).join('')}</select></label>`;
-}
-function numberField(name, label, value, min=0) { return `<label class="dash-field"><span>${escapeHtml(label)}</span><input type="number" min="${Number(min)}" name="${escapeHtml(name)}" value="${escapeHtml(String(value ?? ''))}" /></label>`; }
-function textareaField(name, label, value, max=200) { return `<label class="dash-field"><span>${escapeHtml(label)}</span><textarea name="${escapeHtml(name)}" maxlength="${Number(max)}">${escapeHtml(value ?? '')}</textarea><small><b data-count-for="${escapeHtml(name)}">${String(value ?? '').length}</b>/${Number(max)}</small></label>`; }
-function variableButtons(target = 'welcomeMessage', label = 'Insert Variable') { return `<div class="dash-variable-row"><span>${escapeHtml(label)}</span><div>${['{user}','{server}','{memberCount}'].map(v => `<button type="button" data-insert-variable="${v}" data-insert-target="${escapeHtml(target)}">${v}</button>`).join('')}</div></div>`; }
-function saveBtn() { return `<button class="dash-save-btn" type="submit">Save Changes</button>`; }
 
 function welcomePage(server) {
   const s = readSettings(server.id, 'welcome', {
@@ -497,31 +436,8 @@ function moderationPage(server) {
   const s = readSettings(server.id, 'moderation', { enabled:false, warningsEnabled:true, automodEnabled:false, antiSpam:false, linkFilter:false, inviteFilter:false, modLogChannelId:'demo-ch-mod-logs', blockedWords:'' }, server);
   return `${serverHeader(server,'moderation')}<form class="dash-designer" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls used by the bot.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>${channelSelectField(server,'modLogChannelId','Mod log channel',s.modLogChannelId ?? s.channel,'mod-logs')}${switchField('warningsEnabled',s.warningsEnabled ?? s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('automodEnabled',s.automodEnabled,'Blocked words','Enable blocked word checks.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('linkFilter',s.linkFilter ?? s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('inviteFilter',s.inviteFilter ?? s.antiInvites,'Invite filter','Block Discord invite links.')}${textareaField('blockedWords','Blocked words',s.blockedWords || '',500)}${saveBtn()}</article><article class="dash-card dash-form-card" data-moderation-access><span>Bypass Access</span><h2>Trusted users</h2><p>Bot owner and users with Manage Server bypass moderation filters by default. Add extra trusted users by username search or Discord ID.</p>${userAccessForm('moderation', 'Search user or paste ID')}<div data-moderation-access-list>${emptyState('Loading bypass list...', 'Please wait.')}</div></article><article class="dash-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article></form>`;
 }
-function userAccessForm(kind, title = 'Add user access') {
-  return `<form class="dash-inline-form dash-user-search-form" data-access-form="${escapeHtml(kind)}" autocomplete="off"><label class="dash-field dash-user-search-field"><span>${escapeHtml(title)}</span><input name="userSearch" placeholder="Search username or paste Discord ID" data-user-search="${escapeHtml(kind)}" /><input type="hidden" name="userId" data-user-id="${escapeHtml(kind)}"/><div class="dash-user-search-results" data-user-search-results="${escapeHtml(kind)}" hidden></div></label><button class="dash-save-btn" type="submit">Add user</button></form>`;
-}
 function aiPage(server) {
   return `${serverHeader(server,'ai')}<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>${userAccessForm('ai', 'Search user or paste ID')}<small class="preview-note">Bot owner and users with Manage Server permission have access by default. Manual users can be added by username search or Discord ID.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article></section>`;
-}
-function accessUserRow(user, removable = false, type = 'Manual') {
-  const name = user.displayName || user.name || user.label || user.username || user.id || user.userId || 'Unknown user';
-  const id = user.userId || user.id || '';
-  const img = user.avatarUrl ? `<img src="${escapeHtml(user.avatarUrl)}" alt=""/>` : escapeHtml(name.slice(0,1).toUpperCase());
-  return `<div class="dash-access-row"><span class="dash-access-avatar">${img}</span><span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(type)}${user.username ? ` · ${escapeHtml(user.username)}` : (id ? ` · ${escapeHtml(id)}` : '')}</small></span><button type="button" ${removable ? `data-remove-ai-user="${escapeHtml(id)}" data-remove-ai-label="${escapeHtml(name)}"` : 'disabled'}>${removable ? 'Remove' : 'Default'}</button></div>`;
-}
-function normalizeAccessPayload(data = {}) {
-  const defaultUsers = Array.isArray(data.defaultUsers) ? data.defaultUsers : [
-    ...(data.owner ? [data.owner] : []),
-    ...(Array.isArray(data.manageServerUsers) ? data.manageServerUsers : []),
-  ];
-  const manual = Array.isArray(data.allowedUsers) ? data.allowedUsers : (Array.isArray(data.users) ? data.users : []);
-  return { defaultUsers, manual };
-}
-function renderAccessList(data, manualEmpty = 'No manually added users.') {
-  const { defaultUsers, manual } = normalizeAccessPayload(data);
-  const owner = defaultUsers.filter((user) => ['bot_owner', 'owner'].includes(String(user.source || user.type || '').toLowerCase()));
-  const managers = defaultUsers.filter((user) => !owner.includes(user));
-  return `<div class="dash-access-list"><div class="dash-note"><strong>Default access</strong><span>Bot owner and users with Manage Server are included automatically and cannot be removed.</span></div>${owner.map(u => accessUserRow(u, false, 'Bot Owner')).join('')}${managers.map(u => accessUserRow(u, false, 'Manage Server')).join('')}${manual.length ? `<h3>Manual access</h3>${manual.map(u => accessUserRow(u, true, 'Manual')).join('')}` : emptyState(manualEmpty, 'Search by username or paste a Discord ID to add someone.')}</div>`;
 }
 async function loadAiAccess(guildId) {
   const holder = document.querySelector('[data-ai-access-list]');
@@ -544,12 +460,6 @@ async function loadModerationAccess(guildId) {
   } catch (err) {
     holder.innerHTML = errorCard('Could not load moderation bypass list.', err.message || 'Try again later.');
   }
-}
-function userSuggestionRow(user) {
-  const name = user.displayName || user.username || user.userId || 'Unknown user';
-  const username = user.username && user.username !== name ? user.username : user.userId;
-  const avatar = user.avatarUrl ? `<img src="${escapeHtml(user.avatarUrl)}" alt=""/>` : escapeHtml(String(name).slice(0,1).toUpperCase());
-  return `<button type="button" data-user-suggestion data-user-id="${escapeHtml(user.userId || user.id || '')}" data-user-label="${escapeHtml(name)}"><span class="dash-access-avatar">${avatar}</span><span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(username || '')}</small></span></button>`;
 }
 function attachUserSearch(form, server) {
   const input = form.querySelector('[data-user-search]');

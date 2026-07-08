@@ -1,15 +1,14 @@
-import { MAIN_NAV_ITEMS } from './navConfig.js';
 import { isDemoRoute } from '../demoData.js';
+import { renderMobileDrawer } from './mobileDrawer.js';
 
-function navLink(item) {
-  const authAttrs = item.auth ? ' data-auth-only hidden' : '';
-  return `<a href="${item.href}" data-nav-link data-route="${item.route}"${authAttrs}>${item.label}</a>`;
+function authMarkup(demo) {
+  const initialAuthText = demo ? 'Loading demo...' : 'Checking login...';
+  const initialAuthClass = demo ? 'auth-area auth-loading is-demo' : 'auth-area auth-loading';
+  return `<div class="${initialAuthClass}" data-auth-area>${initialAuthText}</div>`;
 }
 
 export function renderNavbar() {
   const demo = isDemoRoute();
-  const initialAuthText = demo ? 'Loading demo...' : 'Checking login...';
-  const initialAuthClass = demo ? 'auth-area auth-loading is-demo' : 'auth-area auth-loading';
   return `
     <header class="nav" data-global-navbar>
       <a class="brand" href="/" aria-label="Meowz home">
@@ -19,11 +18,7 @@ export function renderNavbar() {
       <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
-      <nav class="nav-links" data-nav-links aria-label="Main navigation">
-        <button class="mobile-drawer-close" type="button" data-menu-close aria-label="Close navigation">×</button>
-        ${MAIN_NAV_ITEMS.map(navLink).join('')}
-        <div class="${initialAuthClass}" data-auth-area>${initialAuthText}</div>
-      </nav>
+      ${renderMobileDrawer({ demo, initialAuthHtml: authMarkup(demo) })}
     </header>
   `;
 }

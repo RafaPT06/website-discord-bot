@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-08",
+    "title": "Component structure and mobile drawer refactor",
+    "items": [
+      "Split repeated dashboard UI helpers into reusable form, feedback, access-list and mobile-drawer components.",
+      "Rebuilt the shared mobile drawer markup so every page uses the same compact navigation rows, account section and close control.",
+      "Added final responsive drawer CSS overrides to remove giant active cards, reduce empty spacing and keep the layout fluid across phone sizes."
+    ]
+  },
+  {
+    "date": "2026-07-08",
     "title": "Server dashboard tabs and API reliability",
     "items": [
       "Refactored server tab links to use one server route with URL hashes so switching tabs does not reload the whole dashboard page.",
