@@ -20,6 +20,7 @@ export function renderNavbar() {
         <span></span><span></span><span></span>
       </button>
       <nav class="nav-links" data-nav-links aria-label="Main navigation">
+        <button class="mobile-drawer-close" type="button" data-menu-close aria-label="Close navigation">×</button>
         ${MAIN_NAV_ITEMS.map(navLink).join('')}
         <div class="${initialAuthClass}" data-auth-area>${initialAuthText}</div>
       </nav>

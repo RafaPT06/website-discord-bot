@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-08",
+    "title": "Mobile navigation drawer redesign",
+    "items": [
+      "Made the mobile drawer compact with grouped navigation rows instead of oversized vertical spacing.",
+      "Changed the active menu item into a consistent selected row rather than a large card.",
+      "Added menu/account hierarchy labels, improved the close button visibility and kept the account controls anchored to the bottom."
+    ]
+  },
+  {
     "date": "2026-07-07",
     "title": "Mobile drawer spacing fix",
     "items": [

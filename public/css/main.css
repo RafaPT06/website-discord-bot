@@ -5362,3 +5362,267 @@ body.dashboard-signed-out .dash-top-actions .dash-owner-toggle {
     pointer-events: none !important;
   }
 }
+
+/* ===== Mobile drawer redesign 2026-07-08 =====
+   Final override for the global mobile menu: compact rows, real hierarchy,
+   a readable close button, and a bottom account block without fixed device
+   heights. Desktop navigation is intentionally untouched. */
+.mobile-drawer-close { display: none; }
+@media (max-width: 720px) {
+  body.menu-open {
+    overflow: hidden !important;
+    touch-action: none !important;
+  }
+
+  .nav[data-global-navbar] {
+    width: min(100% - clamp(1rem, 4vw, 1.5rem), 70rem) !important;
+    min-height: clamp(3.25rem, 9vh, 3.9rem) !important;
+    padding: clamp(.45rem, 1.6vw, .65rem) clamp(.55rem, 2.6vw, .8rem) !important;
+    border-radius: clamp(.95rem, 4vw, 1.35rem) !important;
+    z-index: 90 !important;
+  }
+
+  .nav[data-global-navbar] .brand {
+    min-width: 0 !important;
+    gap: clamp(.45rem, 2vw, .65rem) !important;
+    font-size: clamp(.98rem, 4vw, 1.18rem) !important;
+    overflow: visible !important;
+  }
+
+  .nav[data-global-navbar] .brand span:last-child {
+    max-width: min(11rem, 48vw) !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .nav[data-global-navbar] .brand-icon {
+    width: clamp(2rem, 8.8vw, 2.35rem) !important;
+    height: clamp(2rem, 8.8vw, 2.35rem) !important;
+    border-radius: clamp(.65rem, 2.7vw, .9rem) !important;
+    flex: 0 0 auto !important;
+  }
+
+  .nav[data-global-navbar] .mobile-menu-button {
+    width: clamp(2.15rem, 9vw, 2.55rem) !important;
+    height: clamp(2.15rem, 9vw, 2.55rem) !important;
+    border-radius: clamp(.7rem, 2.8vw, .95rem) !important;
+    flex: 0 0 auto !important;
+    display: grid !important;
+    place-content: center !important;
+    padding: 0 !important;
+  }
+
+  .nav[data-global-navbar] .mobile-menu-button span {
+    width: clamp(.95rem, 4vw, 1.1rem) !important;
+    margin: clamp(.1rem, .45vw, .16rem) auto !important;
+  }
+
+  .nav[data-global-navbar] .nav-links {
+    position: fixed !important;
+    inset-block: 0 !important;
+    inset-inline-end: 0 !important;
+    inset-inline-start: auto !important;
+    width: min(20rem, 82vw) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
+    padding: clamp(4rem, 9dvh, 5rem) clamp(.85rem, 3.4vw, 1.05rem) clamp(.95rem, 2.6dvh, 1.35rem) !important;
+    border-radius: 0 !important;
+    border-block: 0 !important;
+    border-inline-end: 0 !important;
+    border-inline-start: 1px solid rgba(255,255,255,.09) !important;
+    background: rgba(8, 9, 19, .985) !important;
+    box-shadow: -1.35rem 0 4rem rgba(0,0,0,.48) !important;
+    transform: translateX(105%) !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    transition: transform .24s cubic-bezier(.2,.8,.2,1) !important;
+    z-index: 80 !important;
+  }
+
+  .nav[data-global-navbar] .nav-links.is-open {
+    transform: translateX(0) !important;
+    pointer-events: auto !important;
+  }
+
+  .nav[data-global-navbar] .nav-links::before {
+    content: "Menu" !important;
+    display: block !important;
+    color: rgba(255,255,255,.48) !important;
+    text-transform: uppercase !important;
+    letter-spacing: .16em !important;
+    font-size: clamp(.62rem, 2.6vw, .72rem) !important;
+    font-weight: 900 !important;
+    margin: 0 0 clamp(.45rem, 1.3dvh, .7rem) !important;
+    padding-inline: clamp(.2rem, 1vw, .3rem) !important;
+  }
+
+  .mobile-drawer-close {
+    position: absolute !important;
+    top: clamp(.9rem, 3.3dvh, 1.25rem) !important;
+    inset-inline-end: clamp(.85rem, 3.3vw, 1.05rem) !important;
+    width: clamp(2.35rem, 10vw, 2.85rem) !important;
+    height: clamp(2.35rem, 10vw, 2.85rem) !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 1px solid rgba(255,255,255,.18) !important;
+    border-radius: clamp(.75rem, 3vw, 1rem) !important;
+    background: rgba(255,255,255,.08) !important;
+    color: #fff !important;
+    font-size: clamp(1.75rem, 6vw, 2.2rem) !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    z-index: 2 !important;
+  }
+
+  .nav[data-global-navbar] .nav-links > a,
+  .nav[data-global-navbar] .auth-area > a,
+  .nav[data-global-navbar] .auth-loading,
+  .nav[data-global-navbar] .mobile-account-panel a {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-height: clamp(2.45rem, 5.4dvh, 2.85rem) !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 0 clamp(.28rem, .9dvh, .45rem) !important;
+    padding: clamp(.62rem, 1.45dvh, .78rem) clamp(.75rem, 3vw, .95rem) !important;
+    border-radius: clamp(.72rem, 2.7vw, .9rem) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    color: var(--text) !important;
+    font-size: clamp(.9rem, 3.5vw, .98rem) !important;
+    line-height: 1.15 !important;
+    font-weight: 850 !important;
+    aspect-ratio: auto !important;
+  }
+
+  .nav[data-global-navbar] .nav-links > a.active,
+  .nav[data-global-navbar] .nav-links > a:hover,
+  .nav[data-global-navbar] .auth-area > a:hover,
+  .nav[data-global-navbar] .mobile-account-panel a:hover {
+    min-height: clamp(2.45rem, 5.4dvh, 2.85rem) !important;
+    padding: clamp(.62rem, 1.45dvh, .78rem) clamp(.75rem, 3vw, .95rem) !important;
+    background: rgba(139, 92, 246, .18) !important;
+    border-color: rgba(139, 92, 246, .34) !important;
+    box-shadow: inset .18rem 0 0 rgba(34,211,238,.65) !important;
+  }
+
+  .nav[data-global-navbar] .auth-area {
+    flex: 0 0 auto !important;
+    margin-top: auto !important;
+    padding-top: clamp(.75rem, 2.2dvh, 1rem) !important;
+    border-top: 1px solid rgba(255,255,255,.09) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: clamp(.25rem, .8dvh, .45rem) !important;
+    width: 100% !important;
+  }
+
+  .nav[data-global-navbar] .auth-area::before {
+    content: "Account" !important;
+    display: block !important;
+    color: rgba(255,255,255,.48) !important;
+    text-transform: uppercase !important;
+    letter-spacing: .16em !important;
+    font-size: clamp(.62rem, 2.6vw, .72rem) !important;
+    font-weight: 900 !important;
+    margin: 0 0 clamp(.3rem, .8dvh, .45rem) !important;
+    padding-inline: clamp(.2rem, 1vw, .3rem) !important;
+  }
+
+  .nav[data-global-navbar] .auth-area.auth-loading::before,
+  .nav[data-global-navbar] .auth-area:not(.is-authenticated)::before,
+  .nav[data-global-navbar] .auth-area.is-demo::before {
+    content: "Account" !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: clamp(.3rem, .8dvh, .45rem) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-header {
+    flex: 0 0 auto !important;
+    min-height: clamp(2.8rem, 6.6dvh, 3.25rem) !important;
+    padding: clamp(.5rem, 1.5dvh, .68rem) clamp(.6rem, 2.5vw, .8rem) !important;
+    border: 1px solid rgba(255,255,255,.12) !important;
+    border-radius: clamp(.78rem, 2.7vw, .95rem) !important;
+    background: rgba(255,255,255,.045) !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: clamp(.55rem, 2.2vw, .75rem) !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-avatar {
+    width: clamp(1.75rem, 7.6vw, 2.15rem) !important;
+    height: clamp(1.75rem, 7.6vw, 2.15rem) !important;
+    border-radius: clamp(.55rem, 2.4vw, .75rem) !important;
+  }
+
+  .nav[data-global-navbar] .mobile-account-header strong,
+  .nav[data-global-navbar] .mobile-account-header span {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body.menu-open::after {
+    content: "" !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 45 !important;
+    background: rgba(4,6,12,.56) !important;
+    backdrop-filter: blur(clamp(.25rem, 1.4vw, .5rem)) !important;
+    -webkit-backdrop-filter: blur(clamp(.25rem, 1.4vw, .5rem)) !important;
+    pointer-events: none !important;
+  }
+
+  body.menu-open .dash-content,
+  body.menu-open main,
+  body.menu-open .page-shell {
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav[data-global-navbar] .nav-links {
+    width: min(18.5rem, 88vw) !important;
+    padding-inline: clamp(.7rem, 3.5vw, .9rem) !important;
+  }
+}
+
+:root[data-theme="light"] .nav[data-global-navbar] .nav-links {
+  background: rgba(255,255,255,.986) !important;
+  border-left-color: rgba(15,23,42,.1) !important;
+}
+:root[data-theme="light"] .nav[data-global-navbar] .nav-links::before,
+:root[data-theme="light"] .nav[data-global-navbar] .auth-area::before {
+  color: rgba(15,23,42,.5) !important;
+}
+:root[data-theme="light"] .mobile-drawer-close {
+  color: #0f172a !important;
+  background: rgba(15,23,42,.06) !important;
+  border-color: rgba(15,23,42,.12) !important;
+}

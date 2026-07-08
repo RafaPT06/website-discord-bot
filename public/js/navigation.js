@@ -1,6 +1,7 @@
 function getNavEls() {
   return {
     toggle: document.querySelector('[data-menu-toggle]'),
+    close: document.querySelector('[data-menu-close]'),
     links: document.querySelector('[data-nav-links]'),
   };
 }
@@ -38,5 +39,12 @@ export function initNavigation() {
   });
 
   document.querySelectorAll('[data-nav-link]').forEach((link) => link.addEventListener('click', closeMobileMenu));
+  document.querySelector('[data-menu-close]')?.addEventListener('click', closeMobileMenu);
+  document.addEventListener('click', (event) => {
+    const { toggle, links } = getNavEls();
+    if (!document.body.classList.contains('menu-open')) return;
+    if (links?.contains(event.target) || toggle?.contains(event.target)) return;
+    closeMobileMenu();
+  });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMobileMenu(); });
 }
