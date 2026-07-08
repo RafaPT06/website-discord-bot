@@ -319,7 +319,18 @@ async function renderDashboardHome() {
   }
 }
 
-function loadingCard(text) { return `<div class="dash-card dash-loading">${escapeHtml(text)}</div>`; }
+function loadingCard(text) {
+  const safe = escapeHtml(text || 'Loading');
+  return `<div class="dash-card dash-loading skeleton-panel" aria-busy="true" aria-live="polite">
+    <span>${safe}</span>
+    <div class="skeleton-stack" aria-hidden="true">
+      <i class="skeleton-line"></i>
+      <i class="skeleton-line short"></i>
+      <i class="skeleton-line"></i>
+      <i class="skeleton-block"></i>
+    </div>
+  </div>`;
+}
 function errorCard(title, text) { return `<div class="dash-empty dash-error"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
 function pillRow(server) {
   const members = typeof server.memberCount === 'number' ? `${formatNumber(server.memberCount)} members` : 'Members unavailable';

@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-08",
+    "title": "Mobile drawer and loading polish",
+    "items": [
+      "Refined the mobile navigation drawer with compact responsive rows, a clearer active state and a bottom anchored account section.",
+      "Reduced mobile dashboard header, tabs, cards, form controls and footer spacing without changing the desktop layout.",
+      "Expanded skeleton loading states so dashboard, settings and server pages show loading structure instead of plain text."
+    ]
+  },
+  {
+    "date": "2026-07-08",
     "title": "Mobile navigation drawer redesign",
     "items": [
       "Made the mobile drawer compact with grouped navigation rows instead of oversized vertical spacing.",
