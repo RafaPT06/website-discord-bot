@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-09",
+    "title": "Dashboard styling QA pass",
+    "items": [
+      "Separated desktop navbar links from the mobile drawer so Menu and Account drawer groups no longer appear in the desktop topbar.",
+      "Moved the unsaved changes save bar near the server page header as a normal in-flow glass card instead of a viewport-fixed overlay.",
+      "Tightened status pill height, moderation bypass spacing, automation rule card rhythm and dashboard footer credits alignment across desktop and mobile."
+    ]
+  },
+  {
+    "date": "2026-07-09",
     "title": "Dashboard chrome flow fix",
     "items": [
       "Neutralized remaining sticky dashboard topbar/sidebar positioning so navigation behaves as normal page layout instead of overlay chrome.",

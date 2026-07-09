@@ -7457,3 +7457,262 @@ body.dashboard-app-body > .nav[data-global-navbar],
   }
 }
 
+
+/* ===== 2026-07-09 dashboard layout QA pass =====
+   Root fix: desktop and mobile navigation now have separate structures, so the
+   mobile drawer can never leak its Menu/Account groups into the desktop topbar.
+   The save bar remains in normal page flow but keeps a floating glass-card look. */
+.desktop-nav-links {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(.7rem, 1.35vw, 1rem);
+  min-width: 0;
+  margin-left: auto;
+}
+.desktop-nav-links > a {
+  min-height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0 .78rem;
+  color: var(--muted);
+  font-size: .92rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease;
+}
+.desktop-nav-links > a:hover,
+.desktop-nav-links > a.active {
+  color: var(--text);
+  background: rgba(255,255,255,.07);
+  border-color: rgba(139,92,246,.28);
+}
+.desktop-nav-links > a:hover { transform: translateY(-1px); }
+.desktop-nav-links .auth-area { flex: 0 0 auto; }
+.nav[data-global-navbar] > .nav-links.mobile-drawer-panel { display: none !important; }
+.nav[data-global-navbar] > .mobile-menu-button { display: none !important; }
+
+@media (min-width: 821px) {
+  .nav[data-global-navbar] {
+    gap: clamp(1rem, 2vw, 1.4rem);
+  }
+  .nav[data-global-navbar] > .brand {
+    flex: 0 0 auto;
+  }
+  .nav[data-global-navbar] .profile-dropdown {
+    right: 0;
+  }
+}
+
+@media (max-width: 820px) {
+  .desktop-nav-links { display: none !important; }
+  .nav[data-global-navbar] > .mobile-menu-button { display: grid !important; }
+  .nav[data-global-navbar] > .nav-links.mobile-drawer-panel {
+    position: fixed !important;
+    inset-block: 0 !important;
+    inset-inline: auto 0 !important;
+    width: min(82vw, 20.5rem) !important;
+    max-width: calc(100vw - clamp(2.5rem, 12vw, 4.5rem)) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: max(.9rem, env(safe-area-inset-top)) clamp(.85rem, 3vw, 1.05rem) max(.9rem, env(safe-area-inset-bottom)) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    border: 0 !important;
+    border-left: 1px solid rgba(255,255,255,.1) !important;
+    border-radius: 0 !important;
+    background: rgba(6, 7, 16, .988) !important;
+    box-shadow: -1.35rem 0 3.5rem rgba(0,0,0,.42) !important;
+    transform: translateX(104%) !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    z-index: 100 !important;
+    transition: transform .22s ease !important;
+  }
+  .nav[data-global-navbar] > .nav-links.mobile-drawer-panel.is-open {
+    transform: translateX(0) !important;
+    pointer-events: auto !important;
+  }
+  .nav[data-global-navbar] .mobile-drawer-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: .7rem !important;
+    padding-bottom: clamp(.7rem, 2dvh, .95rem) !important;
+    margin-bottom: clamp(.55rem, 1.7dvh, .8rem) !important;
+    border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  }
+  .nav[data-global-navbar] .mobile-drawer-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: clamp(.75rem, 2dvh, 1rem) !important;
+  }
+  .nav[data-global-navbar] .mobile-drawer-list {
+    display: grid !important;
+    gap: .18rem !important;
+  }
+  .nav[data-global-navbar] .mobile-drawer-link,
+  .nav[data-global-navbar] .logout-link,
+  .nav[data-global-navbar] .login-button {
+    min-height: clamp(2.45rem, 6.3dvh, 2.9rem) !important;
+    padding: .62rem .78rem !important;
+    border-radius: .82rem !important;
+  }
+  .nav[data-global-navbar] .mobile-drawer-account { margin-top: auto !important; }
+  .nav[data-global-navbar] .auth-area { min-height: 0; }
+  .nav[data-global-navbar] .mobile-account-panel { display: grid !important; }
+  .nav[data-global-navbar] .profile-menu-wrap { display: none !important; }
+  body.menu-open::after {
+    content: "" !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 88 !important;
+    background: rgba(3, 5, 12, .58) !important;
+    backdrop-filter: blur(.42rem) !important;
+    -webkit-backdrop-filter: blur(.42rem) !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* Dashboard chrome and card rhythm */
+.dash-shell {
+  width: min(100% - clamp(1rem, 3vw, 2rem), 94rem);
+  margin: 0 auto;
+  gap: clamp(1rem, 2.5vw, 1.5rem) !important;
+}
+.dash-content {
+  padding-top: 0 !important;
+}
+.dash-card-head > .status,
+.dash-card-head > b.status,
+.status {
+  flex: 0 0 auto !important;
+  align-self: flex-start !important;
+  min-height: 1.85rem !important;
+  height: auto !important;
+  padding: .32rem .72rem !important;
+  line-height: 1 !important;
+  border-radius: 999px !important;
+  white-space: nowrap !important;
+}
+.dash-card-head {
+  min-width: 0;
+}
+.dash-card-head > div {
+  min-width: 0;
+}
+.dash-moderation-layout {
+  gap: clamp(1rem, 2vw, 1.35rem) !important;
+  row-gap: clamp(1.1rem, 2.5vw, 1.5rem) !important;
+}
+.dash-moderation-layout > .dash-card {
+  min-width: 0;
+}
+.dash-automation-card {
+  align-self: start;
+}
+.dash-automation-card .dash-feature-grid.compact {
+  gap: clamp(.75rem, 1.6vw, .95rem) !important;
+}
+.dash-user-search-form {
+  margin: clamp(.7rem, 1.5vw, .9rem) 0 clamp(.9rem, 2vw, 1.15rem);
+}
+[data-moderation-access-list] {
+  display: block;
+  margin-top: clamp(.85rem, 2vw, 1.1rem);
+}
+
+/* Save controls: visible near the page header, styled like a floating glass card, but not viewport-fixed. */
+[data-server-save-host] {
+  width: 100%;
+  margin: 0 0 clamp(1rem, 2.4vw, 1.35rem) !important;
+}
+[data-server-save-host]:empty { display: none !important; }
+[data-server-save-host] .dash-save-bar,
+.dash-save-bar[data-global-save-bar] {
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  border-color: rgba(139,92,246,.36) !important;
+  background: linear-gradient(135deg, rgba(13, 15, 30, .95), rgba(34, 19, 67, .92)) !important;
+  box-shadow: 0 1rem 2.8rem rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+.dash-save-bar .dash-save-btn,
+.dash-save-bar .dash-secondary-btn {
+  min-height: 2.85rem !important;
+}
+
+/* Footer/credits should feel like a compact dashboard card and align with the page width. */
+body.dashboard-app-body .footer-card {
+  width: min(100% - clamp(1rem, 3vw, 2rem), 94rem) !important;
+  margin: clamp(1.5rem, 3vw, 2.2rem) auto clamp(1rem, 2.5vw, 1.5rem) !important;
+  padding: clamp(.9rem, 2vw, 1.15rem) !important;
+  border-radius: clamp(1rem, 3vw, 1.35rem) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.035)) !important;
+  box-shadow: 0 1rem 2.5rem rgba(0,0,0,.16) !important;
+}
+body.dashboard-app-body .footer-card p:first-child {
+  font-size: .92rem;
+  font-weight: 850;
+}
+body.dashboard-app-body .footer-card p:last-child {
+  margin-top: .25rem;
+  font-size: .82rem;
+}
+
+@media (max-width: 900px) {
+  .dash-shell { width: 100% !important; padding-inline: clamp(.75rem, 3vw, 1rem) !important; }
+  .dash-content { width: 100% !important; }
+  .dash-moderation-layout { gap: clamp(1rem, 2.8dvh, 1.25rem) !important; }
+  .dash-moderation-layout > .dash-card + .dash-card { margin-top: .15rem !important; }
+  .dash-card-head > .status,
+  .dash-card-head > b.status,
+  .status {
+    min-height: 1.75rem !important;
+    padding: .3rem .65rem !important;
+    font-size: .72rem !important;
+  }
+  [data-server-save-host] { margin-bottom: clamp(.85rem, 2.5dvh, 1.1rem) !important; }
+  [data-server-save-host] .dash-save-bar { border-radius: clamp(1rem, 4vw, 1.25rem) !important; }
+  .dash-save-bar > div:last-child {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .dash-user-search-form {
+    grid-template-columns: 1fr !important;
+    gap: .7rem !important;
+  }
+  .dash-user-search-form .dash-save-btn {
+    width: 100%;
+  }
+  body.dashboard-app-body .footer-card {
+    text-align: center;
+  }
+}
+
+:root[data-theme="light"] .desktop-nav-links > a:hover,
+:root[data-theme="light"] .desktop-nav-links > a.active {
+  background: rgba(15,23,42,.045) !important;
+  border-color: rgba(139,92,246,.22) !important;
+}
+:root[data-theme="light"] [data-server-save-host] .dash-save-bar,
+:root[data-theme="light"] .dash-save-bar[data-global-save-bar] {
+  background: linear-gradient(135deg, rgba(255,255,255,.95), rgba(245,243,255,.92)) !important;
+  border-color: rgba(139,92,246,.18) !important;
+}
+:root[data-theme="light"] body.dashboard-app-body .footer-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.72)) !important;
+}

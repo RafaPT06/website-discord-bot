@@ -1,10 +1,32 @@
 import { isDemoRoute } from '../demoData.js';
+import { MAIN_NAV_ITEMS } from './navConfig.js';
 import { renderMobileDrawer } from './mobileDrawer.js';
 
-function authMarkup(demo) {
+function authMarkup(demo, scope = 'desktop') {
   const initialAuthText = demo ? 'Loading demo...' : 'Checking login...';
   const initialAuthClass = demo ? 'auth-area auth-loading is-demo' : 'auth-area auth-loading';
-  return `<div class="${initialAuthClass}" data-auth-area>${initialAuthText}</div>`;
+  return `<div class="${initialAuthClass}" data-auth-area data-auth-scope="${scope}">${initialAuthText}</div>`;
+}
+
+function itemHref(item, demo = false) {
+  if (!demo) return item.href;
+  if (item.route === '/dashboard') return '/demo/dashboard';
+  if (item.route === '/settings' || item.route === '/dashboard/settings') return '/demo/settings';
+  return item.href;
+}
+
+function desktopNavLink(item, demo = false) {
+  const authAttr = item.auth && !demo ? ' data-auth-only hidden' : '';
+  return `<a href="${itemHref(item, demo)}" data-nav-link data-route="${item.route}"${authAttr}>${item.label}</a>`;
+}
+
+function renderDesktopNav(demo = false) {
+  return `
+    <nav class="desktop-nav-links" data-desktop-nav-links aria-label="Main navigation">
+      ${MAIN_NAV_ITEMS.filter((item) => item.route !== '/dashboard/settings').map((item) => desktopNavLink(item, demo)).join('')}
+      ${authMarkup(demo, 'desktop')}
+    </nav>
+  `;
 }
 
 export function renderNavbar() {
@@ -15,10 +37,11 @@ export function renderNavbar() {
         <span class="brand-icon" data-bot-avatar-small>M</span>
         <span data-bot-name-short>Meowz</span>
       </a>
+      ${renderDesktopNav(demo)}
       <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
-      ${renderMobileDrawer({ demo, initialAuthHtml: authMarkup(demo) })}
+      ${renderMobileDrawer({ demo, initialAuthHtml: authMarkup(demo, 'mobile') })}
     </header>
   `;
 }

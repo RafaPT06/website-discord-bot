@@ -1,7 +1,8 @@
 import { escapeHtml } from './utils.js';
 import { DEMO_USER, isDemoRoute } from './demoData.js';
 
-function authAreaEl() { return document.querySelector('[data-auth-area]'); }
+function authAreaEls() { return Array.from(document.querySelectorAll('[data-auth-area]')); }
+function authAreaEl() { return authAreaEls()[0] || null; }
 function authOnlyEls() { return document.querySelectorAll('[data-auth-only]'); }
 function dashboardSectionEl() { return document.querySelector('[data-dashboard]'); }
 function dashboardGuestEl() { return document.querySelector('[data-dashboard-guest]'); }
@@ -47,19 +48,23 @@ function setAuthOnlyVisible(isVisible) {
   if (dashboardGuest) dashboardGuest.hidden = isVisible;
 }
 
-function closeProfileMenu() {
-  const menu = document.querySelector('[data-profile-menu]');
-  const button = document.querySelector('[data-profile-toggle]');
-  if (!menu || !button) return;
-  menu.hidden = true;
-  button.setAttribute('aria-expanded', 'false');
+function closeProfileMenus(exceptWrap = null) {
+  document.querySelectorAll('.profile-menu-wrap').forEach((wrap) => {
+    if (exceptWrap && wrap === exceptWrap) return;
+    const menu = wrap.querySelector('[data-profile-menu]');
+    const button = wrap.querySelector('[data-profile-toggle]');
+    if (!menu || !button) return;
+    menu.hidden = true;
+    button.setAttribute('aria-expanded', 'false');
+  });
 }
 
-function toggleProfileMenu() {
-  const menu = document.querySelector('[data-profile-menu]');
-  const button = document.querySelector('[data-profile-toggle]');
+function toggleProfileMenu(button) {
+  const wrap = button?.closest?.('.profile-menu-wrap');
+  const menu = wrap?.querySelector('[data-profile-menu]');
   if (!menu || !button) return;
   const willOpen = menu.hidden;
+  closeProfileMenus(wrap);
   menu.hidden = !willOpen;
   button.setAttribute('aria-expanded', String(willOpen));
 }
@@ -103,10 +108,7 @@ function renderDemoUser() {
     dashboardGuest.setAttribute('aria-hidden', 'true');
   }
 
-  const authArea = authAreaEl();
-  if (!authArea) return;
-  authArea.className = 'auth-area is-authenticated is-demo';
-  authArea.innerHTML = `
+  const markup = `
     <div class="profile-menu-wrap">
       <a class="nav-user-button" href="/demo/settings" aria-label="Demo settings">
         ${renderAvatar(activeUser)}
@@ -115,16 +117,20 @@ function renderDemoUser() {
     </div>
     <div class="mobile-account-panel"><a class="logout-link" href="/">Exit Demo</a></div>
   `;
+  authAreaEls().forEach((authArea) => {
+    authArea.className = 'auth-area is-authenticated is-demo';
+    authArea.innerHTML = markup;
+  });
 }
 
 function renderLoggedOut() {
   activeUser = null;
   setAuthOnlyVisible(false);
 
-  const authArea = authAreaEl();
-  if (!authArea) return;
-  authArea.className = 'auth-area';
-  authArea.innerHTML = '<a class="login-button" href="/auth/discord">Login with Discord</a>';
+  authAreaEls().forEach((authArea) => {
+    authArea.className = 'auth-area';
+    authArea.innerHTML = '<a class="login-button" href="/auth/discord">Login with Discord</a>';
+  });
 }
 
 function renderLoggedIn(user) {
@@ -132,14 +138,10 @@ function renderLoggedIn(user) {
   setAuthOnlyVisible(true);
   renderDashboard(user);
 
-  const authArea = authAreaEl();
-  if (!authArea) return;
-
   const name = escapeHtml(displayName(user));
   const username = escapeHtml(usernameText(user));
 
-  authArea.className = 'auth-area is-authenticated';
-  authArea.innerHTML = `
+  const markup = `
     <div class="profile-menu-wrap">
       <button class="nav-user-button" type="button" data-profile-toggle aria-haspopup="menu" aria-expanded="false">
         ${renderAvatar(user)}
@@ -175,15 +177,19 @@ function renderLoggedIn(user) {
     </div>
   `;
 
-  const toggle = authArea.querySelector('[data-profile-toggle]');
-  toggle?.addEventListener('click', (event) => {
-    event.stopPropagation();
-    toggleProfileMenu();
+  authAreaEls().forEach((authArea) => {
+    authArea.className = 'auth-area is-authenticated';
+    authArea.innerHTML = markup;
+    const toggle = authArea.querySelector('[data-profile-toggle]');
+    toggle?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleProfileMenu(toggle);
+    });
   });
 }
 
 export async function initAuth() {
-  if (!authAreaEl()) return { authenticated: false, user: null, demo: false };
+  if (!authAreaEls().length) return { authenticated: false, user: null, demo: false };
 
   if (isDemoRoute()) {
     renderDemoUser();
@@ -213,11 +219,11 @@ export async function initAuth() {
 
 document.addEventListener('click', (event) => {
   const menuWrap = event.target.closest?.('.profile-menu-wrap');
-  if (!menuWrap) closeProfileMenu();
+  if (!menuWrap) closeProfileMenus();
 });
 
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') closeProfileMenu();
+  if (event.key === 'Escape') closeProfileMenus();
 });
 
 export function getActiveUser() {
