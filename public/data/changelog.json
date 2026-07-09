@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-09",
+    "title": "Dashboard layout flow polish",
+    "items": [
+      "Moved the global navbar back into the normal page layout flow so it pushes dashboard content down instead of feeling like an overlay.",
+      "Changed the unsaved changes controls into an inline dashboard save section that appears only when drafts exist.",
+      "Kept toast notifications reserved for temporary saved, failed, and read-only feedback messages."
+    ]
+  },
+  {
+    "date": "2026-07-09",
     "title": "Persistent server dashboard save system",
     "items": [
       {
