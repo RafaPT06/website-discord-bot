@@ -19,7 +19,9 @@ function createApp() {
   app.get('/demo/server/:guildId/:section', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
   app.get('/dashboard/settings', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
   app.get('/dashboard/server/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
-  app.get('/dashboard/server/:guildId/:section', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
+  app.get('/dashboard/server/:guildId/:section', (req, res) => res.redirect(`/dashboard/server/${encodeURIComponent(req.params.guildId)}#${encodeURIComponent(req.params.section)}`));
+  app.get('/server/:guildId', (req, res) => res.redirect(`/dashboard/server/${encodeURIComponent(req.params.guildId)}${req.url.includes('#') ? req.url.slice(req.url.indexOf('#')) : ''}`));
+  app.get('/server/:guildId/:section', (req, res) => res.redirect(`/dashboard/server/${encodeURIComponent(req.params.guildId)}#${encodeURIComponent(req.params.section)}`));
   app.get('/docs', (req, res) => res.sendFile(path.join(publicPath, 'docs.html')));
   app.get('/documentation', (req, res) => res.redirect('/docs'));
   app.get('/commands', (req, res) => res.redirect('/docs'));

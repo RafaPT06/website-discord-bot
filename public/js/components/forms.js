@@ -24,7 +24,7 @@ export function saveBtn(label = 'Save Changes') {
   return `<button class="dash-save-btn" type="submit">${escapeHtml(label)}</button>`;
 }
 
-function normalizeChannelValue(value) {
+export function normalizeChannelValue(value) {
   return String(value ?? '').trim().replace(/^#\s*/, '').toLowerCase();
 }
 

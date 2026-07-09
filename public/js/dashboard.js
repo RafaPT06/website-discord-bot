@@ -18,7 +18,7 @@ import {
 import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
 import { emptyState, errorCard, loadingCard } from './components/feedback.js';
-import { switchField, textField, numberField, textareaField, variableButtons, saveBtn, channelSelectField, roleSelectField, textChannels, guildRoles } from './components/forms.js';
+import { switchField, textField, numberField, textareaField, variableButtons, saveBtn, channelSelectField, roleSelectField, textChannels, guildRoles, normalizeChannelValue } from './components/forms.js';
 import { userAccessForm, renderAccessList, userSuggestionRow } from './components/accessList.js';
 import { getActiveUser } from './auth.js';
 import { DEMO_LEVELING, isDemoRoute } from './demoData.js';
@@ -35,12 +35,16 @@ const SETTINGS_STORAGE_KEY = 'meowzServerSettings';
 const DASHBOARD_PREFS_KEY = 'meowzDashboardPreferences';
 const VALID_THEMES = new Set(['dark', 'light']);
 const VALID_LANGUAGES = new Set(['en', 'pt', 'es', 'de', 'fr']);
-const VALID_SECTIONS = new Set(['overview', 'welcome', 'leveling', 'ai', 'logs', 'moderation']);
+const VALID_SECTIONS = new Set(['overview', 'welcome', 'leveling', 'ai', 'ai-image-access', 'logs', 'moderation']);
 let viewMode = localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner' ? 'owner' : 'user';
 const serverPageCache = new Map();
 const tabDataCache = new Map();
 
 function isDemoMode() { return isDemoRoute(); }
+function normalizeSection(section = 'overview') {
+  const normalized = String(section || 'overview').trim().replace(/^#/, '');
+  return normalized === 'ai-image-access' ? 'ai' : (VALID_SECTIONS.has(normalized) ? normalized : 'overview');
+}
 function dashboardBase() { return isDemoMode() ? '/demo/dashboard' : '/dashboard'; }
 function settingsPath() { return isDemoMode() ? '/demo/settings' : '/dashboard/settings'; }
 function demoBadge() { return isDemoMode() ? '<div class="demo-banner" role="status"><strong>Demo Mode</strong><span>Read-only preview using fake data. Real changes are disabled.</span></div>' : ''; }
@@ -71,7 +75,7 @@ applyTheme();
 
 function hashSection(defaultSection = 'overview') {
   const raw = String(window.location.hash || '').replace(/^#/, '').trim();
-  return VALID_SECTIONS.has(raw) ? raw : defaultSection;
+  return normalizeSection(raw || defaultSection);
 }
 function routeInfo() {
   if (isDemoMode()) {
@@ -117,7 +121,7 @@ function serverIcon(server, className = 'dash-server-icon') {
   return `<span class="${className} ${className}-fallback">${initial(server?.name || 'M')}</span>`;
 }
 function sectionTitle(section) {
-  return ({ overview: 'Overview', welcome: 'Welcome Messages', leveling: 'Leveling System', ai: 'AI Image Access', logs: 'Logs', moderation: 'Moderation', settings: 'Settings' })[section] || 'Overview';
+  return ({ overview: 'Overview', welcome: 'Welcome Messages', leveling: 'Leveling System', ai: 'AI Image Access', 'ai-image-access': 'AI Image Access', logs: 'Logs', moderation: 'Moderation', settings: 'Settings' })[section] || 'Overview';
 }
 function sectionPath(server, section = 'overview') {
   const base = `${dashboardBase()}/server/${encodeURIComponent(server.id)}`;
@@ -456,9 +460,10 @@ async function loadModerationAccess(guildId) {
   holder.innerHTML = emptyState('Loading bypass list...', 'Please wait.');
   try {
     const data = await getModerationAccess(guildId);
-    holder.innerHTML = renderAccessList(data, 'No manual moderation bypass users.');
+    holder.innerHTML = renderAccessList(data || { defaultUsers: [], users: [] }, 'No manual moderation bypass users.');
   } catch (err) {
-    holder.innerHTML = errorCard('Could not load moderation bypass list.', err.message || 'Try again later.');
+    holder.innerHTML = `${errorCard('Could not load moderation bypass list.', err.message || 'Try again later.')}<button type="button" class="dash-retry-btn" data-retry-moderation-access>Retry</button>`;
+    holder.querySelector('[data-retry-moderation-access]')?.addEventListener('click', () => loadModerationAccess(guildId));
   }
 }
 function attachUserSearch(form, server) {
@@ -737,34 +742,47 @@ async function renderSettingsPage() {
   }
 }
 async function hydrateServerForSection(server, section) {
-  const cacheKey = `${server.id}:${section}`;
-  if (tabDataCache.has(cacheKey)) return { ...server, ...tabDataCache.get(cacheKey), settings: { ...(server.settings || {}), ...(tabDataCache.get(cacheKey).settings || {}) } };
-  const copy = { ...server, settings: { ...(server.settings || {}) } };
-  if (['welcome', 'leveling', 'logs', 'moderation'].includes(section)) {
+  const active = normalizeSection(section);
+  const cacheKey = `${server.id}:${active}`;
+  const cached = tabDataCache.get(cacheKey);
+  if (cached) return { ...server, ...cached, settings: { ...(server.settings || {}), ...(cached.settings || {}) } };
+
+  const copy = { ...server, channels: Array.isArray(server?.channels) ? server.channels : [], roles: Array.isArray(server?.roles) ? server.roles : [], settings: { ...(server.settings || {}) } };
+
+  if (['welcome', 'leveling', 'logs', 'moderation'].includes(active)) {
     try {
-      const data = await getServerSettings(server.id, section);
-      copy.settings[section] = data.settings || {};
+      const data = await getServerSettings(server.id, active);
+      copy.settings[active] = data?.settings || {};
     } catch (err) {
-      showStatusToast('error', `${sectionTitle(section)} settings unavailable`, err.message || 'Using local preview values.');
+      showStatusToast('error', `${sectionTitle(active)} settings unavailable`, err.message || 'Using local preview values.');
     }
   }
-  if (section === 'leveling') {
+
+  if (active === 'leveling') {
     try {
-      const [roles, rewards] = await Promise.all([getGuildRoles(server.id), getLevelRewards(server.id)]);
-      copy.roles = Array.isArray(roles.roles) ? roles.roles : [];
-      copy.settings.levelRewards = Array.isArray(rewards.rewards) ? rewards.rewards : [];
+      const roles = await getGuildRoles(server.id);
+      copy.roles = Array.isArray(roles?.roles) ? roles.roles : [];
     } catch (err) {
+      copy.roles = [];
       showStatusToast('error', 'Role data unavailable', err.message || 'Reward role editing may be limited.');
     }
+    try {
+      const rewards = await getLevelRewards(server.id);
+      copy.settings.levelRewards = Array.isArray(rewards?.rewards) ? rewards.rewards : [];
+    } catch (err) {
+      copy.settings.levelRewards = [];
+      showStatusToast('error', 'Reward data unavailable', err.message || 'Reward role editing may be limited.');
+    }
   }
-  tabDataCache.set(cacheKey, { roles: copy.roles, settings: copy.settings });
+
+  tabDataCache.set(cacheKey, { roles: copy.roles, channels: copy.channels, settings: copy.settings });
   return copy;
 }
 function serverContent(server, section) {
-  const active = VALID_SECTIONS.has(section) ? section : 'overview';
+  const active = normalizeSection(section);
   if (active === 'welcome') return welcomePage(server);
   if (active === 'leveling') return levelingPage(server);
-  if (active === 'ai') return aiPage(server);
+  if (active === 'ai' || active === 'ai-image-access') return aiPage(server);
   if (active === 'logs') return logsPage(server);
   if (active === 'moderation') return moderationPage(server);
   return overviewPage(server);
@@ -773,7 +791,7 @@ async function renderServerPage(id, section = 'overview') {
   if (!els.detailContent || !els.detail) return;
   if (els.home) els.home.hidden = true;
   els.detail.hidden = false;
-  const active = VALID_SECTIONS.has(section) ? section : 'overview';
+  const active = normalizeSection(section);
   els.detailContent.innerHTML = shell({ active: sectionTitle(active), section: active, content: loadingCard('Loading server...') });
   try {
     let payload = serverPageCache.get(id);
@@ -799,7 +817,7 @@ function handleHashTabNavigation(event) {
   if (!link) return;
   const url = new URL(link.href, window.location.origin);
   if (url.pathname !== window.location.pathname) return;
-  const next = String(url.hash || '#overview').slice(1) || 'overview';
+  const next = normalizeSection(String(url.hash || '#overview').slice(1) || 'overview');
   if (!VALID_SECTIONS.has(next)) return;
   event.preventDefault();
   if (window.location.hash !== `#${next}`) history.pushState(null, '', `#${next}`);

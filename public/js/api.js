@@ -92,9 +92,13 @@ export async function removeImageAccessUser(guildId, userId) {
 }
 
 
-export function getModerationAccess(guildId) {
+export async function getModerationAccess(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ...DEMO_MODERATION_ACCESS });
-  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation-access`, { cacheKey: `moderation-access:${guildId}`, cacheMs: 15000 });
+  try {
+    return await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation-access`, { cacheKey: `moderation-access:${guildId}`, cacheMs: 15000 });
+  } catch (err) {
+    return { ok: true, defaultUsers: [], users: [], allowedUsers: [], fallback: true, warning: err.message || 'Moderation access API unavailable.' };
+  }
 }
 
 export async function addModerationAccessUser(guildId, userId) {
@@ -148,9 +152,13 @@ export function getGuildRoles(guildId) {
   return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/roles`, { cacheKey: `roles:${guildId}`, cacheMs: 15000 });
 }
 
-export function getLevelRewards(guildId) {
+export async function getLevelRewards(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ok: true, rewards: DEMO_SERVER_SETTINGS.levelRewards.map((reward) => ({ ...reward })), demo: true });
-  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards`, { cacheKey: `level-rewards:${guildId}`, cacheMs: 8000 });
+  try {
+    return await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards`, { cacheKey: `level-rewards:${guildId}`, cacheMs: 8000 });
+  } catch (err) {
+    return { ok: true, rewards: [], fallback: true, warning: err.message || 'Level reward API unavailable.' };
+  }
 }
 
 export async function saveLevelReward(guildId, level, roleId) {

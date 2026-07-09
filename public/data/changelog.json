@@ -1,6 +1,32 @@
 [
   {
     "date": "2026-07-09",
+    "title": "Dashboard stability and mobile navigation cleanup",
+    "changes": [
+      {
+        "type": "Fix",
+        "text": "Restored shared channel normalization so server dashboards no longer crash when channel selects render."
+      },
+      {
+        "type": "Fix",
+        "text": "Made leveling roles and reward data load independently with safe fallback states instead of failing the entire tab."
+      },
+      {
+        "type": "Fix",
+        "text": "Moderation trusted-user loading now always resolves to success, empty, or retryable error states."
+      },
+      {
+        "type": "Improvement",
+        "text": "Rebuilt the mobile drawer as compact navigation rows with one menu label, a subtle active state, and a bottom account section."
+      },
+      {
+        "type": "Improvement",
+        "text": "Kept server tab navigation on one route with URL hash state and legacy section redirects."
+      }
+    ]
+  },
+  {
+    "date": "2026-07-09",
     "title": "Mobile drawer cleanup and dashboard helper fixes",
     "items": [
       "Finished the global mobile drawer reset so legacy dashboard drawer styles no longer duplicate account labels or create giant active cards.",
