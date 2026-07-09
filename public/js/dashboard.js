@@ -39,6 +39,76 @@ const VALID_SECTIONS = new Set(['overview', 'welcome', 'leveling', 'ai', 'logs',
 let viewMode = localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner' ? 'owner' : 'user';
 const serverPageCache = new Map();
 const tabDataCache = new Map();
+let serverRenderNonce = 0;
+const DASHBOARD_SERVER_SNAPSHOT_KEY = 'meowzDashboardServerSnapshots';
+
+function storeServerSnapshots(data) {
+  const installed = Array.isArray(data?.installed) ? data.installed : [];
+  if (!installed.length) return;
+  try {
+    sessionStorage.setItem(DASHBOARD_SERVER_SNAPSHOT_KEY, JSON.stringify({
+      at: Date.now(),
+      servers: installed.map((server) => ({ ...server })),
+    }));
+  } catch {
+    // Session storage is an enhancement only.
+  }
+}
+
+function readServerSnapshot(guildId) {
+  const key = String(guildId || '');
+  if (!key) return null;
+
+  for (const payload of serverPageCache.values()) {
+    if (payload?.server?.id === key) return { ...payload.server, settings: { ...(payload.server.settings || {}) } };
+  }
+
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(DASHBOARD_SERVER_SNAPSHOT_KEY) || '{}');
+    const servers = Array.isArray(parsed?.servers) ? parsed.servers : [];
+    const server = servers.find((item) => String(item.id) === key);
+    return server ? { ...server, channels: Array.isArray(server.channels) ? server.channels : [], settings: { ...(server.settings || {}) } } : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchServerSnapshot(guildId) {
+  let snapshot = readServerSnapshot(guildId);
+  if (snapshot) return snapshot;
+
+  try {
+    const data = await getDashboardGuilds(viewMode);
+    storeServerSnapshots(data);
+    snapshot = readServerSnapshot(guildId);
+    return snapshot;
+  } catch {
+    return null;
+  }
+}
+
+function syncDashTabs(root = document) {
+  const tabs = root?.querySelector?.('.dash-tabs');
+  if (!tabs) return;
+
+  requestAnimationFrame(() => {
+    const active = tabs.querySelector('a.is-active');
+    if (!active) {
+      tabs.scrollLeft = 0;
+      return;
+    }
+
+    const isMobile = window.matchMedia?.('(max-width: 900px)').matches ?? window.innerWidth <= 900;
+    if (!isMobile) {
+      tabs.scrollLeft = 0;
+      return;
+    }
+
+    const nearStart = active.offsetLeft < tabs.clientWidth * 0.45;
+    const target = nearStart ? 0 : Math.max(0, active.offsetLeft - 12);
+    tabs.scrollTo({ left: target, behavior: 'auto' });
+  });
+}
 
 const serverDraftCache = new Map();
 
@@ -391,6 +461,7 @@ async function renderDashboardHome() {
   els.home.innerHTML = shell({ content: loadingCard('Loading dashboard...') });
   try {
     const data = await getDashboardGuilds(viewMode);
+    storeServerSnapshots(data);
     els.home.innerHTML = shell({ active: 'Dashboard', section: 'dashboard', showOwnerToggle: true, isOwner: Boolean(data.isOwner), content: dashboardHomeContent(data) });
     wireShell(els.home);
   } catch (err) {
@@ -882,22 +953,50 @@ async function renderServerPage(id, section = 'overview') {
   if (els.home) els.home.hidden = true;
   els.detail.hidden = false;
   const active = VALID_SECTIONS.has(section) ? section : 'overview';
-  els.detailContent.innerHTML = shell({ active: sectionTitle(active), section: active, content: loadingCard('Loading server...') });
+  const renderNonce = ++serverRenderNonce;
+  let finishedFullLoad = false;
+
+  function renderSnapshot(snapshot) {
+    if (!snapshot || renderNonce !== serverRenderNonce || finishedFullLoad) return;
+    document.title = `${snapshot.name} — ${sectionTitle(active)} — Meowz`;
+    els.detailContent.innerHTML = shell({
+      server: snapshot,
+      active: sectionTitle(active),
+      section: active,
+      content: `${serverHeader(snapshot, active)}${loadingCard(`Loading ${sectionTitle(active).toLowerCase()} settings...`)}`,
+    });
+    wireShell(els.detailContent);
+    syncDashTabs(els.detailContent);
+  }
+
+  const initialSnapshot = readServerSnapshot(id);
+  if (initialSnapshot) renderSnapshot(initialSnapshot);
+  else {
+    els.detailContent.innerHTML = shell({ active: sectionTitle(active), section: active, content: loadingCard('Loading server...') });
+    fetchServerSnapshot(id).then(renderSnapshot);
+  }
+
   try {
     let payload = serverPageCache.get(id);
     if (!payload) {
       payload = await getDashboardServer(id);
       serverPageCache.set(id, payload);
+      if (payload?.server) storeServerSnapshots({ installed: [payload.server] });
     }
     const server = await hydrateServerForSection(payload.server, active);
+    finishedFullLoad = true;
+    if (renderNonce !== serverRenderNonce) return;
     document.title = `${server.name} — ${sectionTitle(active)} — Meowz`;
     els.detailContent.innerHTML = shell({ server, active: sectionTitle(active), section: active, content: serverContent(server, active) });
     wireShell(els.detailContent);
+    syncDashTabs(els.detailContent);
     attachSettingsForm(server, active);
     attachGlobalSaveBar(server);
     if (active === 'ai') attachAiPage(server);
     if (active === 'moderation') attachModerationAccess(server);
   } catch (err) {
+    finishedFullLoad = true;
+    if (renderNonce !== serverRenderNonce) return;
     showStatusToast('error', 'Server failed to load', err.message || 'Could not open server.');
     els.detailContent.innerHTML = shell({ active: 'Server unavailable', content: errorCard('Could not open this server.', err.message || 'Try again later.') });
     wireShell(els.detailContent);

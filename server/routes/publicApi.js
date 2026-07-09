@@ -13,7 +13,38 @@ const DISCORD_CHANNEL_TYPES = Object.freeze({
 const MANAGE_GUILD = 0x20n;
 const ADMINISTRATOR = 0x8n;
 const USER_GUILDS_CACHE_MS = 45 * 1000;
+const DISCORD_API_TIMEOUT_MS = Number(process.env.DISCORD_API_TIMEOUT_MS || 6500);
+const OPTIONAL_DASHBOARD_LOOKUP_TIMEOUT_MS = Number(process.env.DASHBOARD_OPTIONAL_LOOKUP_TIMEOUT_MS || 1500);
 const userGuildCache = new Map();
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = DISCORD_API_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeout = Number.isFinite(Number(timeoutMs)) && Number(timeoutMs) > 0
+    ? setTimeout(() => controller.abort(), Number(timeoutMs))
+    : null;
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: options.signal || controller.signal,
+    });
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      const error = new Error('Discord API request timed out.');
+      error.statusCode = 504;
+      throw error;
+    }
+    throw err;
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
+function optionalLookupTimeout(label, timeoutMs = OPTIONAL_DASHBOARD_LOOKUP_TIMEOUT_MS) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve({ channels: [], source: null, errors: [`${label} timed out after ${timeoutMs}ms.`], timedOut: true }), timeoutMs);
+  });
+}
 
 function getOwnerId() {
   return process.env.OWNER_ID || process.env.BOT_OWNER_ID || process.env.DASHBOARD_OWNER_ID || '861228909851705366';
@@ -81,7 +112,7 @@ async function getUserGuilds(session) {
     return cached.guilds;
   }
 
-  const response = await fetch(`${DISCORD_API}/users/@me/guilds`, {
+  const response = await fetchWithTimeout(`${DISCORD_API}/users/@me/guilds`, {
     headers: { authorization: `Bearer ${accessToken}` },
   });
   const data = await response.json().catch(() => null);
@@ -205,7 +236,7 @@ async function requestDiscordGuildChannels(guildId) {
     throw error;
   }
 
-  const response = await fetch(`${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/channels`, {
+  const response = await fetchWithTimeout(`${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/channels`, {
     headers: { authorization: `Bot ${token}` },
   });
   const data = await response.json().catch(() => null);
@@ -227,7 +258,7 @@ async function requestDiscordGuildRoles(guildId) {
     error.statusCode = 503;
     throw error;
   }
-  const response = await fetch(`${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/roles`, {
+  const response = await fetchWithTimeout(`${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/roles`, {
     headers: { authorization: `Bot ${token}` },
   });
   const data = await response.json().catch(() => null);
@@ -290,7 +321,7 @@ async function requestDiscordGuildUserSearch(guildId, query, limit = 8) {
   const endpoint = looksLikeId
     ? `${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/members/${encodeURIComponent(trimmed)}`
     : `${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/members/search?query=${encodeURIComponent(trimmed)}&limit=${encodeURIComponent(Math.max(1, Math.min(25, Number(limit) || 8)))}`;
-  const response = await fetch(endpoint, { headers: { authorization: `Bot ${token}` } });
+  const response = await fetchWithTimeout(endpoint, { headers: { authorization: `Bot ${token}` } });
   const data = await response.json().catch(() => null);
   if (!response.ok) {
     const error = new Error(data?.message || `Discord member API returned ${response.status}`);
@@ -459,7 +490,11 @@ router.get('/dashboard/guilds', requireAuth, async (req, res) => {
 });
 
 router.get('/dashboard/servers/:guildId', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  const channelData = await getDashboardServerChannels(req.params.guildId);
+  const channelData = await Promise.race([
+    getDashboardServerChannels(req.params.guildId),
+    optionalLookupTimeout('Dashboard channel lookup'),
+  ]);
+
   res.json({
     ok: true,
     server: { ...req.dashboardServer, channels: channelData.channels, channelSource: channelData.source },

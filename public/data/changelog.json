@@ -1,6 +1,24 @@
 [
   {
     "date": "2026-07-09",
+    "title": "Mobile dashboard tab follow-up",
+    "items": [
+      "Reset the server tab strip after each render so mobile tabs do not reopen scrolled halfway across the row.",
+      "Added a cached server snapshot fallback so the server header and tabs can appear immediately while detailed settings finish loading.",
+      "Tightened mobile dashboard width rules to prevent nested padding from creating clipped horizontal overflow."
+    ]
+  },
+  {
+    "date": "2026-07-09",
+    "title": "Mobile dashboard loading and tab hotfix",
+    "items": [
+      "Kept server dashboard tabs inside the mobile viewport so the first tab no longer starts clipped off-screen.",
+      "Made the loading server skeleton more compact on phones while server data is being fetched.",
+      "Added request timeouts and a fast fallback for optional channel lookup so server pages do not stay stuck on loading when Discord or the bot API is slow."
+    ]
+  },
+  {
+    "date": "2026-07-09",
     "title": "Dashboard styling QA pass",
     "items": [
       "Separated desktop navbar links from the mobile drawer so Menu and Account drawer groups no longer appear in the desktop topbar.",

@@ -3,17 +3,32 @@ import { DEMO_BOT_STATS, DEMO_DASHBOARD, DEMO_IMAGE_ACCESS, DEMO_MODERATION_ACCE
 const memoryCache = new Map();
 
 async function fetchJson(url, options = {}) {
-  const { cacheKey, cacheMs = 0, ...fetchOptions } = options;
+  const { cacheKey, cacheMs = 0, timeoutMs = 15000, ...fetchOptions } = options;
   if (cacheKey && cacheMs > 0) {
     const cached = memoryCache.get(cacheKey);
     if (cached && Date.now() - cached.at < cacheMs) return cached.data;
   }
 
-  const response = await fetch(url, {
-    cache: 'no-store',
-    headers: { 'content-type': 'application/json', ...(fetchOptions.headers || {}) },
-    ...fetchOptions,
-  });
+  const controller = new AbortController();
+  const timeout = Number.isFinite(Number(timeoutMs)) && Number(timeoutMs) > 0
+    ? setTimeout(() => controller.abort(), Number(timeoutMs))
+    : null;
+
+  let response;
+  try {
+    response = await fetch(url, {
+      cache: 'no-store',
+      headers: { 'content-type': 'application/json', ...(fetchOptions.headers || {}) },
+      ...fetchOptions,
+      signal: fetchOptions.signal || controller.signal,
+    });
+  } catch (err) {
+    if (err?.name === 'AbortError') throw new Error('Request timed out. Try again in a few seconds.');
+    throw err;
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
@@ -49,7 +64,7 @@ export function getDashboardGuilds(mode = 'user') {
 
 export function getDashboardServer(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ok: true, server: demoServerById(guildId), updatedAt: new Date().toISOString(), demo: true });
-  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}`, { cacheKey: `dashboard-server:${guildId}`, cacheMs: 10000 });
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}`, { cacheKey: `dashboard-server:${guildId}`, cacheMs: 10000, timeoutMs: 9000 });
 }
 
 
