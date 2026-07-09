@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-09",
+    "title": "Real mobile navigation modal",
+    "items": [
+      "Rebuilt the mobile menu as a separate top-layer dialog instead of a drawer nested inside the header.",
+      "Moved the backdrop to the modal layer so the page behind is dimmed while the menu stays sharp and readable.",
+      "Added mobile-safe spacing, internal menu scrolling, accessible close/backdrop behavior and preserved desktop navigation/auth rendering."
+    ]
+  },
+  {
+    "date": "2026-07-09",
     "title": "Mobile drawer blur hotfix",
     "items": [
       "Fixed the mobile menu stacking order so the backdrop no longer sits above the drawer and blurs the menu contents.",

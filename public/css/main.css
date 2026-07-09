@@ -7941,3 +7941,401 @@ body.dashboard-app-body .footer-card p:last-child {
     filter: none !important;
   }
 }
+
+/* ===== 2026-07-09 real mobile navigation modal =====
+   Replaces the old header-bound drawer with a top-layer dialog. The page
+   backdrop now belongs to the dialog, while the menu surface stays sharp. */
+.mobile-nav-dialog {
+  display: none;
+}
+
+html.mobile-nav-open,
+body.mobile-nav-open {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+.mobile-nav-dialog[open] {
+  position: fixed;
+  inset: 0;
+  width: 100dvw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  display: grid;
+  justify-items: end;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.mobile-nav-dialog::backdrop {
+  background: rgba(2, 4, 14, .68);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.mobile-nav-surface {
+  width: min(24rem, calc(100dvw - clamp(1rem, 5vw, 3.5rem)));
+  height: 100dvh;
+  max-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.4dvh, 1.25rem);
+  padding:
+    calc(env(safe-area-inset-top, 0px) + clamp(1rem, 3vw, 1.25rem))
+    calc(env(safe-area-inset-right, 0px) + clamp(1rem, 3vw, 1.25rem))
+    calc(env(safe-area-inset-bottom, 0px) + clamp(1rem, 3vw, 1.25rem))
+    clamp(1rem, 3vw, 1.25rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-left: 1px solid rgba(255,255,255,.1);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(139,92,246,.16), transparent 34%),
+    linear-gradient(180deg, rgba(7,8,18,.985), rgba(9,10,22,.97));
+  box-shadow: -28px 0 80px rgba(0,0,0,.46);
+  transform: translateX(102%);
+  transition: transform .26s cubic-bezier(.2,.85,.2,1);
+  will-change: transform;
+}
+
+.mobile-nav-dialog.is-open .mobile-nav-surface,
+.mobile-nav-dialog[open]:not(.is-opening) .mobile-nav-surface {
+  transform: translateX(0);
+}
+
+.mobile-nav-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .9rem;
+  padding-bottom: clamp(.85rem, 2.2dvh, 1rem);
+  border-bottom: 1px solid rgba(255,255,255,.09);
+}
+
+.mobile-nav-brand {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.mobile-nav-brand .brand-icon {
+  width: clamp(2.35rem, 9vw, 2.8rem);
+  height: clamp(2.35rem, 9vw, 2.8rem);
+  border-radius: clamp(.75rem, 3vw, 1rem);
+  flex: 0 0 auto;
+}
+
+.mobile-nav-brand span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: .18rem;
+  line-height: 1;
+}
+
+.mobile-nav-brand small {
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.mobile-nav-brand strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(1.15rem, 4.6vw, 1.4rem);
+  font-weight: 950;
+}
+
+.mobile-nav-close {
+  width: clamp(2.35rem, 9.5vw, 2.85rem);
+  height: clamp(2.35rem, 9.5vw, 2.85rem);
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: clamp(.8rem, 3vw, 1rem);
+  background: rgba(255,255,255,.075);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.mobile-nav-close span {
+  transform: translateY(-1px);
+  font-size: 1.55rem;
+  line-height: 1;
+  font-weight: 750;
+}
+
+.mobile-nav-close:hover,
+.mobile-nav-close:focus-visible {
+  border-color: rgba(139,92,246,.38);
+  background: rgba(139,92,246,.14);
+  outline: none;
+}
+
+.mobile-nav-body {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5dvh, 1.35rem);
+}
+
+.mobile-nav-section {
+  display: grid;
+  gap: .55rem;
+}
+
+.mobile-nav-section > small {
+  padding-inline: .25rem;
+  color: rgba(255,255,255,.48);
+  font-size: .72rem;
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.mobile-nav-list {
+  display: grid;
+  gap: .28rem;
+}
+
+.mobile-nav-link,
+.mobile-nav-dialog .login-button,
+.mobile-nav-dialog .logout-link {
+  width: 100%;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: .75rem;
+  padding: .7rem .85rem;
+  border: 1px solid transparent;
+  border-radius: .95rem;
+  background: transparent;
+  color: rgba(255,255,255,.86);
+  box-shadow: none;
+  font-size: 1rem;
+  font-weight: 850;
+  line-height: 1.15;
+  text-align: left;
+  text-decoration: none;
+  transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+
+.mobile-nav-link:hover,
+.mobile-nav-link:focus-visible,
+.mobile-nav-dialog .login-button:hover,
+.mobile-nav-dialog .login-button:focus-visible,
+.mobile-nav-dialog .logout-link:hover,
+.mobile-nav-dialog .logout-link:focus-visible {
+  color: #fff;
+  background: rgba(255,255,255,.055);
+  border-color: rgba(255,255,255,.09);
+  outline: none;
+}
+
+.mobile-nav-link.active,
+.mobile-nav-link[aria-current="page"] {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(139,92,246,.24), rgba(34,211,238,.08));
+  border-color: rgba(139,92,246,.34);
+  box-shadow: inset .2rem 0 0 var(--primary-2);
+}
+
+.mobile-nav-account {
+  margin-top: auto;
+  padding-top: clamp(.9rem, 2.4dvh, 1.15rem);
+  border-top: 1px solid rgba(255,255,255,.09);
+}
+
+.mobile-nav-dialog .auth-area {
+  min-height: 0;
+  display: block;
+  width: 100%;
+}
+
+.mobile-nav-dialog .auth-area.auth-loading {
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  padding: .75rem .85rem;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: .95rem;
+  background: rgba(255,255,255,.045);
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.mobile-nav-dialog .profile-menu-wrap {
+  display: none !important;
+}
+
+.mobile-nav-dialog .mobile-account-panel {
+  display: grid !important;
+  gap: .5rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.mobile-nav-dialog .mobile-account-header {
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: clamp(2.25rem, 8.5vw, 2.65rem) minmax(0, 1fr);
+  align-items: center;
+  gap: .75rem;
+  padding: .7rem .75rem;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 1rem;
+  background: rgba(255,255,255,.052);
+}
+
+.mobile-nav-dialog .mobile-account-avatar {
+  width: clamp(2.25rem, 8.5vw, 2.65rem);
+  height: clamp(2.25rem, 8.5vw, 2.65rem);
+  border-radius: .8rem;
+}
+
+.mobile-nav-dialog .mobile-account-header div {
+  min-width: 0;
+}
+
+.mobile-nav-dialog .mobile-account-header strong,
+.mobile-nav-dialog .mobile-account-header span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-nav-dialog .mobile-account-header strong {
+  color: var(--text);
+  font-size: .98rem;
+  font-weight: 900;
+}
+
+.mobile-nav-dialog .mobile-account-header span {
+  margin-top: .18rem;
+  color: var(--muted);
+  font-size: .84rem;
+  font-weight: 750;
+}
+
+.mobile-nav-dialog .logout-link {
+  color: #fb7185;
+  background: rgba(255,255,255,.04);
+  border-color: rgba(255,255,255,.075);
+}
+
+@media (min-width: 821px) {
+  .mobile-nav-dialog[open] {
+    display: none !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .desktop-nav-links {
+    display: none !important;
+  }
+
+  .nav[data-global-navbar] > .mobile-menu-button {
+    display: grid !important;
+  }
+
+  /* The old drawer was a nav element inside the header. It is no longer used. */
+  .nav[data-global-navbar] > .nav-links.mobile-drawer-panel,
+  .nav[data-global-navbar] > [data-nav-links] {
+    display: none !important;
+  }
+
+  .nav[data-global-navbar] {
+    z-index: 30 !important;
+  }
+
+  body.mobile-nav-open .nav[data-global-navbar],
+  body.mobile-nav-open main,
+  body.mobile-nav-open .page-shell,
+  body.mobile-nav-open .dashboard-app-root,
+  body.mobile-nav-open .footer-card {
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobile-nav-surface {
+    width: min(23rem, calc(100dvw - .75rem));
+    padding-left: .95rem;
+  }
+
+  .mobile-nav-link,
+  .mobile-nav-dialog .login-button,
+  .mobile-nav-dialog .logout-link {
+    min-height: 2.85rem;
+    font-size: .96rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav-surface,
+  .mobile-nav-link,
+  .mobile-nav-dialog .login-button,
+  .mobile-nav-dialog .logout-link {
+    transition: none !important;
+  }
+}
+
+:root[data-theme="light"] .mobile-nav-dialog::backdrop {
+  background: rgba(15,23,42,.3);
+}
+
+:root[data-theme="light"] .mobile-nav-surface {
+  border-left-color: rgba(15,23,42,.1);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(139,92,246,.1), transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,.985), rgba(248,250,252,.97));
+  box-shadow: -28px 0 80px rgba(15,23,42,.18);
+}
+
+:root[data-theme="light"] .mobile-nav-section > small,
+:root[data-theme="light"] .mobile-nav-brand small {
+  color: rgba(15,23,42,.52);
+}
+
+:root[data-theme="light"] .mobile-nav-link,
+:root[data-theme="light"] .mobile-nav-dialog .login-button,
+:root[data-theme="light"] .mobile-nav-dialog .logout-link {
+  color: rgba(15,23,42,.82);
+}
+
+:root[data-theme="light"] .mobile-nav-link:hover,
+:root[data-theme="light"] .mobile-nav-link:focus-visible,
+:root[data-theme="light"] .mobile-nav-dialog .login-button:hover,
+:root[data-theme="light"] .mobile-nav-dialog .login-button:focus-visible,
+:root[data-theme="light"] .mobile-nav-dialog .logout-link:hover,
+:root[data-theme="light"] .mobile-nav-dialog .logout-link:focus-visible,
+:root[data-theme="light"] .mobile-nav-dialog .mobile-account-header,
+:root[data-theme="light"] .mobile-nav-dialog .auth-area.auth-loading {
+  background: rgba(15,23,42,.045);
+  border-color: rgba(15,23,42,.09);
+}
+
+:root[data-theme="light"] .mobile-nav-link.active,
+:root[data-theme="light"] .mobile-nav-link[aria-current="page"] {
+  color: #0f172a;
+  background: linear-gradient(135deg, rgba(139,92,246,.15), rgba(34,211,238,.07));
+}

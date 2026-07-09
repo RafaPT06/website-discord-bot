@@ -1,6 +1,6 @@
 import { isDemoRoute } from '../demoData.js';
 import { MAIN_NAV_ITEMS } from './navConfig.js';
-import { renderMobileDrawer } from './mobileDrawer.js';
+import { renderMobileNavDialog } from './mobileDrawer.js';
 
 function authMarkup(demo, scope = 'desktop') {
   const initialAuthText = demo ? 'Loading demo...' : 'Checking login...';
@@ -33,25 +33,28 @@ export function renderNavbar() {
   const demo = isDemoRoute();
   return `
     <header class="nav" data-global-navbar>
-      <a class="brand" href="/" aria-label="Meowz home">
+      <a class="brand" href="${demo ? '/demo' : '/'}" aria-label="Meowz home">
         <span class="brand-icon" data-bot-avatar-small>M</span>
         <span data-bot-name-short>Meowz</span>
       </a>
       ${renderDesktopNav(demo)}
-      <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
+      <button class="mobile-menu-button" type="button" data-menu-toggle aria-controls="mobile-nav" aria-label="Open navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
-      ${renderMobileDrawer({ demo, initialAuthHtml: authMarkup(demo, 'mobile') })}
     </header>
+    ${renderMobileNavDialog({ demo, initialAuthHtml: authMarkup(demo, 'mobile') })}
   `;
 }
 
 export function mountNavbar() {
+  document.querySelectorAll('[data-mobile-nav-dialog]').forEach((dialog) => dialog.remove());
+
   const current = document.querySelector('header.nav, [data-global-navbar]');
   if (current) {
     current.outerHTML = renderNavbar();
     return;
   }
+
   const glows = document.querySelectorAll('.bg-glow');
   const anchor = glows.length ? glows[glows.length - 1] : null;
   if (anchor) anchor.insertAdjacentHTML('afterend', renderNavbar());
