@@ -7331,3 +7331,129 @@ body.dashboard-signed-out .dash-top-actions .dash-owner-toggle {
     gap: .55rem !important;
   }
 }
+
+
+/* ===== FINAL: dashboard navbar/save controls participate in layout flow =====
+   These overrides intentionally come last to neutralize older sticky/fixed dashboard chrome.
+   Toasts and mobile drawer overlays remain temporary overlays; permanent dashboard controls do not.
+*/
+body.dashboard-app-body {
+  overflow-x: hidden;
+}
+
+body.dashboard-app-body > .nav,
+body.dashboard-app-body > .nav[data-global-navbar],
+.nav[data-global-navbar] {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: 20 !important;
+}
+
+.dashboard-app-root {
+  padding-top: 0 !important;
+}
+
+.dash-shell {
+  position: relative !important;
+  align-items: start !important;
+  overflow: visible !important;
+}
+
+.dash-sidebar {
+  position: relative !important;
+  top: auto !important;
+  height: auto !important;
+  min-height: calc(100vh - clamp(5rem, 10vw, 7rem)) !important;
+  align-self: stretch !important;
+  z-index: 1 !important;
+}
+
+.dash-main {
+  position: relative !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+.dash-topbar {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: 2 !important;
+  backdrop-filter: none !important;
+}
+
+[data-server-save-host] {
+  position: relative !important;
+  display: block !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+[data-server-save-host]:empty {
+  display: none !important;
+}
+
+[data-server-save-host] .dash-save-bar,
+.dash-save-bar[data-global-save-bar],
+.dash-save-bar {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: clamp(1rem, 2.5vw, 1.35rem) 0 0 !important;
+  z-index: 1 !important;
+}
+
+.status-toast,
+.toast,
+[data-toast],
+.status-toast-stack {
+  position: fixed;
+}
+
+/* Keep mobile drawer as the only intentional navigation overlay. */
+@media (max-width: 900px) {
+  .dash-shell {
+    display: block !important;
+  }
+
+  .dash-sidebar {
+    display: none !important;
+  }
+
+  .dash-topbar {
+    display: none !important;
+  }
+
+  .dash-content,
+  .dash-main {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  [data-server-save-host] .dash-save-bar,
+  .dash-save-bar[data-global-save-bar] {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: clamp(.65rem, 2.5vw, .85rem) !important;
+  }
+
+  [data-server-save-host] .dash-save-bar > div:last-child,
+  .dash-save-bar[data-global-save-bar] > div:last-child {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: clamp(.5rem, 2vw, .65rem) !important;
+  }
+}
+
