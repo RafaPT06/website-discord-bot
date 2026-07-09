@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-09",
+    "title": "Mobile drawer blur hotfix",
+    "items": [
+      "Fixed the mobile menu stacking order so the backdrop no longer sits above the drawer and blurs the menu contents.",
+      "Kept the drawer, close button and hamburger controls sharp while the page behind them remains dimmed.",
+      "Preserved the in-flow dashboard navbar behavior without reintroducing a fixed desktop overlay."
+    ]
+  },
+  {
+    "date": "2026-07-09",
     "title": "Mobile dashboard tab follow-up",
     "items": [
       "Reset the server tab strip after each render so mobile tabs do not reopen scrolled halfway across the row.",

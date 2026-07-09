@@ -7908,3 +7908,36 @@ body.dashboard-app-body .footer-card p:last-child {
     min-height: clamp(3.75rem, 10dvh, 5.5rem) !important;
   }
 }
+
+/* ===== 2026-07-09 mobile drawer stacking fix =====
+   The dashboard flow reset lowered the navbar to z-index 20, which put the
+   fixed drawer inside a lower stacking context than the menu backdrop. This
+   keeps the backdrop over the page only, while the drawer stays sharp above it.
+*/
+@media (max-width: 900px) {
+  body.menu-open > .nav[data-global-navbar],
+  body.menu-open .nav[data-global-navbar] {
+    position: relative !important;
+    z-index: 140 !important;
+    isolation: isolate !important;
+    filter: none !important;
+  }
+
+  body.menu-open::after {
+    z-index: 80 !important;
+    pointer-events: auto !important;
+  }
+
+  body.menu-open .nav[data-global-navbar] > .nav-links.mobile-drawer-panel {
+    z-index: 160 !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.menu-open .nav[data-global-navbar] > .mobile-menu-button,
+  body.menu-open .nav[data-global-navbar] .mobile-drawer-close {
+    z-index: 170 !important;
+    filter: none !important;
+  }
+}
