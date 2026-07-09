@@ -8,6 +8,7 @@
     "monitor": "node scripts/monitor.js"
   },
   "dependencies": {
+    "@playwright/test": "^1.61.1",
     "express": "^4.21.2"
   }
 }

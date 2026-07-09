@@ -21,7 +21,7 @@ export function variableButtons(target = 'welcomeMessage', label = 'Insert Varia
 }
 
 export function saveBtn(label = 'Save Changes') {
-  return `<button class="dash-save-btn" type="submit">${escapeHtml(label)}</button>`;
+  return `<button class="dash-save-btn dash-tab-save-legacy" type="submit" hidden>${escapeHtml(label)}</button>`;
 }
 
 export function normalizeChannelValue(value) {

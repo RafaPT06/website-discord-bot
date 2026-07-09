@@ -1,27 +1,22 @@
 [
   {
     "date": "2026-07-09",
-    "title": "Dashboard stability and mobile navigation cleanup",
-    "changes": [
+    "title": "Persistent server dashboard save system",
+    "items": [
       {
-        "type": "Fix",
-        "text": "Restored shared channel normalization so server dashboards no longer crash when channel selects render."
+        "text": "Refactored server dashboard edits into a shared per-server draft state with one contextual unsaved changes bar."
       },
       {
-        "type": "Fix",
-        "text": "Made leveling roles and reward data load independently with safe fallback states instead of failing the entire tab."
+        "text": "Kept hash-based server tabs lazy-loaded and cached while preserving draft changes between tab switches."
       },
       {
-        "type": "Fix",
-        "text": "Moderation trusted-user loading now always resolves to success, empty, or retryable error states."
+        "text": "Fixed channel normalization imports so dashboard channel selects no longer crash when rendering previews."
       },
       {
-        "type": "Improvement",
-        "text": "Rebuilt the mobile drawer as compact navigation rows with one menu label, a subtle active state, and a bottom account section."
+        "text": "Added safer fallbacks for role, level reward and moderation bypass APIs so failed data does not lock pages in loading states."
       },
       {
-        "type": "Improvement",
-        "text": "Kept server tab navigation on one route with URL hash state and legacy section redirects."
+        "text": "Reworked the mobile drawer final override with compact Tailwind-style rows, a subtle active state and responsive sizing."
       }
     ]
   },

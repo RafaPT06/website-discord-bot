@@ -21,7 +21,10 @@ export function renderMobileDrawer({ demo = false, initialAuthHtml = '' } = {}) 
   return `
     <nav class="nav-links mobile-drawer-panel" data-nav-links aria-label="Main navigation" aria-hidden="true">
       <div class="mobile-drawer-head">
-        <strong class="mobile-drawer-title">Menu</strong>
+        <a class="mobile-drawer-brand" href="${demo ? '/demo' : '/'}" data-nav-link data-route="/">
+          <span class="brand-icon" data-bot-avatar-small>M</span>
+          <strong>Meowz</strong>
+        </a>
         <button class="mobile-drawer-close" type="button" data-menu-close aria-label="Close navigation">×</button>
       </div>
 
