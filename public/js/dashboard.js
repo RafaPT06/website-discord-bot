@@ -18,7 +18,7 @@ import {
 import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
 import { emptyState, errorCard, loadingCard } from './components/feedback.js';
-import { switchField, textField, numberField, textareaField, variableButtons, saveBtn, channelSelectField, roleSelectField } from './components/forms.js';
+import { switchField, textField, numberField, textareaField, variableButtons, saveBtn, channelSelectField, roleSelectField, textChannels, guildRoles } from './components/forms.js';
 import { userAccessForm, renderAccessList, userSuggestionRow } from './components/accessList.js';
 import { getActiveUser } from './auth.js';
 import { DEMO_LEVELING, isDemoRoute } from './demoData.js';

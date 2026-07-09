@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-09",
+    "title": "Mobile drawer cleanup and dashboard helper fixes",
+    "items": [
+      "Finished the global mobile drawer reset so legacy dashboard drawer styles no longer duplicate account labels or create giant active cards.",
+      "Restored shared guild channel and role helpers after the component split so server pages no longer fail with missing textChannels or guildRoles errors.",
+      "Added stronger responsive overrides for the mobile navbar, drawer rows, account section and dashboard spacing without using fixed phone-specific sizes."
+    ]
+  },
+  {
     "version": "v1.15.0",
     "date": "2026-07-08",
     "changes": [

@@ -6862,3 +6862,232 @@ body.dashboard-signed-out .dash-top-actions .dash-owner-toggle {
   .dash-save-btn { min-height: clamp(2.9rem, 9dvh, 3.25rem) !important; border-radius: clamp(.8rem, 3vw, 1rem) !important; }
   .footer-card { padding: clamp(.85rem, 3vw, 1rem) !important; margin-block: clamp(1rem, 4dvh, 1.5rem) !important; }
 }
+
+
+/* ===== 2026-07-09 hard reset for component drawer + dashboard globals ===== */
+@media (max-width: 720px) {
+  /* Kill legacy dashboard drawer system completely. One drawer only: components/mobileDrawer.js */
+  .dash-mobile-bar,
+  .dash-mobile-backdrop,
+  .dash-mobile-drawer { display: none !important; visibility: hidden !important; pointer-events: none !important; }
+
+  body.menu-open { overflow: hidden !important; }
+  body.menu-open::after {
+    content: "" !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 88 !important;
+    background: rgba(3, 5, 12, .58) !important;
+    backdrop-filter: blur(.42rem) !important;
+  }
+
+  .nav[data-global-navbar] {
+    position: sticky !important;
+    top: max(.45rem, env(safe-area-inset-top)) !important;
+    z-index: 90 !important;
+    width: min(calc(100% - clamp(1rem, 4vw, 1.35rem)), 68rem) !important;
+    margin: clamp(.45rem, 1.6dvh, .75rem) auto 0 !important;
+    padding: clamp(.48rem, 1.7vw, .68rem) clamp(.6rem, 2.4vw, .85rem) !important;
+    min-height: 0 !important;
+    border-radius: clamp(.95rem, 3.7vw, 1.25rem) !important;
+  }
+  .nav[data-global-navbar] .brand { min-width: 0 !important; gap: .55rem !important; font-size: clamp(1rem, 4vw, 1.18rem) !important; }
+  .nav[data-global-navbar] .brand > span:last-child { min-width: 0 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+  .nav[data-global-navbar] .brand-icon {
+    width: clamp(2.05rem, 8.8vw, 2.45rem) !important;
+    height: clamp(2.05rem, 8.8vw, 2.45rem) !important;
+    border-radius: clamp(.68rem, 2.5vw, .85rem) !important;
+    flex: 0 0 auto !important;
+  }
+  .nav[data-global-navbar] .mobile-menu-button {
+    width: clamp(2.25rem, 9vw, 2.65rem) !important;
+    height: clamp(2.25rem, 9vw, 2.65rem) !important;
+    border-radius: clamp(.7rem, 2.8vw, .9rem) !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+  .nav[data-global-navbar] .mobile-menu-button span { width: clamp(1rem, 4vw, 1.2rem) !important; margin-block: .13rem !important; }
+
+  .nav[data-global-navbar] .nav-links.mobile-drawer-panel,
+  .nav[data-global-navbar] .nav-links {
+    position: fixed !important;
+    inset-block: 0 !important;
+    inset-inline: auto 0 !important;
+    width: min(78vw, 19.5rem) !important;
+    max-width: calc(100vw - clamp(2.35rem, 10vw, 4.25rem)) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: max(.85rem, env(safe-area-inset-top)) clamp(.85rem, 3vw, 1rem) max(.85rem, env(safe-area-inset-bottom)) !important;
+    border: 0 !important;
+    border-left: 1px solid rgba(255,255,255,.09) !important;
+    border-radius: 0 !important;
+    background: rgba(6, 7, 16, .988) !important;
+    box-shadow: -1.3rem 0 3.5rem rgba(0,0,0,.38) !important;
+    backdrop-filter: none !important;
+    transform: translateX(104%) !important;
+    transition: transform .22s ease !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    z-index: 100 !important;
+  }
+  .nav[data-global-navbar] .nav-links.is-open { transform: translateX(0) !important; pointer-events: auto !important; }
+
+  .mobile-drawer-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: .7rem !important;
+    flex: 0 0 auto !important;
+    padding: 0 0 clamp(.7rem, 2dvh, .9rem) !important;
+    margin: 0 0 clamp(.55rem, 1.6dvh, .75rem) !important;
+    border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  }
+  .mobile-drawer-brand { display: inline-flex !important; align-items: center !important; gap: .55rem !important; min-width: 0 !important; color: var(--text) !important; text-decoration: none !important; }
+  .mobile-drawer-brand .brand-icon { width: clamp(1.9rem, 8vw, 2.2rem) !important; height: clamp(1.9rem, 8vw, 2.2rem) !important; border-radius: .65rem !important; }
+  .mobile-drawer-brand strong { min-width: 0 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; font-size: clamp(.98rem, 4vw, 1.12rem) !important; }
+  .mobile-drawer-close {
+    display: grid !important;
+    place-content: center !important;
+    flex: 0 0 auto !important;
+    width: clamp(2.2rem, 9vw, 2.55rem) !important;
+    height: clamp(2.2rem, 9vw, 2.55rem) !important;
+    border-radius: .82rem !important;
+    border: 1px solid rgba(255,255,255,.16) !important;
+    background: rgba(255,255,255,.095) !important;
+    color: #fff !important;
+    font-size: clamp(1.35rem, 5vw, 1.6rem) !important;
+    line-height: 1 !important;
+    font-weight: 950 !important;
+  }
+
+  .mobile-drawer-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: clamp(.75rem, 2dvh, 1rem) !important;
+  }
+  .mobile-drawer-section,
+  .mobile-drawer-account { display: flex !important; flex-direction: column !important; gap: .42rem !important; }
+  .mobile-drawer-section small,
+  .mobile-drawer-account > small {
+    padding-inline: .25rem !important;
+    color: rgba(255,255,255,.46) !important;
+    text-transform: uppercase !important;
+    letter-spacing: .14em !important;
+    font-size: clamp(.62rem, 2.4vw, .72rem) !important;
+    font-weight: 950 !important;
+  }
+  .mobile-drawer-list { display: flex !important; flex-direction: column !important; gap: .16rem !important; }
+  .nav[data-global-navbar] .mobile-drawer-link,
+  .nav[data-global-navbar] .nav-links a.mobile-drawer-link,
+  .nav[data-global-navbar] .nav-links a[data-nav-link],
+  .nav[data-global-navbar] .auth-area > a,
+  .nav[data-global-navbar] .logout-link,
+  .nav[data-global-navbar] .login-button {
+    width: 100% !important;
+    min-height: clamp(2.45rem, 6.7dvh, 2.75rem) !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: .62rem .78rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    border-radius: .78rem !important;
+    border: 1px solid transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: rgba(255,255,255,.84) !important;
+    font-size: clamp(.9rem, 3.5vw, .98rem) !important;
+    font-weight: 850 !important;
+    line-height: 1.12 !important;
+    text-align: left !important;
+    text-decoration: none !important;
+  }
+  .nav[data-global-navbar] .mobile-drawer-link:hover,
+  .nav[data-global-navbar] .mobile-drawer-link:focus-visible,
+  .nav[data-global-navbar] .logout-link:hover,
+  .nav[data-global-navbar] .login-button:hover { background: rgba(255,255,255,.06) !important; border-color: rgba(255,255,255,.08) !important; }
+  .nav[data-global-navbar] .mobile-drawer-link.active,
+  .nav[data-global-navbar] .mobile-drawer-link[aria-current="page"] {
+    background: rgba(139,92,246,.15) !important;
+    border-color: rgba(139,92,246,.28) !important;
+    box-shadow: inset .17rem 0 0 var(--primary-2) !important;
+    color: #fff !important;
+    min-height: clamp(2.45rem, 6.7dvh, 2.75rem) !important;
+    padding-block: .62rem !important;
+  }
+
+  .mobile-drawer-account { margin-top: auto !important; padding-top: clamp(.65rem, 2dvh, .85rem) !important; border-top: 1px solid rgba(255,255,255,.08) !important; }
+  .mobile-drawer-account > small { display: block !important; }
+  .mobile-drawer-account-links { margin-bottom: .25rem !important; }
+  .nav[data-global-navbar] .auth-area {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+  .nav[data-global-navbar] .auth-area::before,
+  .nav[data-global-navbar] .auth-area::after,
+  .mobile-account-panel::before,
+  .mobile-account-panel::after { content: none !important; display: none !important; }
+  .nav[data-global-navbar] .profile-menu-wrap { display: none !important; }
+  .nav[data-global-navbar] .mobile-account-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: .4rem !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+  .mobile-account-header {
+    display: grid !important;
+    grid-template-columns: clamp(2rem, 8vw, 2.25rem) minmax(0, 1fr) !important;
+    gap: .62rem !important;
+    align-items: center !important;
+    min-height: 0 !important;
+    padding: .58rem .66rem !important;
+    border-radius: .82rem !important;
+    border: 1px solid rgba(255,255,255,.1) !important;
+    background: rgba(255,255,255,.055) !important;
+  }
+  .mobile-account-avatar { width: clamp(2rem, 8vw, 2.25rem) !important; height: clamp(2rem, 8vw, 2.25rem) !important; border-radius: .65rem !important; }
+  .mobile-account-header div { min-width: 0 !important; }
+  .mobile-account-header strong,
+  .mobile-account-header span { display: block !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+  .mobile-account-header strong { font-size: clamp(.9rem, 3.4vw, .97rem) !important; line-height: 1.12 !important; }
+  .mobile-account-header span { font-size: clamp(.78rem, 3vw, .84rem) !important; line-height: 1.12 !important; color: var(--muted) !important; }
+  .nav[data-global-navbar] .logout-link { color: #fb7185 !important; background: rgba(255,255,255,.045) !important; border-color: rgba(255,255,255,.075) !important; }
+
+  /* Dashboard after component cleanup */
+  .dashboard-app-root { padding-top: clamp(.8rem, 2.5dvh, 1.1rem) !important; }
+  .dash-shell,
+  .dash-main,
+  .dash-content { width: 100% !important; max-width: none !important; min-width: 0 !important; }
+  .dash-shell { padding-inline: clamp(.7rem, 3vw, 1rem) !important; }
+  .dash-card { padding: clamp(.9rem, 3.6vw, 1.15rem) !important; }
+  .dash-feature-grid.compact,
+  .dash-feature-grid,
+  .dash-designer,
+  .dash-grid { gap: clamp(.65rem, 2dvh, .85rem) !important; }
+
+  :root[data-theme="light"] body.menu-open::after { background: rgba(15,23,42,.25) !important; }
+  :root[data-theme="light"] .nav[data-global-navbar] .nav-links.mobile-drawer-panel,
+  :root[data-theme="light"] .nav[data-global-navbar] .nav-links { background: rgba(255,255,255,.985) !important; border-left-color: rgba(15,23,42,.1) !important; }
+  :root[data-theme="light"] .mobile-drawer-section small,
+  :root[data-theme="light"] .mobile-drawer-account > small { color: rgba(15,23,42,.48) !important; }
+  :root[data-theme="light"] .nav[data-global-navbar] .mobile-drawer-link,
+  :root[data-theme="light"] .nav[data-global-navbar] .logout-link,
+  :root[data-theme="light"] .nav[data-global-navbar] .login-button { color: var(--text) !important; }
+  :root[data-theme="light"] .nav[data-global-navbar] .mobile-drawer-link.active { background: rgba(139,92,246,.12) !important; }
+  :root[data-theme="light"] .mobile-account-header,
+  :root[data-theme="light"] .nav[data-global-navbar] .logout-link { background: rgba(15,23,42,.045) !important; border-color: rgba(15,23,42,.1) !important; }
+}
