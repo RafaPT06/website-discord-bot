@@ -1,0 +1,43 @@
+name: Apply moderation cleanup
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-moderation-cleanup.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Apply and verify cleanup
+        run: |
+          python scripts/apply-moderation-cleanup.py
+          node --check public/js/dashboard.js
+          node --check public/js/api.js
+          node --check public/js/components/accessList.js
+          python -m json.tool public/data/changelog.json >/dev/null
+
+      - name: Commit cleanup
+        run: |
+          rm -f scripts/apply-moderation-cleanup.py
+          rm -f .github/workflows/apply-moderation-cleanup.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Fix moderation trusted users layout and loading"
+          git push
