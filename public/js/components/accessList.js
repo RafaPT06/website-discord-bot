@@ -27,11 +27,14 @@ export function normalizeAccessPayload(data = {}) {
   return { defaultUsers, manual };
 }
 
-export function renderAccessList(data, manualEmpty = 'No manually added users.') {
+export function renderAccessList(data = {}, manualEmpty = 'No manually added users.') {
   const { defaultUsers, manual } = normalizeAccessPayload(data);
   const owner = defaultUsers.filter((user) => ['bot_owner', 'owner'].includes(String(user.source || user.type || '').toLowerCase()));
   const managers = defaultUsers.filter((user) => !owner.includes(user));
-  return `<div class="dash-access-list"><div class="dash-note"><strong>Default access</strong><span>Bot owner and users with Manage Server are included automatically and cannot be removed.</span></div>${owner.map(u => accessUserRow(u, false, 'Bot Owner')).join('')}${managers.map(u => accessUserRow(u, false, 'Manage Server')).join('')}${manual.length ? `<h3>Manual access</h3>${manual.map(u => accessUserRow(u, true, 'Manual')).join('')}` : emptyState(manualEmpty, 'Search by username or paste a Discord ID to add someone.')}</div>`;
+  const fallbackNote = data?.fallback
+    ? '<div class="dash-note dash-note-warning"><strong>Limited access data</strong><span>The live moderation access API is unavailable, so safe defaults are shown for now.</span></div>'
+    : '';
+  return `<div class="dash-access-list">${fallbackNote}<div class="dash-note"><strong>Default access</strong><span>Bot owner and users with Manage Server are included automatically and cannot be removed.</span></div>${owner.map(u => accessUserRow(u, false, 'Bot Owner')).join('')}${managers.map(u => accessUserRow(u, false, 'Manage Server')).join('')}${manual.length ? `<h3>Manual access</h3>${manual.map(u => accessUserRow(u, true, 'Manual')).join('')}` : emptyState(manualEmpty, 'Search by username or paste a Discord ID to add someone.')}</div>`;
 }
 
 export function userSuggestionRow(user) {

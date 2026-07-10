@@ -107,13 +107,13 @@ export async function removeImageAccessUser(guildId, userId) {
 }
 
 
-export async function getModerationAccess(guildId) {
+export function getModerationAccess(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ...DEMO_MODERATION_ACCESS });
-  try {
-    return await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation-access`, { cacheKey: `moderation-access:${guildId}`, cacheMs: 15000, timeoutMs: 9000 });
-  } catch (err) {
-    return { ok: true, users: [], defaultUsers: [], fallback: true, error: err.message || 'Moderation access API unavailable.' };
-  }
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation-access`, {
+    cacheKey: `moderation-access:${guildId}`,
+    cacheMs: 15000,
+    timeoutMs: 9000,
+  });
 }
 
 export async function addModerationAccessUser(guildId, userId) {

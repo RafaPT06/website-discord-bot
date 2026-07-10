@@ -7610,12 +7610,19 @@ body.dashboard-app-body > .nav[data-global-navbar],
   min-width: 0;
 }
 .dash-moderation-layout {
-  gap: clamp(1rem, 2vw, 1.35rem) !important;
-  row-gap: clamp(1.1rem, 2.5vw, 1.5rem) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr) !important;
+  align-items: start !important;
+  gap: clamp(1.1rem, 2.4vw, 1.55rem) !important;
 }
 .dash-moderation-layout > .dash-card {
   min-width: 0;
+  margin: 0 !important;
 }
+.dash-moderation-settings {
+  grid-row: span 2;
+}
+.dash-moderation-access-card,
 .dash-automation-card {
   align-self: start;
 }
@@ -7628,6 +7635,10 @@ body.dashboard-app-body > .nav[data-global-navbar],
 [data-moderation-access-list] {
   display: block;
   margin-top: clamp(.85rem, 2vw, 1.1rem);
+}
+.dash-note-warning {
+  border-color: rgba(245, 158, 11, .28) !important;
+  background: rgba(245, 158, 11, .08) !important;
 }
 
 /* Save controls: visible near the page header, styled like a floating glass card, but not viewport-fixed. */
@@ -7673,8 +7684,12 @@ body.dashboard-app-body .footer-card p:last-child {
 @media (max-width: 900px) {
   .dash-shell { width: 100% !important; padding-inline: clamp(.75rem, 3vw, 1rem) !important; }
   .dash-content { width: 100% !important; }
-  .dash-moderation-layout { gap: clamp(1rem, 2.8dvh, 1.25rem) !important; }
-  .dash-moderation-layout > .dash-card + .dash-card { margin-top: .15rem !important; }
+  .dash-moderation-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: clamp(1rem, 2.8dvh, 1.35rem) !important;
+  }
+  .dash-moderation-settings { grid-row: auto; }
+  .dash-moderation-layout > .dash-card + .dash-card { margin-top: 0 !important; }
   .dash-card-head > .status,
   .dash-card-head > b.status,
   .status {
@@ -7941,239 +7956,6 @@ body.dashboard-app-body .footer-card p:last-child {
     filter: none !important;
   }
 }
-
-/* ===== 2026-07-10 floating dashboard state cards =====
-   Unsaved changes and active section status are viewport-level cards so they
-   remain visible while editing long mobile dashboard forms. */
-[data-server-save-host] {
-  position: fixed !important;
-  left: 50% !important;
-  right: auto !important;
-  bottom: max(.85rem, env(safe-area-inset-bottom)) !important;
-  transform: translateX(-50%) !important;
-  width: min(calc(100dvw - clamp(1rem, 4vw, 2rem)), 46rem) !important;
-  max-width: 46rem !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  z-index: 1200 !important;
-  pointer-events: none !important;
-}
-[data-server-save-host]:empty { display: none !important; }
-[data-server-save-host] .dash-save-bar,
-.dash-save-bar[data-global-save-bar] {
-  position: relative !important;
-  inset: auto !important;
-  transform: none !important;
-  width: 100% !important;
-  margin: 0 !important;
-  pointer-events: auto !important;
-  border: 1px solid rgba(139,92,246,.45) !important;
-  background:
-    radial-gradient(circle at 92% 18%, rgba(34,211,238,.18), transparent 30%),
-    linear-gradient(135deg, rgba(12, 13, 27, .97), rgba(35, 18, 69, .95)) !important;
-  box-shadow: 0 1.15rem 3.2rem rgba(0,0,0,.46), inset 0 1px 0 rgba(255,255,255,.1) !important;
-  backdrop-filter: blur(1.05rem) saturate(1.12) !important;
-  -webkit-backdrop-filter: blur(1.05rem) saturate(1.12) !important;
-}
-body.has-dashboard-unsaved {
-  padding-bottom: clamp(7rem, 16dvh, 10rem);
-}
-
-[data-floating-status-host] {
-  position: fixed !important;
-  right: max(1rem, env(safe-area-inset-right)) !important;
-  bottom: max(1rem, env(safe-area-inset-bottom)) !important;
-  z-index: 1190 !important;
-  pointer-events: none !important;
-}
-body.has-dashboard-unsaved [data-floating-status-host] {
-  bottom: calc(max(1rem, env(safe-area-inset-bottom)) + clamp(5.8rem, 12dvh, 7.2rem)) !important;
-}
-[data-floating-status-host]:empty { display: none !important; }
-.dash-floating-status {
-  display: inline-flex;
-  align-items: center;
-  gap: .55rem;
-  max-width: min(26rem, calc(100dvw - 2rem));
-  min-height: 2.45rem;
-  padding: .48rem .7rem .48rem .82rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background:
-    radial-gradient(circle at 12% 18%, rgba(34,211,238,.12), transparent 34%),
-    rgba(8, 10, 22, .94);
-  box-shadow: 0 .95rem 2.6rem rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
-  backdrop-filter: blur(.9rem) saturate(1.12);
-  -webkit-backdrop-filter: blur(.9rem) saturate(1.12);
-  color: #fff;
-}
-.dash-floating-status span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: rgba(255,255,255,.72);
-  font-size: .78rem;
-  font-weight: 900;
-}
-.dash-floating-status strong {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 1.65rem;
-  padding: 0 .62rem;
-  border-radius: 999px;
-  font-size: .75rem;
-  font-weight: 950;
-  letter-spacing: .01em;
-}
-.dash-floating-status.enabled strong,
-.status.enabled,
-.dash-log-status.on strong {
-  color: #86efac !important;
-  border-color: rgba(57,229,140,.28) !important;
-  background: rgba(57,229,140,.14) !important;
-}
-.dash-floating-status.disabled strong,
-.status.disabled,
-.dash-log-status.off strong {
-  color: #fda4af !important;
-  border-color: rgba(251,113,133,.28) !important;
-  background: rgba(251,113,133,.12) !important;
-}
-
-.dash-card-head {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  align-items: start !important;
-  gap: clamp(.75rem, 2.2vw, 1rem) !important;
-}
-.dash-card-head > div { min-width: 0 !important; }
-.dash-card-head > .status,
-.dash-card-head > b.status,
-.status {
-  justify-self: end !important;
-  align-self: start !important;
-  flex: 0 0 auto !important;
-  display: inline-flex !important;
-  width: auto !important;
-  max-width: 100% !important;
-  min-height: 1.85rem !important;
-  padding: .34rem .72rem !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-  border-radius: 999px !important;
-  background: rgba(255,255,255,.06) !important;
-  color: rgba(255,255,255,.86) !important;
-  font-size: .78rem !important;
-  font-weight: 950 !important;
-}
-
-.dash-log-status-grid {
-  display: grid !important;
-  gap: clamp(.65rem, 2vw, .8rem) !important;
-}
-.dash-log-status {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  align-items: center !important;
-  gap: .75rem !important;
-  min-width: 0 !important;
-}
-.dash-log-status span {
-  min-width: 0 !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-}
-.dash-log-status strong {
-  justify-self: end !important;
-  min-width: max-content !important;
-  min-height: 1.75rem !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 0 .7rem !important;
-  border: 1px solid rgba(255,255,255,.1) !important;
-  border-radius: 999px !important;
-  font-size: .78rem !important;
-  font-weight: 950 !important;
-  line-height: 1 !important;
-}
-
-@media (max-width: 700px) {
-  [data-server-save-host] {
-    width: calc(100dvw - clamp(1rem, 4vw, 1.5rem)) !important;
-    bottom: max(.7rem, env(safe-area-inset-bottom)) !important;
-  }
-  [data-server-save-host] .dash-save-bar,
-  .dash-save-bar[data-global-save-bar] {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: .75rem !important;
-    padding: clamp(.95rem, 4vw, 1.15rem) !important;
-    border-radius: clamp(1rem, 4vw, 1.25rem) !important;
-  }
-  .dash-save-bar > div:last-child {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: .6rem !important;
-  }
-  .dash-save-bar .dash-save-btn,
-  .dash-save-bar .dash-secondary-btn {
-    min-height: 3.05rem !important;
-    width: 100% !important;
-  }
-  body.has-dashboard-unsaved {
-    padding-bottom: clamp(10rem, 24dvh, 13rem);
-  }
-  [data-floating-status-host] {
-    right: max(.75rem, env(safe-area-inset-right)) !important;
-    left: max(.75rem, env(safe-area-inset-left)) !important;
-    bottom: max(.75rem, env(safe-area-inset-bottom)) !important;
-  }
-  body.has-dashboard-unsaved [data-floating-status-host] {
-    bottom: calc(max(.75rem, env(safe-area-inset-bottom)) + clamp(9.1rem, 22dvh, 11.2rem)) !important;
-  }
-  .dash-floating-status {
-    width: fit-content;
-    max-width: 100%;
-  }
-  .dash-card-head {
-    grid-template-columns: minmax(0, 1fr) auto !important;
-  }
-  .dash-card-head > .status,
-  .dash-card-head > b.status,
-  .status {
-    min-height: 1.75rem !important;
-    padding: .31rem .64rem !important;
-    font-size: .72rem !important;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  [data-server-save-host] .dash-save-bar,
-  .dash-floating-status {
-    animation: dashboardFloatIn .18s ease-out both;
-  }
-  @keyframes dashboardFloatIn {
-    from { opacity: 0; transform: translateY(.45rem) scale(.985); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-}
-
-:root[data-theme="light"] [data-server-save-host] .dash-save-bar,
-:root[data-theme="light"] .dash-save-bar[data-global-save-bar] {
-  background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(245,243,255,.95)) !important;
-  box-shadow: 0 1.15rem 3rem rgba(15,23,42,.18), inset 0 1px 0 rgba(255,255,255,.75) !important;
-}
-:root[data-theme="light"] .dash-floating-status {
-  background: rgba(255,255,255,.94);
-  color: #0f172a;
-  box-shadow: 0 .95rem 2.4rem rgba(15,23,42,.14), inset 0 1px 0 rgba(255,255,255,.8);
-}
-:root[data-theme="light"] .dash-floating-status span { color: rgba(15,23,42,.68); }
 
 /* ===== 2026-07-10 dashboard flow + mobile nav reconstruction =====
    Root fixes: save controls return to dashboard content flow, the status badge is a compact

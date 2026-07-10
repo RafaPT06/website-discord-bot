@@ -181,7 +181,7 @@ function renderGlobalSaveBar(guildId) {
 }
 function syncSectionStatus(form, section) {
   if (!form) return;
-  const status = form.querySelector('.dash-form-card .dash-card-head .status');
+  const status = form.querySelector('.dash-card-head .status');
   if (!status) return;
   const enabledInput = section === 'welcome'
     ? form.querySelector('input[name="welcomeEnabled"]')
@@ -596,7 +596,26 @@ function logStatus(label, enabled) { return `<div class="dash-log-status ${enabl
 function logExample(title, text, type) { return `<div class="dash-log-example ${type}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
 function moderationPage(server) {
   const s = readSettings(server.id, 'moderation', { enabled:false, warningsEnabled:true, automodEnabled:false, antiSpam:false, linkFilter:false, inviteFilter:false, modLogChannelId:'demo-ch-mod-logs', blockedWords:'' }, server);
-  return `<form class="dash-designer dash-moderation-layout" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls used by the bot.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>${channelSelectField(server,'modLogChannelId','Mod log channel',s.modLogChannelId ?? s.channel,'mod-logs')}${switchField('warningsEnabled',s.warningsEnabled ?? s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('automodEnabled',s.automodEnabled,'Blocked words','Enable blocked word checks.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('linkFilter',s.linkFilter ?? s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('inviteFilter',s.inviteFilter ?? s.antiInvites,'Invite filter','Block Discord invite links.')}${textareaField('blockedWords','Blocked words',s.blockedWords || '',500)}${saveBtn()}</article><article class="dash-card dash-form-card" data-moderation-access><span>Bypass Access</span><h2>Trusted users</h2><p>Bot owner and users with Manage Server bypass moderation filters by default. Add extra trusted users by username search or Discord ID.</p>${userAccessForm('moderation', 'Search user or paste ID')}<div data-moderation-access-list>${emptyState('Loading bypass list...', 'Please wait.')}</div></article><article class="dash-card dash-automation-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article></form>`;
+  return `<section class="dash-designer dash-moderation-layout" data-moderation-page>
+    <form class="dash-card dash-form-card dash-moderation-settings" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}">
+      <div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls used by the bot.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>
+      ${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>
+      ${channelSelectField(server,'modLogChannelId','Mod log channel',s.modLogChannelId ?? s.channel,'mod-logs')}
+      ${switchField('warningsEnabled',s.warningsEnabled ?? s.warnings,'Warning system','Allow moderators to warn users.')}
+      ${switchField('automodEnabled',s.automodEnabled,'Blocked words','Enable blocked word checks.')}
+      ${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}
+      ${switchField('linkFilter',s.linkFilter ?? s.antiLinks,'Link filter','Block links from non-trusted users.')}
+      ${switchField('inviteFilter',s.inviteFilter ?? s.antiInvites,'Invite filter','Block Discord invite links.')}
+      ${textareaField('blockedWords','Blocked words',s.blockedWords || '',500)}
+      ${saveBtn()}
+    </form>
+    <article class="dash-card dash-form-card dash-moderation-access-card" data-moderation-access>
+      <span>Bypass Access</span><h2>Trusted users</h2><p>Bot owner and users with Manage Server bypass moderation filters by default. Add extra trusted users by username search or Discord ID.</p>
+      ${userAccessForm('moderation', 'Search user or paste ID')}
+      <div data-moderation-access-list aria-live="polite">${emptyState('Loading bypass list...', 'Please wait.')}</div>
+    </article>
+    <article class="dash-card dash-automation-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article>
+  </section>`;
 }
 function aiPage(server) {
   return `<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>${userAccessForm('ai', 'Search user or paste ID')}<small class="preview-note">Bot owner and users with Manage Server permission have access by default. Manual users can be added by username search or Discord ID.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article></section>`;
@@ -612,18 +631,17 @@ async function loadAiAccess(guildId) {
     holder.innerHTML = errorCard('Could not load access list.', err.message || 'Try again later.');
   }
 }
-async function loadModerationAccess(guildId) {
-  const holder = document.querySelector('[data-moderation-access-list]');
+async function loadModerationAccess(guildId, holder = document.querySelector('[data-moderation-access-list]')) {
   if (!holder) return;
-  holder.innerHTML = emptyState('Loading bypass list...', 'Please wait.');
-  const fallback = { ok: true, defaultUsers: [], users: [], fallback: true, warning: 'Moderation access took too long to respond.' };
+  const requestId = `${guildId}:${Date.now()}:${Math.random()}`;
+  holder.dataset.moderationRequestId = requestId;
+  holder.innerHTML = emptyState('Loading bypass list...', 'Fetching trusted users from the bot API.');
   try {
-    const data = await Promise.race([
-      getModerationAccess(guildId),
-      new Promise((resolve) => setTimeout(() => resolve(fallback), 9000)),
-    ]);
-    holder.innerHTML = renderAccessList(data, 'No manual moderation bypass users.');
+    const data = await getModerationAccess(guildId);
+    if (!holder.isConnected || holder.dataset.moderationRequestId !== requestId) return;
+    holder.innerHTML = renderAccessList(data || {}, 'No manual moderation bypass users.');
   } catch (err) {
+    if (!holder.isConnected || holder.dataset.moderationRequestId !== requestId) return;
     holder.innerHTML = renderAccessList({ ok: true, defaultUsers: [], users: [], fallback: true, error: err.message }, 'No manual moderation bypass users.');
     showStatusToast('error', 'Moderation bypass loaded with fallback', err.message || 'The bot API did not respond in time.');
   }
@@ -695,9 +713,15 @@ function attachAiPage(server) {
   });
 }
 function attachModerationAccess(server) {
-  const form = document.querySelector('[data-access-form="moderation"]');
-  if (!form) return;
-  loadModerationAccess(server.id);
+  const page = document.querySelector('[data-moderation-page]');
+  const holder = page?.querySelector('[data-moderation-access-list]');
+  if (!page || !holder) return;
+  loadModerationAccess(server.id, holder);
+  const form = page.querySelector('[data-access-form="moderation"]');
+  if (!form) {
+    holder.innerHTML = errorCard('Could not initialize trusted users.', 'The moderation access form is unavailable.');
+    return;
+  }
   attachUserSearch(form, server);
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -706,18 +730,17 @@ function attachModerationAccess(server) {
     if (!/^\d{15,25}$/.test(userId)) return showStatusToast('error', 'Invalid user ID', 'Search a user or paste a valid Discord user ID.');
     const btn = e.currentTarget.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Adding...';
-    try { await addModerationAccessUser(server.id, userId); e.currentTarget.reset(); e.currentTarget.querySelector('input[name="userId"]').value = ''; showStatusToast('success', 'Moderation bypass updated', 'User was added.'); await loadModerationAccess(server.id); }
+    try { await addModerationAccessUser(server.id, userId); e.currentTarget.reset(); e.currentTarget.querySelector('input[name="userId"]').value = ''; showStatusToast('success', 'Moderation bypass updated', 'User was added.'); await loadModerationAccess(server.id, holder); }
     catch (err) { showStatusToast('error', 'Could not add user', err.message || 'Try again later.'); }
     finally { btn.disabled = false; btn.textContent = 'Add user'; }
   });
-  const list = document.querySelector('[data-moderation-access-list]');
-  list?.addEventListener('click', async (e) => {
+  holder.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-remove-ai-user]');
     if (!btn) return;
     const userId = btn.dataset.removeAiUser;
     if (!confirm(`Remove moderation bypass from ${btn.dataset.removeAiLabel || userId}?`)) return;
     btn.disabled = true; btn.textContent = 'Removing...';
-    try { await removeModerationAccessUser(server.id, userId); showStatusToast('success', 'Moderation bypass updated', 'User was removed.'); await loadModerationAccess(server.id); }
+    try { await removeModerationAccessUser(server.id, userId); showStatusToast('success', 'Moderation bypass updated', 'User was removed.'); await loadModerationAccess(server.id, holder); }
     catch (err) { showStatusToast('error', 'Could not remove user', err.message || 'Try again later.'); btn.disabled = false; btn.textContent = 'Remove'; }
   });
 }

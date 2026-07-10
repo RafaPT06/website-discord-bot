@@ -1,11 +1,12 @@
 [
   {
     "date": "2026-07-10",
-    "title": "Moderation bypass and save card hotfix",
+    "title": "Moderation trusted users structural fix",
     "items": [
-      "Added a dashboard flow fix bundle loaded after the main dashboard script so the moderation bypass panel resolves instead of staying on Loading bypass list.",
-      "Restyled the unsaved changes controls as an in-flow dashboard card rather than a fixed or detached overlay.",
-      "Improved spacing between the trusted users card and the automation rules card across mobile and desktop layouts."
+      "Separated the moderation settings form from the trusted-user form so the browser no longer repairs invalid nested forms and splits the automation card out of the dashboard grid.",
+      "Placed Moderation Tools, Trusted users and Automation under one responsive grid container with consistent spacing on desktop, tablet and mobile.",
+      "Fixed trusted-user loading and add/remove initialization in the real dashboard code, including safe fallback feedback when the bot API is unavailable.",
+      "Removed the obsolete floating save-card CSS and deleted references to the temporary dashboard flow helper bundle."
     ]
   },
   {
