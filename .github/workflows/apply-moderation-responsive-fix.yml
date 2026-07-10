@@ -1,0 +1,35 @@
+name: Apply moderation responsive fix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-moderation-responsive-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply and verify responsive fix
+        run: |
+          python scripts/apply-moderation-responsive-fix.py
+          python -m json.tool public/data/changelog.json >/dev/null
+
+      - name: Commit responsive fix
+        run: |
+          rm -f scripts/apply-moderation-responsive-fix.py
+          rm -f .github/workflows/apply-moderation-responsive-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Fix moderation layout in narrow desktop view"
+          git push
