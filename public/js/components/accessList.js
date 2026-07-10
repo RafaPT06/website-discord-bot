@@ -16,8 +16,14 @@ export function normalizeAccessPayload(data = {}) {
   const defaultUsers = Array.isArray(data.defaultUsers) ? data.defaultUsers : [
     ...(data.owner ? [data.owner] : []),
     ...(Array.isArray(data.manageServerUsers) ? data.manageServerUsers : []),
+    ...(Array.isArray(data.managers) ? data.managers : []),
   ];
-  const manual = Array.isArray(data.allowedUsers) ? data.allowedUsers : (Array.isArray(data.users) ? data.users : []);
+  const manual = Array.isArray(data.allowedUsers) ? data.allowedUsers
+    : Array.isArray(data.users) ? data.users
+    : Array.isArray(data.trustedUsers) ? data.trustedUsers
+    : Array.isArray(data.bypassUsers) ? data.bypassUsers
+    : Array.isArray(data.members) ? data.members
+    : [];
   return { defaultUsers, manual };
 }
 

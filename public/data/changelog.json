@@ -1,20 +1,12 @@
 [
   {
     "date": "2026-07-10",
-    "title": "Dashboard save and status polish",
+    "title": "Dashboard API and layout flow fixes",
     "items": [
-      "Moved the unsaved changes controls to the end of the active dashboard tab content so they stay in normal page flow instead of appearing like a fixed header alert.",
-      "Tightened dashboard status badges so Enabled and Disabled pills stay compact and aligned on mobile.",
-      "Refined log status rows to keep labels readable while preventing the status pill from stretching or clipping."
-    ]
-  },
-  {
-    "date": "2026-07-09",
-    "title": "Real mobile navigation modal",
-    "items": [
-      "Rebuilt the mobile menu as a separate top-layer dialog instead of a drawer nested inside the header.",
-      "Moved the backdrop to the modal layer so the page behind is dimmed while the menu stays sharp and readable.",
-      "Added mobile-safe spacing, internal menu scrolling, accessible close/backdrop behavior and preserved desktop navigation/auth rendering."
+      "Fixed moderation bypass loading so the trusted users panel resolves with bot API data or a safe fallback instead of staying on Loading bypass list.",
+      "Returned the unsaved changes controls to the dashboard content flow after the active tab so Save and Discard feel connected to the page and are not fixed overlays.",
+      "Added resilient Leveling reward API fallbacks and preserved cached, hash-based tab switching for server dashboard sections.",
+      "Rebuilt the mobile navigation as a separate dialog layer while keeping the desktop navbar in normal page flow."
     ]
   },
   {

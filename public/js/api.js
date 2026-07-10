@@ -110,7 +110,7 @@ export async function removeImageAccessUser(guildId, userId) {
 export async function getModerationAccess(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ...DEMO_MODERATION_ACCESS });
   try {
-    return await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation-access`, { cacheKey: `moderation-access:${guildId}`, cacheMs: 15000 });
+    return await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation-access`, { cacheKey: `moderation-access:${guildId}`, cacheMs: 15000, timeoutMs: 9000 });
   } catch (err) {
     return { ok: true, users: [], defaultUsers: [], fallback: true, error: err.message || 'Moderation access API unavailable.' };
   }
@@ -174,7 +174,7 @@ export async function getGuildRoles(guildId) {
 export async function getLevelRewards(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ok: true, rewards: DEMO_SERVER_SETTINGS.levelRewards.map((reward) => ({ ...reward })), demo: true });
   try {
-    return await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards`, { cacheKey: `level-rewards:${guildId}`, cacheMs: 8000 });
+    return await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards`, { cacheKey: `level-rewards:${guildId}`, cacheMs: 8000, timeoutMs: 9000 });
   } catch (err) {
     return { ok: true, rewards: [], fallback: true, error: err.message || 'Level rewards API unavailable.' };
   }
@@ -184,6 +184,7 @@ export async function saveLevelReward(guildId, level, roleId) {
   if (isDemoRoute()) throw new Error('Demo mode is read-only. Log in to make changes.');
   const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards`, {
     method: 'POST',
+    timeoutMs: 9000,
     body: JSON.stringify({ level, roleId }),
   });
   clearServerCaches(guildId, 'leveling');
@@ -192,7 +193,7 @@ export async function saveLevelReward(guildId, level, roleId) {
 
 export async function deleteLevelReward(guildId, level) {
   if (isDemoRoute()) throw new Error('Demo mode is read-only. Log in to make changes.');
-  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards/${encodeURIComponent(level)}`, { method: 'DELETE' });
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards/${encodeURIComponent(level)}`, { method: 'DELETE', timeoutMs: 9000 });
   clearServerCaches(guildId, 'leveling');
   return data;
 }

@@ -22,10 +22,7 @@ export function renderMobileNavDialog({ demo = false, initialAuthHtml = '' } = {
         <div class="mobile-nav-head">
           <a class="mobile-nav-brand" href="${demo ? '/demo' : '/'}" data-nav-link data-route="/" aria-label="Meowz home">
             <span class="brand-icon" data-bot-avatar-small>M</span>
-            <span>
-              <small>Meowz</small>
-              <strong id="mobile-nav-title">Menu</strong>
-            </span>
+            <span><small>Meowz</small><strong id="mobile-nav-title">Menu</strong></span>
           </a>
           <button class="mobile-nav-close" type="button" data-menu-close aria-label="Close navigation">
             <span aria-hidden="true">×</span>

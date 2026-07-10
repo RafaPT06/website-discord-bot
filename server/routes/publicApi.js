@@ -526,6 +526,54 @@ async function proxyBotGuildSetting(req, res, botPath, options = {}) {
   }
 }
 
+async function requestFirstBotApi(paths, options = {}) {
+  const errors = [];
+  for (const path of paths) {
+    try {
+      const data = await requestBotApi(path, options);
+      return { data, path, errors };
+    } catch (err) {
+      errors.push(`${path}: ${err.message || 'unavailable'}`);
+      if (![404, 405, 501, 502, 503, 504].includes(Number(err.statusCode || 0))) throw err;
+    }
+  }
+  const error = new Error(errors[errors.length - 1] || 'Bot API routes are unavailable.');
+  error.statusCode = 503;
+  error.errors = errors;
+  throw error;
+}
+
+function levelRewardPaths(guildId, level = null) {
+  const guild = encodeURIComponent(guildId);
+  const encodedLevel = level === null ? null : encodeURIComponent(level);
+  const bases = [
+    `/api/guilds/${guild}/level-rewards`,
+    `/api/guilds/${guild}/leveling/rewards`,
+    `/api/guilds/${guild}/levels/rewards`,
+  ];
+  return encodedLevel === null ? bases : bases.map((base) => `${base}/${encodedLevel}`);
+}
+
+function moderationAccessPaths(guildId, userId = null) {
+  const guild = encodeURIComponent(guildId);
+  const encodedUser = userId === null ? null : encodeURIComponent(userId);
+  const bases = [
+    `/api/guilds/${guild}/moderation-access`,
+    `/api/guilds/${guild}/moderation/bypass`,
+    `/api/guilds/${guild}/moderation/trusted-users`,
+    `/api/guilds/${guild}/trusted-users`,
+  ];
+  return encodedUser === null ? bases : bases.map((base) => `${base}/${encodedUser}`);
+}
+
+function normalizeLevelRewardsPayload(data = {}) {
+  const raw = Array.isArray(data?.rewards) ? data.rewards
+    : Array.isArray(data?.levelRewards) ? data.levelRewards
+    : Array.isArray(data) ? data
+    : [];
+  return { ...data, ok: data?.ok !== false, rewards: raw };
+}
+
 
 router.get('/dashboard/servers/:guildId/roles', requireAuth, requireManageableInstalledServer, async (req, res) => {
   const roleData = await getDashboardServerRoles(req.params.guildId);
@@ -556,20 +604,29 @@ router.put('/dashboard/servers/:guildId/leveling', requireAuth, requireManageabl
 
 router.get('/dashboard/servers/:guildId/level-rewards', requireAuth, requireManageableInstalledServer, async (req, res) => {
   try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/level-rewards`);
-    res.json(data);
+    const result = await requestFirstBotApi(levelRewardPaths(req.params.guildId));
+    res.json({ ...normalizeLevelRewardsPayload(result.data), sourcePath: result.path });
   } catch (err) {
-    if (err.statusCode === 404) return res.json({ ok: true, rewards: [], fallback: true, warning: 'Level reward API is not available yet.' });
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not reach the bot API.' });
+    res.json({ ok: true, rewards: [], fallback: true, errors: err.errors || [err.message || 'Level reward API is not available yet.'] });
   }
 });
 
 router.post('/dashboard/servers/:guildId/level-rewards', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/level-rewards`, { method: 'POST', body: JSON.stringify(req.body || {}) });
+  try {
+    const result = await requestFirstBotApi(levelRewardPaths(req.params.guildId), { method: 'POST', body: JSON.stringify(req.body || {}) });
+    res.json({ ...(result.data || { ok: true }), sourcePath: result.path });
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not save level reward.', errors: err.errors || [] });
+  }
 });
 
 router.delete('/dashboard/servers/:guildId/level-rewards/:level', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/level-rewards/${encodeURIComponent(req.params.level)}`, { method: 'DELETE' });
+  try {
+    const result = await requestFirstBotApi(levelRewardPaths(req.params.guildId, req.params.level), { method: 'DELETE' });
+    res.json({ ...(result.data || { ok: true }), sourcePath: result.path });
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not remove level reward.', errors: err.errors || [] });
+  }
 });
 
 router.get('/dashboard/servers/:guildId/logs', requireAuth, requireManageableInstalledServer, async (req, res) => {
@@ -608,25 +665,34 @@ router.get('/dashboard/servers/:guildId/users/search', requireAuth, requireManag
 
 router.get('/dashboard/servers/:guildId/moderation-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
   try {
-    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation-access`);
-    res.json(data);
+    const result = await requestFirstBotApi(moderationAccessPaths(req.params.guildId));
+    res.json({ ...(result.data || {}), ok: result.data?.ok !== false, sourcePath: result.path });
   } catch (err) {
-    if (err.statusCode === 404) return res.json(fallbackAccessPayload(req, 'moderation'));
-    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not load moderation access.' });
+    res.json({ ...fallbackAccessPayload(req, 'moderation'), errors: err.errors || [err.message || 'Moderation access API unavailable.'] });
   }
 });
 
 router.post('/dashboard/servers/:guildId/moderation-access', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation-access`, {
-    method: 'POST',
-    body: JSON.stringify({ userId: req.body?.userId }),
-  });
+  try {
+    const result = await requestFirstBotApi(moderationAccessPaths(req.params.guildId), {
+      method: 'POST',
+      body: JSON.stringify({ userId: req.body?.userId }),
+    });
+    res.json({ ...(result.data || { ok: true }), sourcePath: result.path });
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not add moderation bypass user.', errors: err.errors || [] });
+  }
 });
 
 router.delete('/dashboard/servers/:guildId/moderation-access/:userId', requireAuth, requireManageableInstalledServer, async (req, res) => {
-  await proxyBotGuildSetting(req, res, `/api/guilds/${encodeURIComponent(req.params.guildId)}/moderation-access/${encodeURIComponent(req.params.userId)}`, {
-    method: 'DELETE',
-  });
+  try {
+    const result = await requestFirstBotApi(moderationAccessPaths(req.params.guildId, req.params.userId), {
+      method: 'DELETE',
+    });
+    res.json({ ...(result.data || { ok: true }), sourcePath: result.path });
+  } catch (err) {
+    res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not remove moderation bypass user.', errors: err.errors || [] });
+  }
 });
 
 router.get('/dashboard/servers/:guildId/image-access', requireAuth, requireManageableInstalledServer, async (req, res) => {

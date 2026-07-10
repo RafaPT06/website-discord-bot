@@ -35,12 +35,20 @@ const SETTINGS_STORAGE_KEY = 'meowzServerSettings';
 const DASHBOARD_PREFS_KEY = 'meowzDashboardPreferences';
 const VALID_THEMES = new Set(['dark', 'light']);
 const VALID_LANGUAGES = new Set(['en', 'pt', 'es', 'de', 'fr']);
-const VALID_SECTIONS = new Set(['overview', 'welcome', 'leveling', 'ai', 'logs', 'moderation']);
+const VALID_SECTIONS = new Set(['overview', 'welcome', 'leveling', 'ai-image-access', 'logs', 'moderation']);
 let viewMode = localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner' ? 'owner' : 'user';
 const serverPageCache = new Map();
 const tabDataCache = new Map();
 let serverRenderNonce = 0;
+let activeServerShellId = null;
 const DASHBOARD_SERVER_SNAPSHOT_KEY = 'meowzDashboardServerSnapshots';
+
+
+function normalizeSection(section = 'overview') {
+  const raw = String(section || 'overview').replace(/^#/, '').trim() || 'overview';
+  if (raw === 'ai') return 'ai-image-access';
+  return VALID_SECTIONS.has(raw) ? raw : 'overview';
+}
 
 function storeServerSnapshots(data) {
   const installed = Array.isArray(data?.installed) ? data.installed : [];
@@ -171,6 +179,18 @@ function renderGlobalSaveBar(guildId) {
   if (!host) return;
   host.innerHTML = globalSaveBarHtml(guildId);
 }
+function syncSectionStatus(form, section) {
+  if (!form) return;
+  const status = form.querySelector('.dash-form-card .dash-card-head .status');
+  if (!status) return;
+  const enabledInput = section === 'welcome'
+    ? form.querySelector('input[name="welcomeEnabled"]')
+    : form.querySelector('input[name="enabled"]');
+  const enabled = enabledInput ? Boolean(enabledInput.checked) : status.classList.contains('enabled');
+  status.textContent = enabled ? 'Enabled' : 'Disabled';
+  status.classList.toggle('enabled', enabled);
+  status.classList.toggle('disabled', !enabled);
+}
 
 function isDemoMode() { return isDemoRoute(); }
 function dashboardBase() { return isDemoMode() ? '/demo/dashboard' : '/dashboard'; }
@@ -203,7 +223,7 @@ applyTheme();
 
 function hashSection(defaultSection = 'overview') {
   const raw = String(window.location.hash || '').replace(/^#/, '').trim();
-  return VALID_SECTIONS.has(raw) ? raw : defaultSection;
+  return raw ? normalizeSection(raw) : normalizeSection(defaultSection);
 }
 function routeInfo() {
   if (isDemoMode()) {
@@ -213,7 +233,7 @@ function routeInfo() {
     const demoServerMatch = path.match(/^\/demo\/server\/([^/]+)(?:\/([^/]+))?\/?$/);
     if (demoServerMatch) {
       const fallback = decodeURIComponent(demoServerMatch[2] || 'overview');
-      return { id: decodeURIComponent(demoServerMatch[1]), section: hashSection(VALID_SECTIONS.has(fallback) ? fallback : 'overview') };
+      return { id: decodeURIComponent(demoServerMatch[1]), section: hashSection(normalizeSection(fallback)) };
     }
     return { home: true };
   }
@@ -224,7 +244,7 @@ function routeInfo() {
   const match = window.location.pathname.match(serverRe);
   if (!match) return null;
   const fallback = decodeURIComponent(match[2] || 'overview');
-  return { id: decodeURIComponent(match[1]), section: hashSection(VALID_SECTIONS.has(fallback) ? fallback : 'overview') };
+  return { id: decodeURIComponent(match[1]), section: hashSection(normalizeSection(fallback)) };
 }
 
 function activeUser() { return getActiveUser?.() || null; }
@@ -249,11 +269,11 @@ function serverIcon(server, className = 'dash-server-icon') {
   return `<span class="${className} ${className}-fallback">${initial(server?.name || 'M')}</span>`;
 }
 function sectionTitle(section) {
-  return ({ overview: 'Overview', welcome: 'Welcome Messages', leveling: 'Leveling System', ai: 'AI Image Access', logs: 'Logs', moderation: 'Moderation', settings: 'Settings' })[section] || 'Overview';
+  return ({ overview: 'Overview', welcome: 'Welcome Messages', leveling: 'Leveling System', 'ai-image-access': 'AI Image Access', logs: 'Logs', moderation: 'Moderation', settings: 'Settings' })[normalizeSection(section)] || 'Overview';
 }
 function sectionPath(server, section = 'overview') {
   const base = `${dashboardBase()}/server/${encodeURIComponent(server.id)}`;
-  return `${base}#${encodeURIComponent(section || 'overview')}`;
+  return `${base}#${encodeURIComponent(normalizeSection(section))}`;
 }
 function readSettings(guildId, section, defaults = {}, server = null) {
   let resolved = { ...defaults };
@@ -278,7 +298,7 @@ function writeSettings(guildId, section, values) {
 
 function shell({ server = null, active = 'Dashboard', section = 'dashboard', content = '', showOwnerToggle = false, isOwner = false }) {
   return `
-    <div class="dash-shell">${demoBadge()}
+    <div class="dash-shell" ${server ? `data-dashboard-server-shell="${escapeHtml(server.id)}"` : ''}>${demoBadge()}
       <aside class="dash-sidebar" aria-label="Dashboard navigation">
         <div class="dash-brand-row">
           <a class="dash-brand" href="${dashboardBase()}"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a>
@@ -293,7 +313,6 @@ function shell({ server = null, active = 'Dashboard', section = 'dashboard', con
         ${mobileBreadcrumb(server, active)}
         <div class="dash-content">
           ${content}
-          ${server ? `<div data-server-save-host>${globalSaveBarHtml(server.id)}</div>` : ''}
         </div>
       </div>
     </div>
@@ -312,7 +331,7 @@ function navLink(href, key, active, label) {
 function sidebarNav(server, active) {
   if (server) {
     const settings = [
-      ['overview', 'Overview'], ['welcome', 'Welcome / Goodbye'], ['leveling', 'Leveling System'], ['ai', 'AI Image Access'], ['logs', 'Logs'], ['moderation', 'Moderation'],
+      ['overview', 'Overview'], ['welcome', 'Welcome / Goodbye'], ['leveling', 'Leveling System'], ['ai-image-access', 'AI Image Access'], ['logs', 'Logs'], ['moderation', 'Moderation'],
     ].map(([key, label]) => navLink(sectionPath(server, key), key, active, label)).join('');
     const resources = `${navLink('/docs', 'docs', active, 'Documentation')}${navLink('/changelog', 'changelog', active, 'Changelog')}`;
     const account = navLink(settingsPath(), 'settings', active, 'Settings');
@@ -325,7 +344,7 @@ function sidebarNav(server, active) {
 function topbar(server, active, showOwnerToggle, isOwner) {
   return `
     <header class="dash-topbar">
-      <div class="dash-breadcrumb"><a href="${dashboardBase()}">Servers</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active !== 'Overview' ? `<span>›</span><strong>${escapeHtml(active)}</strong>` : ''}` : ''}</div>
+      <div class="dash-breadcrumb"><a href="${dashboardBase()}">Servers</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a><span data-dashboard-active-separator ${active === 'Overview' ? 'hidden' : ''}>›</span><strong data-dashboard-active-crumb ${active === 'Overview' ? 'hidden' : ''}>${escapeHtml(active)}</strong>` : ''}</div>
       <div class="dash-top-actions">
         ${showOwnerToggle && isOwner ? ownerToggle() : ''}
         ${server ? `<a class="dash-primary-small" href="/">View Bot</a>` : ''}
@@ -341,7 +360,7 @@ function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwne
     ['Overview', sectionPath(server)],
     ['Welcome/Goodbye', sectionPath(server, 'welcome')],
     ['Leveling', sectionPath(server, 'leveling')],
-    ['AI Image Access', sectionPath(server, 'ai')],
+    ['AI Image Access', sectionPath(server, 'ai-image-access')],
     ['Logs', sectionPath(server, 'logs')],
     ['Moderation', sectionPath(server, 'moderation')],
   ] : [['Overview', dashboardBase()]];
@@ -352,7 +371,7 @@ function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwne
   return `<header class="dash-mobile-bar"><a class="dash-brand" href="${dashboardBase()}"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><div class="dash-mobile-backdrop" data-dash-backdrop hidden></div><aside class="dash-mobile-drawer" data-dash-drawer hidden><div class="dash-drawer-head"><span>${server ? serverIcon(server, 'dash-current-icon') : '<span class="dash-current-icon">M</span>'}</span><div><strong>${escapeHtml(activeLabel)}</strong><small>${escapeHtml(active)}</small></div></div>${showOwnerToggle && isOwner ? `<div class="dash-drawer-toggle">${ownerToggle()}</div>` : ''}<nav>${renderGroup('Dashboard', dashboardLinks)}${renderGroup('Resources', resourceLinks)}${renderGroup('Account', accountLinks)}${isDemoMode() ? '<div class="dash-drawer-group"><a href="/">Exit Demo</a></div>' : '<div class="dash-drawer-group"><a href="/auth/logout" class="danger">Logout</a></div>'}</nav></aside></header>`;
 }
 function mobileBreadcrumb(server, active = 'Dashboard') {
-  return `<div class="dash-mobile-breadcrumb"><a href="${dashboardBase()}">Dashboard</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a>${active !== 'Overview' ? `<span>›</span><strong>${escapeHtml(active)}</strong>` : ''}` : ''}</div>`;
+  return `<div class="dash-mobile-breadcrumb"><a href="${dashboardBase()}">Dashboard</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a><span data-dashboard-active-separator ${active === 'Overview' ? 'hidden' : ''}>›</span><strong data-dashboard-active-crumb ${active === 'Overview' ? 'hidden' : ''}>${escapeHtml(active)}</strong>` : ''}</div>`;
 }
 function closeDashDrawer(bar = document) {
   const scope = bar?.querySelector ? bar : document;
@@ -389,7 +408,6 @@ function openDashDrawer(bar, btn) {
 
 function wireShell(root = document) {
   closeDashDrawer(document);
-
   root.querySelectorAll('[data-dash-menu]').forEach((btn) => {
     btn.addEventListener('click', (event) => {
       event.preventDefault();
@@ -457,6 +475,8 @@ function dashboardHomeContent(data) {
 }
 async function renderDashboardHome() {
   if (!els.home) return;
+  document.body.classList.remove('has-dashboard-unsaved', 'has-dashboard-status');
+  activeServerShellId = null;
   els.home.hidden = false;
   if (els.detail) els.detail.hidden = true;
   document.title = 'Dashboard — Meowz';
@@ -478,13 +498,13 @@ function pillRow(server) {
   return `<div class="dash-pills"><span>${escapeHtml(members)}</span><span>${escapeHtml(server.accessLabel || 'Manage Server')}</span><span>Bot Installed</span></div>`;
 }
 function serverHeader(server, active) {
-  const tabs = [['overview','Overview'],['welcome','Welcome / Goodbye'],['leveling','Leveling'],['ai','AI Image Access'],['logs','Logs'],['moderation','Moderation']];
+  const tabs = [['overview','Overview'],['welcome','Welcome / Goodbye'],['leveling','Leveling'],['ai-image-access','AI Image Access'],['logs','Logs'],['moderation','Moderation']];
   return `<section class="dash-server-title">${serverIcon(server, 'dash-title-icon')}<div><span>Server Dashboard</span><h1>${escapeHtml(server.name)}</h1><p>Manage Meowz features for this server.</p>${pillRow(server)}</div></section><nav class="dash-tabs">${tabs.map(([key,label]) => `<a class="${key===active?'is-active':''}" href="${escapeHtml(sectionPath(server,key))}">${escapeHtml(label)}</a>`).join('')}</nav>`;
 }
 function infoRow(label, value) { return `<div class="dash-info-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`; }
 
 function overviewPage(server) {
-  return `${serverHeader(server,'overview')}<section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome / Goodbye','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section>`;
+  return `<section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome / Goodbye','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai-image-access','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section>`;
 }
 
 
@@ -506,7 +526,7 @@ function welcomePage(server) {
   s.welcomeStyle = s.welcomeStyle ?? 'Custom Card (Modern)';
   s.goodbyeStyle = s.goodbyeStyle ?? 'Text only';
 
-  return `${serverHeader(server,'welcome')}<form class="dash-designer dash-designer-wide" data-settings-form="welcome" data-guild-id="${escapeHtml(server.id)}">
+  return `<form class="dash-designer dash-designer-wide" data-settings-form="welcome" data-guild-id="${escapeHtml(server.id)}">
     <article class="dash-card dash-form-card">
       <div class="dash-card-head"><div><span>Welcome Messages</span><h2>Welcome Messages</h2><p>Configure the message Meowz sends when someone joins ${escapeHtml(server.name)}.</p></div><b class="status ${s.welcomeEnabled?'enabled':''}">${s.welcomeEnabled?'Enabled':'Disabled'}</b></div>
       ${switchField('welcomeEnabled',s.welcomeEnabled,'Enable welcome messages','Send a message when someone joins the server.')}
@@ -566,20 +586,20 @@ function levelingPage(server) {
   const s = readSettings(server.id, 'leveling', { enabled:true, xpPerMessage:15, cooldownSeconds:60, channelId:'demo-ch-level-up', stackRoles:true }, server);
   const rewards = Array.isArray(server?.settings?.levelRewards) ? server.settings.levelRewards : [];
   const firstRole = guildRoles(server)[0]?.id || '';
-  return `${serverHeader(server,'leveling')}<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xpPerMessage','XP per message',s.xpPerMessage ?? s.xp,1)}${numberField('cooldownSeconds','Cooldown seconds',s.cooldownSeconds ?? s.cooldown,5)}${channelSelectField(server,'channelId','Level-up channel',s.channelId ?? s.channel,'level-up')}${switchField('stackRoles',s.stackRoles !== false,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><div class="dash-level-preview"><strong>${isDemoMode() ? `Demo rank #${DEMO_LEVELING.rank} · Level ${DEMO_LEVELING.level}` : 'Level reward preview'}</strong><span>${isDemoMode() ? `${formatNumber(DEMO_LEVELING.xp)} / ${formatNumber(DEMO_LEVELING.nextLevelXp)} XP` : `${formatNumber(s.xpPerMessage || 15)} XP/message · ${formatNumber(s.cooldownSeconds || 60)}s cooldown`}</span><div><i style="width:${isDemoMode() ? Math.min(100, Math.round((DEMO_LEVELING.xp / DEMO_LEVELING.nextLevelXp) * 100)) : 82}%"></i></div></div><div class="dash-role-table" data-level-rewards><div class="dash-role-table-head"><strong>Reward roles</strong></div><div class="dash-inline-form dash-reward-editor">${numberField('rewardLevel','Reward level',5,1)}${roleSelectField(server,'rewardRoleId','Reward role',firstRole)}<button type="button" class="dash-save-btn" data-add-level-reward>Add Role</button></div>${rewards.length ? rewards.map((r) => `<div class="dash-role-row"><span>Level ${escapeHtml(r.level)}</span><strong>@${escapeHtml(r.roleName || r.role || r.roleId)}</strong><button type="button" data-remove-level-reward="${escapeHtml(r.level)}">Remove</button></div>`).join('') : emptyState('No reward roles configured.', 'Add a level and role above to make level rewards real.')}</div><small class="preview-note">Reward roles are now loaded from and saved through the bot API.</small></article></form>`;
+  return `<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xpPerMessage','XP per message',s.xpPerMessage ?? s.xp,1)}${numberField('cooldownSeconds','Cooldown seconds',s.cooldownSeconds ?? s.cooldown,5)}${channelSelectField(server,'channelId','Level-up channel',s.channelId ?? s.channel,'level-up')}${switchField('stackRoles',s.stackRoles !== false,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><div class="dash-level-preview"><strong>${isDemoMode() ? `Demo rank #${DEMO_LEVELING.rank} · Level ${DEMO_LEVELING.level}` : 'Level reward preview'}</strong><span>${isDemoMode() ? `${formatNumber(DEMO_LEVELING.xp)} / ${formatNumber(DEMO_LEVELING.nextLevelXp)} XP` : `${formatNumber(s.xpPerMessage || 15)} XP/message · ${formatNumber(s.cooldownSeconds || 60)}s cooldown`}</span><div><i style="width:${isDemoMode() ? Math.min(100, Math.round((DEMO_LEVELING.xp / DEMO_LEVELING.nextLevelXp) * 100)) : 82}%"></i></div></div><div class="dash-role-table" data-level-rewards><div class="dash-role-table-head"><strong>Reward roles</strong></div><div class="dash-inline-form dash-reward-editor">${numberField('rewardLevel','Reward level',5,1)}${roleSelectField(server,'rewardRoleId','Reward role',firstRole)}<button type="button" class="dash-save-btn" data-add-level-reward>Add Role</button></div>${rewards.length ? rewards.map((r) => `<div class="dash-role-row"><span>Level ${escapeHtml(r.level)}</span><strong>@${escapeHtml(r.roleName || r.role || r.roleId)}</strong><button type="button" data-remove-level-reward="${escapeHtml(r.level)}">Remove</button></div>`).join('') : emptyState('No reward roles configured.', 'Add a level and role above to make level rewards real.')}</div><small class="preview-note">Reward roles are now loaded from and saved through the bot API.</small></article></form>`;
 }
 function logsPage(server) {
   const s = readSettings(server.id, 'logs', { enabled:false, channelId:'demo-ch-logs', messageEvents:true, memberEvents:true, moderationEvents:true, voiceEvents:false }, server);
-  return `${serverHeader(server,'logs')}<form class="dash-designer" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Logs</span><h2>Logs</h2><p>Configure real bot log channels and event tracking for ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable logs','Send selected events to a log channel.')}<hr/>${channelSelectField(server,'channelId','Log channel',s.channelId ?? s.channel,'logs')}${switchField('messageEvents',s.messageEvents ?? s.messages,'Message logs','Track message delete and edit events.')}${switchField('memberEvents',s.memberEvents ?? s.members,'Member logs','Track joins and leaves.')}${switchField('moderationEvents',s.moderationEvents ?? s.moderation,'Moderation logs','Track warnings, bans and automod actions.')}${switchField('voiceEvents',s.voiceEvents ?? s.voice,'Voice logs','Track voice channel joins and leaves.')}${saveBtn()}</article><article class="dash-card"><span>Live examples</span><h2>Tracked activity</h2><div class="dash-log-status-grid">${logStatus('Message Logs', s.messageEvents ?? s.messages)}${logStatus('Member Logs', s.memberEvents ?? s.members)}${logStatus('Voice Logs', s.voiceEvents ?? s.voice)}${logStatus('Moderation Logs', s.moderationEvents ?? s.moderation)}</div>${logExample('Member joined','A real member join event can be logged by the bot.','success')}${logExample('Message deleted','Deleted and edited messages are logged when enabled.','warn')}${logExample('Moderation action','Automod actions are sent to logs when enabled.','mod')}</article></form>`;
+  return `<form class="dash-designer" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Logs</span><h2>Logs</h2><p>Configure real bot log channels and event tracking for ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable logs','Send selected events to a log channel.')}<hr/>${channelSelectField(server,'channelId','Log channel',s.channelId ?? s.channel,'logs')}${switchField('messageEvents',s.messageEvents ?? s.messages,'Message logs','Track message delete and edit events.')}${switchField('memberEvents',s.memberEvents ?? s.members,'Member logs','Track joins and leaves.')}${switchField('moderationEvents',s.moderationEvents ?? s.moderation,'Moderation logs','Track warnings, bans and automod actions.')}${switchField('voiceEvents',s.voiceEvents ?? s.voice,'Voice logs','Track voice channel joins and leaves.')}${saveBtn()}</article><article class="dash-card"><span>Live examples</span><h2>Tracked activity</h2><div class="dash-log-status-grid">${logStatus('Message Logs', s.messageEvents ?? s.messages)}${logStatus('Member Logs', s.memberEvents ?? s.members)}${logStatus('Voice Logs', s.voiceEvents ?? s.voice)}${logStatus('Moderation Logs', s.moderationEvents ?? s.moderation)}</div>${logExample('Member joined','A real member join event can be logged by the bot.','success')}${logExample('Message deleted','Deleted and edited messages are logged when enabled.','warn')}${logExample('Moderation action','Automod actions are sent to logs when enabled.','mod')}</article></form>`;
 }
 function logStatus(label, enabled) { return `<div class="dash-log-status ${enabled ? 'on' : 'off'}"><span>${escapeHtml(label)}</span><strong>${enabled ? 'Enabled' : 'Disabled'}</strong></div>`; }
 function logExample(title, text, type) { return `<div class="dash-log-example ${type}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
 function moderationPage(server) {
   const s = readSettings(server.id, 'moderation', { enabled:false, warningsEnabled:true, automodEnabled:false, antiSpam:false, linkFilter:false, inviteFilter:false, modLogChannelId:'demo-ch-mod-logs', blockedWords:'' }, server);
-  return `${serverHeader(server,'moderation')}<form class="dash-designer dash-moderation-layout" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls used by the bot.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>${channelSelectField(server,'modLogChannelId','Mod log channel',s.modLogChannelId ?? s.channel,'mod-logs')}${switchField('warningsEnabled',s.warningsEnabled ?? s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('automodEnabled',s.automodEnabled,'Blocked words','Enable blocked word checks.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('linkFilter',s.linkFilter ?? s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('inviteFilter',s.inviteFilter ?? s.antiInvites,'Invite filter','Block Discord invite links.')}${textareaField('blockedWords','Blocked words',s.blockedWords || '',500)}${saveBtn()}</article><article class="dash-card dash-form-card" data-moderation-access><span>Bypass Access</span><h2>Trusted users</h2><p>Bot owner and users with Manage Server bypass moderation filters by default. Add extra trusted users by username search or Discord ID.</p>${userAccessForm('moderation', 'Search user or paste ID')}<div data-moderation-access-list>${emptyState('Loading bypass list...', 'Please wait.')}</div></article><article class="dash-card dash-automation-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article></form>`;
+  return `<form class="dash-designer dash-moderation-layout" data-settings-form="moderation" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Moderation</span><h2>Moderation Tools</h2><p>Configure warnings, filters and moderation controls used by the bot.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable moderation tools','Turn on configurable moderation features.')}<hr/>${channelSelectField(server,'modLogChannelId','Mod log channel',s.modLogChannelId ?? s.channel,'mod-logs')}${switchField('warningsEnabled',s.warningsEnabled ?? s.warnings,'Warning system','Allow moderators to warn users.')}${switchField('automodEnabled',s.automodEnabled,'Blocked words','Enable blocked word checks.')}${switchField('antiSpam',s.antiSpam,'Anti-spam','Detect repeated messages automatically.')}${switchField('linkFilter',s.linkFilter ?? s.antiLinks,'Link filter','Block links from non-trusted users.')}${switchField('inviteFilter',s.inviteFilter ?? s.antiInvites,'Invite filter','Block Discord invite links.')}${textareaField('blockedWords','Blocked words',s.blockedWords || '',500)}${saveBtn()}</article><article class="dash-card dash-form-card" data-moderation-access><span>Bypass Access</span><h2>Trusted users</h2><p>Bot owner and users with Manage Server bypass moderation filters by default. Add extra trusted users by username search or Discord ID.</p>${userAccessForm('moderation', 'Search user or paste ID')}<div data-moderation-access-list>${emptyState('Loading bypass list...', 'Please wait.')}</div></article><article class="dash-card dash-automation-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article></form>`;
 }
 function aiPage(server) {
-  return `${serverHeader(server,'ai')}<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>${userAccessForm('ai', 'Search user or paste ID')}<small class="preview-note">Bot owner and users with Manage Server permission have access by default. Manual users can be added by username search or Discord ID.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article></section>`;
+  return `<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>${userAccessForm('ai', 'Search user or paste ID')}<small class="preview-note">Bot owner and users with Manage Server permission have access by default. Manual users can be added by username search or Discord ID.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article></section>`;
 }
 async function loadAiAccess(guildId) {
   const holder = document.querySelector('[data-ai-access-list]');
@@ -596,11 +616,16 @@ async function loadModerationAccess(guildId) {
   const holder = document.querySelector('[data-moderation-access-list]');
   if (!holder) return;
   holder.innerHTML = emptyState('Loading bypass list...', 'Please wait.');
+  const fallback = { ok: true, defaultUsers: [], users: [], fallback: true, warning: 'Moderation access took too long to respond.' };
   try {
-    const data = await getModerationAccess(guildId);
+    const data = await Promise.race([
+      getModerationAccess(guildId),
+      new Promise((resolve) => setTimeout(() => resolve(fallback), 9000)),
+    ]);
     holder.innerHTML = renderAccessList(data, 'No manual moderation bypass users.');
   } catch (err) {
-    holder.innerHTML = errorCard('Could not load moderation bypass list.', err.message || 'Try again later.');
+    holder.innerHTML = renderAccessList({ ok: true, defaultUsers: [], users: [], fallback: true, error: err.message }, 'No manual moderation bypass users.');
+    showStatusToast('error', 'Moderation bypass loaded with fallback', err.message || 'The bot API did not respond in time.');
   }
 }
 function attachUserSearch(form, server) {
@@ -763,9 +788,12 @@ function attachSettingsForm(server, section) {
     });
     const values = getFormValues(form);
     setDraft(server.id, section, payloadForSection(section, values));
+    syncSectionStatus(form, section);
     if (section === 'welcome') updateWelcomePreview(server, form);
     if (section === 'logs') updateLogsPreview(form);
+    syncSectionStatus(form, section);
   };
+  syncSectionStatus(form, section);
   form.addEventListener('input', refreshFormPreview);
   form.addEventListener('change', refreshFormPreview);
   form.querySelectorAll('[data-insert-variable]').forEach((btn) => {
@@ -941,41 +969,83 @@ async function hydrateServerForSection(server, section) {
   tabDataCache.set(cacheKey, { roles: copy.roles, settings: copy.settings });
   return copy;
 }
-function serverContent(server, section) {
-  const active = VALID_SECTIONS.has(section) ? section : 'overview';
+function serverSectionBody(server, section) {
+  const active = normalizeSection(section);
   if (active === 'welcome') return welcomePage(server);
   if (active === 'leveling') return levelingPage(server);
-  if (active === 'ai') return aiPage(server);
+  if (active === 'ai-image-access') return aiPage(server);
   if (active === 'logs') return logsPage(server);
   if (active === 'moderation') return moderationPage(server);
   return overviewPage(server);
 }
+function serverContent(server, section, { includeHeader = true } = {}) {
+  const active = normalizeSection(section);
+  const saveHost = `<div data-server-save-host>${globalSaveBarHtml(server.id)}</div>`;
+  return `${includeHeader ? serverHeader(server, active) : ''}<div class="dash-tab-content" data-server-tab-content data-active-section="${escapeHtml(active)}">${serverSectionBody(server, active)}</div>${saveHost}`;
+}
+function updatePersistentServerChrome(server, section) {
+  const active = normalizeSection(section);
+  document.querySelectorAll('.dash-tabs a, .dash-side-nav a').forEach((link) => {
+    if (!link.href || !link.href.includes('/server/')) return;
+    const url = new URL(link.href, window.location.origin);
+    const linkSection = normalizeSection((url.hash || '#overview').slice(1));
+    link.classList.toggle('is-active', linkSection === active);
+  });
+  document.querySelectorAll('[data-dashboard-active-crumb]').forEach((crumb) => {
+    crumb.textContent = sectionTitle(active);
+    crumb.hidden = active === 'overview';
+  });
+  document.querySelectorAll('[data-dashboard-active-separator]').forEach((separator) => {
+    separator.hidden = active === 'overview';
+  });
+}
+function attachActiveSection(server, active) {
+  attachSettingsForm(server, active);
+  attachGlobalSaveBar(server);
+  if (active === 'ai-image-access') attachAiPage(server);
+  if (active === 'moderation') attachModerationAccess(server);
+  const form = document.querySelector(`[data-settings-form="${CSS.escape(active)}"]`);
+  if (form) syncSectionStatus(form, active);
+}
+
 async function renderServerPage(id, section = 'overview') {
   if (!els.detailContent || !els.detail) return;
   if (els.home) els.home.hidden = true;
   els.detail.hidden = false;
-  const active = VALID_SECTIONS.has(section) ? section : 'overview';
+  const active = normalizeSection(section);
   const renderNonce = ++serverRenderNonce;
   let finishedFullLoad = false;
+  const hasPersistentShell = activeServerShellId === id && Boolean(els.detailContent.querySelector('[data-server-tab-content]'));
 
   function renderSnapshot(snapshot) {
-    if (!snapshot || renderNonce !== serverRenderNonce || finishedFullLoad) return;
+    if (!snapshot || renderNonce !== serverRenderNonce || finishedFullLoad || hasPersistentShell) return;
+    activeServerShellId = snapshot.id;
     document.title = `${snapshot.name} — ${sectionTitle(active)} — Meowz`;
     els.detailContent.innerHTML = shell({
       server: snapshot,
       active: sectionTitle(active),
       section: active,
-      content: `${serverHeader(snapshot, active)}${loadingCard(`Loading ${sectionTitle(active).toLowerCase()} settings...`)}`,
+      content: `${serverHeader(snapshot, active)}<div class="dash-tab-content" data-server-tab-content data-active-section="${escapeHtml(active)}">${loadingCard(`Loading ${sectionTitle(active).toLowerCase()} settings...`)}</div><div data-server-save-host>${globalSaveBarHtml(snapshot.id)}</div>`,
     });
     wireShell(els.detailContent);
     syncDashTabs(els.detailContent);
   }
 
-  const initialSnapshot = readServerSnapshot(id);
-  if (initialSnapshot) renderSnapshot(initialSnapshot);
-  else {
-    els.detailContent.innerHTML = shell({ active: sectionTitle(active), section: active, content: loadingCard('Loading server...') });
-    fetchServerSnapshot(id).then(renderSnapshot);
+  if (hasPersistentShell) {
+    updatePersistentServerChrome({ id }, active);
+    const tabHost = els.detailContent.querySelector('[data-server-tab-content]');
+    if (tabHost) {
+      tabHost.dataset.activeSection = active;
+      tabHost.innerHTML = loadingCard(`Loading ${sectionTitle(active).toLowerCase()} settings...`);
+    }
+  } else {
+    const initialSnapshot = readServerSnapshot(id);
+    if (initialSnapshot) renderSnapshot(initialSnapshot);
+    else {
+      activeServerShellId = null;
+      els.detailContent.innerHTML = shell({ active: sectionTitle(active), section: active, content: loadingCard('Loading server...') });
+      fetchServerSnapshot(id).then(renderSnapshot);
+    }
   }
 
   try {
@@ -989,15 +1059,27 @@ async function renderServerPage(id, section = 'overview') {
     finishedFullLoad = true;
     if (renderNonce !== serverRenderNonce) return;
     document.title = `${server.name} — ${sectionTitle(active)} — Meowz`;
+
+    const tabHost = els.detailContent.querySelector('[data-server-tab-content]');
+    const sameShell = activeServerShellId === server.id && tabHost;
+    if (sameShell) {
+      updatePersistentServerChrome(server, active);
+      tabHost.dataset.activeSection = active;
+      tabHost.innerHTML = serverSectionBody(server, active);
+      renderGlobalSaveBar(server.id);
+      syncDashTabs(els.detailContent);
+      attachActiveSection(server, active);
+      return;
+    }
+
+    activeServerShellId = server.id;
     els.detailContent.innerHTML = shell({ server, active: sectionTitle(active), section: active, content: serverContent(server, active) });
     wireShell(els.detailContent);
     syncDashTabs(els.detailContent);
-    attachSettingsForm(server, active);
-    attachGlobalSaveBar(server);
-    if (active === 'ai') attachAiPage(server);
-    if (active === 'moderation') attachModerationAccess(server);
+    attachActiveSection(server, active);
   } catch (err) {
     finishedFullLoad = true;
+    activeServerShellId = null;
     if (renderNonce !== serverRenderNonce) return;
     showStatusToast('error', 'Server failed to load', err.message || 'Could not open server.');
     els.detailContent.innerHTML = shell({ active: 'Server unavailable', content: errorCard('Could not open this server.', err.message || 'Try again later.') });
@@ -1009,8 +1091,7 @@ function handleHashTabNavigation(event) {
   if (!link) return;
   const url = new URL(link.href, window.location.origin);
   if (url.pathname !== window.location.pathname) return;
-  const next = String(url.hash || '#overview').slice(1) || 'overview';
-  if (!VALID_SECTIONS.has(next)) return;
+  const next = normalizeSection(String(url.hash || '#overview').slice(1) || 'overview');
   event.preventDefault();
   if (window.location.hash !== `#${next}`) history.pushState(null, '', `#${next}`);
   const info = routeInfo();
