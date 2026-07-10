@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-10",
+    "title": "Moderation bypass and save card hotfix",
+    "items": [
+      "Added a dashboard flow fix bundle loaded after the main dashboard script so the moderation bypass panel resolves instead of staying on Loading bypass list.",
+      "Restyled the unsaved changes controls as an in-flow dashboard card rather than a fixed or detached overlay.",
+      "Improved spacing between the trusted users card and the automation rules card across mobile and desktop layouts."
+    ]
+  },
+  {
+    "date": "2026-07-10",
     "title": "Dashboard API and layout flow fixes",
     "items": [
       "Fixed moderation bypass loading so the trusted users panel resolves with bot API data or a safe fallback instead of staying on Loading bypass list.",
