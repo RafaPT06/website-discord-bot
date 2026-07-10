@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-10",
+    "title": "Moderation responsive width fix",
+    "items": [
+      "Changed the moderation tab to use its available dashboard content width instead of the browser viewport when deciding between one and two columns.",
+      "Prevented Android Chrome desktop-site mode from squeezing Moderation Tools and Trusted users into narrow scaled-down columns.",
+      "Made the trusted-user search controls stack automatically whenever their card becomes too narrow."
+    ]
+  },
+  {
+    "date": "2026-07-10",
     "title": "Moderation trusted users structural fix",
     "items": [
       "Separated the moderation settings form from the trusted-user form so the browser no longer repairs invalid nested forms and splits the automation card out of the dashboard grid.",

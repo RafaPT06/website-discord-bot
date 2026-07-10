@@ -7590,6 +7590,8 @@ body.dashboard-app-body > .nav[data-global-navbar],
 }
 .dash-content {
   padding-top: 0 !important;
+  container-type: inline-size;
+  container-name: dashboard-content;
 }
 .dash-card-head > .status,
 .dash-card-head > b.status,
@@ -7611,7 +7613,7 @@ body.dashboard-app-body > .nav[data-global-navbar],
 }
 .dash-moderation-layout {
   display: grid !important;
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr) !important;
+  grid-template-columns: minmax(0, 1fr) !important;
   align-items: start !important;
   gap: clamp(1.1rem, 2.4vw, 1.55rem) !important;
 }
@@ -7620,11 +7622,32 @@ body.dashboard-app-body > .nav[data-global-navbar],
   margin: 0 !important;
 }
 .dash-moderation-settings {
-  grid-row: span 2;
+  grid-row: auto;
+}
+.dash-moderation-access-card {
+  container-type: inline-size;
+  container-name: moderation-access;
 }
 .dash-moderation-access-card,
 .dash-automation-card {
   align-self: start;
+}
+@container dashboard-content (min-width: 68rem) {
+  .dash-moderation-layout {
+    grid-template-columns: minmax(34rem, 1.08fr) minmax(22rem, .92fr) !important;
+  }
+  .dash-moderation-settings {
+    grid-row: span 2;
+  }
+}
+@container moderation-access (max-width: 28rem) {
+  .dash-user-search-form {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: .7rem !important;
+  }
+  .dash-user-search-form .dash-save-btn {
+    width: 100%;
+  }
 }
 .dash-automation-card .dash-feature-grid.compact {
   gap: clamp(.75rem, 1.6vw, .95rem) !important;
