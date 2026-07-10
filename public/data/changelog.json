@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-10",
+    "title": "Dashboard save and status polish",
+    "items": [
+      "Moved the unsaved changes controls to the end of the active dashboard tab content so they stay in normal page flow instead of appearing like a fixed header alert.",
+      "Tightened dashboard status badges so Enabled and Disabled pills stay compact and aligned on mobile.",
+      "Refined log status rows to keep labels readable while preventing the status pill from stretching or clipping."
+    ]
+  },
+  {
     "date": "2026-07-09",
     "title": "Real mobile navigation modal",
     "items": [

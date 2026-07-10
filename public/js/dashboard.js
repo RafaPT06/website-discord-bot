@@ -291,8 +291,10 @@ function shell({ server = null, active = 'Dashboard', section = 'dashboard', con
       <div class="dash-main">
         ${topbar(server, active, showOwnerToggle, isOwner)}
         ${mobileBreadcrumb(server, active)}
-        ${server ? `<div data-server-save-host>${globalSaveBarHtml(server.id)}</div>` : ''}
-        <div class="dash-content">${content}</div>
+        <div class="dash-content">
+          ${content}
+          ${server ? `<div data-server-save-host>${globalSaveBarHtml(server.id)}</div>` : ''}
+        </div>
       </div>
     </div>
   `;

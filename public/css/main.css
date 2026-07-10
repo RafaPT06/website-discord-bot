@@ -8339,3 +8339,155 @@ body.mobile-nav-open {
   color: #0f172a;
   background: linear-gradient(135deg, rgba(139,92,246,.15), rgba(34,211,238,.07));
 }
+
+/* ===== 2026-07-10 dashboard status + save flow polish =====
+   Keep status pills compact/readable and make the unsaved changes controls live
+   at the end of the active tab content instead of above the server header. */
+.dash-content > [data-server-save-host] {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: clamp(1rem, 2.4vw, 1.35rem) 0 0 !important;
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  z-index: auto !important;
+}
+
+.dash-content > [data-server-save-host]:empty {
+  display: none !important;
+}
+
+.dash-content > [data-server-save-host] .dash-save-bar,
+[data-server-save-host] .dash-save-bar,
+.dash-save-bar[data-global-save-bar] {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  z-index: auto !important;
+  border-radius: clamp(1rem, 3vw, 1.25rem) !important;
+}
+
+.dash-card-head {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: clamp(.75rem, 2vw, 1rem) !important;
+}
+
+.dash-card-head > div {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.dash-card-head > .status,
+.dash-card-head > b.status,
+.status {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: max-content !important;
+  max-width: 9rem !important;
+  min-height: 1.75rem !important;
+  padding: .28rem .68rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: flex-start !important;
+  border-radius: 999px !important;
+  font-size: clamp(.68rem, 2.45vw, .78rem) !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+}
+
+.dash-log-status-grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: clamp(.55rem, 1.8vw, .75rem) !important;
+}
+
+.dash-log-status {
+  min-width: 0 !important;
+  min-height: clamp(3rem, 8dvh, 3.65rem) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: .75rem !important;
+  padding: clamp(.72rem, 2.2vw, .9rem) clamp(.8rem, 2.6vw, 1rem) !important;
+  border-radius: clamp(.85rem, 3vw, 1rem) !important;
+}
+
+.dash-log-status span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: clamp(.9rem, 3.7vw, 1.05rem) !important;
+  line-height: 1.15 !important;
+}
+
+.dash-log-status strong {
+  min-width: max-content !important;
+  min-height: 1.65rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: .22rem .58rem !important;
+  border: 1px solid rgba(255,255,255,.1) !important;
+  border-radius: 999px !important;
+  font-size: clamp(.68rem, 2.55vw, .76rem) !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.dash-log-status.on strong {
+  color: #86efac !important;
+  border-color: rgba(57,229,140,.24) !important;
+  background: rgba(57,229,140,.12) !important;
+}
+
+.dash-log-status.off strong {
+  color: #fb7185 !important;
+  border-color: rgba(255,92,122,.22) !important;
+  background: rgba(255,92,122,.1) !important;
+}
+
+@media (max-width: 520px) {
+  .dash-card-head {
+    gap: .7rem !important;
+  }
+
+  .dash-card-head > .status,
+  .dash-card-head > b.status,
+  .status {
+    min-height: 1.65rem !important;
+    padding: .24rem .58rem !important;
+    font-size: .68rem !important;
+  }
+
+  .dash-log-status {
+    min-height: 2.9rem !important;
+  }
+
+  .dash-log-status strong {
+    min-height: 1.55rem !important;
+    padding-inline: .5rem !important;
+  }
+
+  .dash-content > [data-server-save-host] .dash-save-bar,
+  [data-server-save-host] .dash-save-bar,
+  .dash-save-bar[data-global-save-bar] {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: .75rem !important;
+  }
+
+  .dash-save-bar > div:last-child {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .55rem !important;
+  }
+}
