@@ -1,0 +1,19 @@
+/* Final live-preview overrides: preserve loading/error states, then let the generated card blend into the Discord mockup once ready. */
+.dash-live-preview:not(.is-loading):not(.is-error) {
+  min-height: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dash-live-preview:not(.is-loading):not(.is-error) img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+  background: transparent;
+}
+
+.dash-live-preview:not(.is-loading):not(.is-error) .dash-live-preview-state {
+  display: none;
+}

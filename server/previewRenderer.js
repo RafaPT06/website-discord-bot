@@ -4,7 +4,7 @@ const CARD_X = 38;
 const CARD_Y = 38;
 const CARD_WIDTH = 1124;
 const CARD_HEIGHT = 484;
-const FONT_STACK = `Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Segoe UI Symbol", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+const FONT_STACK = `Inter,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,Segoe UI Emoji,Apple Color Emoji,Noto Color Emoji,sans-serif`;
 
 function escapeXml(value = '') {
   return String(value)
@@ -94,10 +94,10 @@ function renderGreetingPreviewSvg(payload = {}) {
     ${cardFrame(type)}
     ${memberBadge}
     ${avatar}
-    <g fill="#ffffff" text-anchor="middle" font-family="${FONT_STACK}">
-      <text x="600" y="362" font-size="54" font-weight="800" letter-spacing=".015em">${first || ''}</text>
+    <g fill="#ffffff" text-anchor="middle" font-family="${FONT_STACK}" style="font-variant-emoji:emoji">
+      <text x="600" y="362" font-size="54" font-weight="800">${first || ''}</text>
       <text x="600" y="414" font-size="28" font-weight="700" letter-spacing=".08em">${second || ''}</text>
-      <text x="600" y="470" font-size="50" font-weight="800" letter-spacing=".015em">${third || ''}</text>
+      <text x="600" y="470" font-size="50" font-weight="800">${third || ''}</text>
     </g>
   </svg>`;
 }
@@ -128,7 +128,7 @@ function renderLevelUpPreviewSvg(payload = {}) {
   <svg xmlns="http://www.w3.org/2000/svg" width="${DEFAULT_WIDTH}" height="${DEFAULT_HEIGHT}" viewBox="0 0 ${DEFAULT_WIDTH} ${DEFAULT_HEIGHT}" role="img" aria-label="Level up card preview">
     ${cardFrame('welcome')}
     ${avatar}
-    <g fill="#ffffff" font-family="${FONT_STACK}">
+    <g fill="#ffffff" font-family="${FONT_STACK}" style="font-variant-emoji:emoji">
       <text x="328" y="190" font-size="54" font-weight="800" letter-spacing=".015em">LEVEL UP!</text>
       <text x="328" y="246" font-size="34" font-weight="700">${username}</text>
       <text x="884" y="174" font-size="24" font-weight="700" fill="rgba(255,255,255,.78)" letter-spacing=".06em">LEVEL</text>

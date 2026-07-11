@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-11",
+    "title": "Unicode preview text and background fix",
+    "items": [
+      "Corrected the SVG font-family markup and added emoji-capable system fallbacks so preview usernames, server names, accents and emoji render without being converted into question marks.",
+      "Removed the invisible ready-state gradient layer that was leaving a dark shade across the lower part of generated cards.",
+      "Made loaded preview frames transparent and intrinsic-height while preserving the existing loading and error placeholders."
+    ]
+  },
+  {
+    "date": "2026-07-11",
     "title": "Preview typography and background polish",
     "items": [
       "Updated the live SVG preview cards to use a broader system font stack with emoji-capable fallbacks so usernames, server names and symbols render more reliably.",
