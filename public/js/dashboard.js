@@ -354,8 +354,12 @@ function buildWelcomePreviewPayload(server, settings, kind = 'welcome') {
     memberCount: Number(server?.memberCount || 11),
     showMember: settings.showMember !== false,
     showAvatar: settings.showAvatar !== false,
-    message: kind === 'goodbye' ? (settings.goodbyeMessage || 'GOODBYE {user}\nLEFT\n{server}') : (settings.welcomeMessage || 'WELCOME {user}\nTO\n{server}'),
-    messageTemplate: kind === 'goodbye' ? (settings.goodbyeMessage || 'GOODBYE {user}\nLEFT\n{server}') : (settings.welcomeMessage || 'WELCOME {user}\nTO\n{server}'),
+    message: kind === 'goodbye'
+      ? `GOODBYE\n{user}\n${String(server?.name || '').trim() || 'PERSONAL'}`
+      : `WELCOME\n{user}\n${String(server?.name || '').trim() || 'PERSONAL'}`,
+    messageTemplate: kind === 'goodbye'
+      ? `GOODBYE\n{user}\n${String(server?.name || '').trim() || 'PERSONAL'}`
+      : `WELCOME\n{user}\n${String(server?.name || '').trim() || 'PERSONAL'}`,
   };
 }
 function hydrateWelcomePreview(server, settings) {
