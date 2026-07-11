@@ -41,3 +41,5 @@ jobs:
           git add .
           git commit -m "Add live dashboard previews"
           git push
+
+# Retry after adding the preview renderer.
