@@ -7,7 +7,8 @@
       "Fixed multi-line welcome and goodbye templates so extra lines are combined correctly and the final {server} line is no longer dropped.",
       "Kept previews live and unsaved with request debouncing, cancellation, small in-memory image caching and safe public demo rate limits.",
       "Connected saved welcome and goodbye message templates to the bot card and Discord message output so the configured text is no longer ignored.",
-      "Made live preview containers collapse to the exact PNG height after loading, removing the empty black area below welcome, goodbye and level-up cards on Android and other large-font displays."
+      "Made live preview containers collapse to the exact PNG height after loading, removing the empty black area below welcome, goodbye and level-up cards on Android and other large-font displays.",
+      "Fixed welcome and goodbye card-style changes so they are tracked as unsaved, saved through the bot API and restored after reloading, including the member-number and avatar card options."
     ]
   },
   {

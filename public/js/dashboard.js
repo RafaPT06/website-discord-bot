@@ -913,8 +913,12 @@ function payloadForSection(section, values) {
       goodbyeEnabled: Boolean(values.goodbyeEnabled),
       welcomeChannelId: values.welcomeChannelId || null,
       goodbyeChannelId: values.goodbyeChannelId || null,
+      welcomeStyle: values.welcomeStyle || 'Custom Card (Modern)',
+      goodbyeStyle: values.goodbyeStyle || 'Text only',
       welcomeMessage: values.welcomeMessage || '',
       goodbyeMessage: values.goodbyeMessage || '',
+      showMember: values.showMember !== false,
+      showAvatar: values.showAvatar !== false,
     };
   }
   if (section === 'leveling') {
