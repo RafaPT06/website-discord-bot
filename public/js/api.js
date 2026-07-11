@@ -198,32 +198,11 @@ export async function deleteLevelReward(guildId, level) {
   return data;
 }
 
-export async function requestDashboardPreview(kind, payload, { signal } = {}) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
-  const abortFromCaller = () => controller.abort();
-  signal?.addEventListener('abort', abortFromCaller, { once: true });
-
-  try {
-    const response = await fetch(`/api/dashboard/preview/${encodeURIComponent(kind)}`, {
-      method: 'POST',
-      cache: 'no-store',
-      headers: { 'content-type': 'application/json' },
-      signal: controller.signal,
-      body: JSON.stringify({ ...(payload || {}), demo: isDemoRoute() }),
-    });
-
-    if (!response.ok) {
-      const data = await response.json().catch(() => null);
-      throw new Error(data?.error || `Preview request failed with ${response.status}`);
-    }
-
-    return response.blob();
-  } catch (err) {
-    if (err?.name === 'AbortError') throw new Error('Preview request timed out.');
-    throw err;
-  } finally {
-    clearTimeout(timeout);
-    signal?.removeEventListener('abort', abortFromCaller);
-  }
+export function requestDashboardPreview(kind, payload, { signal } = {}) {
+  return fetchJson(`/api/dashboard/preview/${encodeURIComponent(kind)}`, {
+    method: 'POST',
+    timeoutMs: 12000,
+    signal,
+    body: JSON.stringify({ ...(payload || {}), demo: isDemoRoute() }),
+  });
 }

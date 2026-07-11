@@ -267,10 +267,12 @@ function avatarHtml(className = 'dash-user-avatar') {
 function initial(name = 'M') { return escapeHtml(String(name || 'M').trim().charAt(0).toUpperCase() || 'M'); }
 
 const previewResponseCache = new Map();
-const previewTimers = new Map();
-const previewControllers = new Map();
-const MAX_PREVIEW_CACHE = 24;
+const previewTimers = new WeakMap();
+const previewControllers = new WeakMap();
 
+function previewDataUrl(svg = '') {
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
 function livePreviewShell(kind, alt, label = 'Generating preview…') {
   return `<div class="dash-live-preview is-loading" data-live-preview="${escapeHtml(kind)}"><img alt="${escapeHtml(alt)}" loading="lazy" hidden /><div class="dash-live-preview-state"><strong>${escapeHtml(label)}</strong><span>Updates live while you edit.</span></div></div>`;
 }
@@ -284,24 +286,8 @@ function setPreviewState(host, state, message, detail) {
   const stateBox = host.querySelector('.dash-live-preview-state');
   if (stateBox) stateBox.innerHTML = `<strong>${escapeHtml(message || 'Preview')}</strong><span>${escapeHtml(detail || '')}</span>`;
 }
-function cachePreviewUrl(key, url) {
-  previewResponseCache.set(key, url);
-  while (previewResponseCache.size > MAX_PREVIEW_CACHE) {
-    const oldestKey = previewResponseCache.keys().next().value;
-    const oldestUrl = previewResponseCache.get(oldestKey);
-    previewResponseCache.delete(oldestKey);
-    if (oldestUrl) URL.revokeObjectURL(oldestUrl);
-  }
-}
-function cancelLivePreview(kind) {
-  const timer = previewTimers.get(kind);
-  if (timer) clearTimeout(timer);
-  previewTimers.delete(kind);
-  previewControllers.get(kind)?.abort?.();
-  previewControllers.delete(kind);
-}
 async function runLivePreview(host, kind, payload) {
-  if (!host?.isConnected || !payload) return;
+  if (!host || !payload) return;
   const key = previewCacheKey(kind, payload);
   const cached = previewResponseCache.get(key);
   const img = host.querySelector('img');
@@ -311,60 +297,52 @@ async function runLivePreview(host, kind, payload) {
     setPreviewState(host, 'ready', 'Preview ready', '');
     return;
   }
-
-  previewControllers.get(kind)?.abort?.();
+  previewControllers.get(host)?.abort?.();
   const controller = new AbortController();
-  previewControllers.set(kind, controller);
+  previewControllers.set(host, controller);
   setPreviewState(host, 'loading', 'Generating preview…', 'Updates live while you edit.');
-
   try {
-    const blob = await requestDashboardPreview(kind, payload, { signal: controller.signal });
-    if (controller.signal.aborted || !host.isConnected) return;
-    const imageUrl = URL.createObjectURL(blob);
-    cachePreviewUrl(key, imageUrl);
+    const data = await requestDashboardPreview(kind, payload, { signal: controller.signal });
+    if (controller.signal.aborted) return;
+    const dataUrl = previewDataUrl(data.svg || '');
+    previewResponseCache.set(key, dataUrl);
     if (img) {
-      img.src = imageUrl;
+      img.src = dataUrl;
       img.hidden = false;
     }
     setPreviewState(host, 'ready', 'Preview ready', '');
   } catch (err) {
-    if (controller.signal.aborted || !host.isConnected) return;
+    if (controller.signal.aborted) return;
     setPreviewState(host, 'error', 'Preview unavailable', err.message || 'The live preview could not be generated.');
-  } finally {
-    if (previewControllers.get(kind) === controller) previewControllers.delete(kind);
   }
 }
-function scheduleLivePreview(host, kind, payload, delay = 320) {
+function scheduleLivePreview(host, kind, payload, delay = 220) {
   if (!host || !payload) return;
-  const existing = previewTimers.get(kind);
+  const existing = previewTimers.get(host);
   if (existing) clearTimeout(existing);
   const timeout = setTimeout(() => {
-    previewTimers.delete(kind);
     runLivePreview(host, kind, payload);
+    previewTimers.delete(host);
   }, delay);
-  previewTimers.set(kind, timeout);
+  previewTimers.set(host, timeout);
 }
 function buildWelcomePreviewPayload(server, settings, kind = 'welcome') {
   return {
     kind,
-    serverName: String(server?.name || '').trim() || 'PERSONAL',
-    guildName: String(server?.name || '').trim() || 'PERSONAL',
+    serverName: server?.name || 'PERSONAL',
     userName: activeName(),
     avatarUrl: userAvatarUrl(activeUser(), 256),
     memberCount: Number(server?.memberCount || 11),
     showMember: settings.showMember !== false,
     showAvatar: settings.showAvatar !== false,
-    message: kind === 'goodbye' ? (settings.goodbyeMessage || 'GOODBYE {user}\nLEFT\n{server}') : (settings.welcomeMessage || 'WELCOME {user}\nTO\n{server}'),
-    messageTemplate: kind === 'goodbye' ? (settings.goodbyeMessage || 'GOODBYE {user}\nLEFT\n{server}') : (settings.welcomeMessage || 'WELCOME {user}\nTO\n{server}'),
+    message: kind === 'goodbye' ? (settings.goodbyeMessage || 'Goodbye {user}.') : (settings.welcomeMessage || 'WELCOME {user}\nTO\n{server}'),
   };
 }
 function hydrateWelcomePreview(server, settings) {
   const welcomeHost = document.querySelector('[data-live-preview="welcome"]');
   const goodbyeHost = document.querySelector('[data-live-preview="goodbye"]');
   if (welcomeHost && settings.welcomeStyle !== 'Text only') scheduleLivePreview(welcomeHost, 'welcome', buildWelcomePreviewPayload(server, settings, 'welcome'));
-  else cancelLivePreview('welcome');
   if (goodbyeHost && settings.goodbyeStyle !== 'Text only') scheduleLivePreview(goodbyeHost, 'goodbye', buildWelcomePreviewPayload(server, settings, 'goodbye'));
-  else cancelLivePreview('goodbye');
 }
 function levelPreviewStats(settings = {}) {
   if (isDemoMode()) {
@@ -392,14 +370,11 @@ function levelPreviewStats(settings = {}) {
   };
 }
 function buildLevelPreviewPayload(server, settings) {
-  const stats = levelPreviewStats(settings);
   return {
-    serverName: String(server?.name || '').trim() || 'PERSONAL',
-    guildName: String(server?.name || '').trim() || 'PERSONAL',
+    serverName: server?.name || 'PERSONAL',
     userName: activeName(),
     avatarUrl: userAvatarUrl(activeUser(), 256),
-    ...stats,
-    neededXp: stats.requiredXp,
+    ...levelPreviewStats(settings),
   };
 }
 function hydrateLevelPreview(server, settings, host = document.querySelector('[data-live-preview="level-up"]')) {

@@ -1,5 +1,10 @@
 const DEFAULT_WIDTH = 1200;
-const DEFAULT_HEIGHT = 675;
+const DEFAULT_HEIGHT = 560;
+const CARD_X = 38;
+const CARD_Y = 38;
+const CARD_WIDTH = 1124;
+const CARD_HEIGHT = 484;
+const FONT_STACK = `Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Segoe UI Symbol", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
 
 function escapeXml(value = '') {
   return String(value)
@@ -39,46 +44,60 @@ function renderAvatarCircle({ id, x, y, size, avatarUrl, fallbackText, ring = 'r
   }
   return `
     <circle cx="${x + r}" cy="${y + r}" r="${r}" fill="#162033" stroke="${ring}" stroke-width="10" />
-    <text x="${x + r}" y="${y + r + 18}" text-anchor="middle" font-size="54" font-family="Arial, Helvetica, sans-serif" font-weight="800" fill="#ffffff">${fallbackText}</text>`;
+    <text x="${x + r}" y="${y + r + 18}" text-anchor="middle" font-size="54" font-family="${FONT_STACK}" font-weight="800" fill="#ffffff">${fallbackText}</text>`;
 }
 
 function bubbleSet() {
   const bubbles = [
-    [90, -92, 360, 0.065], [365, 65, 270, 0.045], [660, -78, 330, 0.05], [910, 84, 250, 0.055],
-    [40, 320, 250, 0.04], [350, 330, 300, 0.05], [670, 300, 270, 0.04], [935, 350, 230, 0.05],
-    [195, 160, 190, 0.03], [535, 170, 180, 0.035], [782, 138, 170, 0.03], [1005, -28, 160, 0.04],
+    [80, -88, 320, 0.06], [300, 42, 240, 0.05], [550, -70, 300, 0.045], [820, 14, 280, 0.05],
+    [968, -48, 220, 0.05], [36, 240, 220, 0.04], [225, 185, 190, 0.03], [430, 172, 250, 0.04],
+    [670, 144, 190, 0.03], [846, 160, 220, 0.04], [984, 220, 210, 0.03], [530, 298, 280, 0.05],
+    [780, 310, 280, 0.05], [1015, 320, 200, 0.045], [170, 328, 210, 0.035], [10, 92, 190, 0.035],
   ];
   return bubbles.map(([x, y, size, alpha]) => `<circle cx="${x + size / 2}" cy="${y + size / 2}" r="${size / 2}" fill="rgba(255,255,255,${alpha})" />`).join('');
+}
+
+function cardFrame(type = 'welcome') {
+  const accent = type === 'goodbye' ? '#d9d9de' : '#9f5cff';
+  const accentDark = type === 'goodbye' ? '#b9bcc6' : '#6236d9';
+  return `
+    <defs>
+      <linearGradient id="card-sheen-${type}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="rgba(255,255,255,.045)" />
+        <stop offset="100%" stop-color="rgba(255,255,255,.01)" />
+      </linearGradient>
+    </defs>
+    <rect x="${CARD_X}" y="${CARD_Y}" width="${CARD_WIDTH}" height="${CARD_HEIGHT}" rx="34" fill="rgba(0,0,0,.68)" stroke="rgba(255,255,255,.08)" stroke-width="2" />
+    <rect x="${CARD_X}" y="${CARD_Y}" width="${CARD_WIDTH}" height="${CARD_HEIGHT}" rx="34" fill="url(#card-sheen-${type})" />
+    ${bubbleSet()}
+    <path d="M48 452 C 68 342, 246 346, 320 404 C 356 432, 364 480, 368 522 L 48 522 Z" fill="${accentDark}" opacity="0.96" />
+    <path d="M62 416 C 104 392, 178 394, 224 426 C 254 446, 276 484, 280 522 L 62 522 Z" fill="${accent}" opacity="0.96" />
+    <path d="M968 38 C 1084 20, 1152 50, 1162 130 C 1165 162, 1147 196, 1110 202 L 1002 202 C 1002 202, 978 174, 976 140 C 972 92, 958 60, 968 38 Z" fill="${accent}" opacity="0.95" />`;
 }
 
 function renderGreetingPreviewSvg(payload = {}) {
   const type = payload.type === 'goodbye' ? 'goodbye' : 'welcome';
   const lines = normalizeLines(
     payload.message,
-    type === 'goodbye' ? ['GOODBYE RAFA', 'SEE YOU', 'SOON'] : ['WELCOME RAFA', 'TO', String(payload.serverName || 'PERSONAL')],
+    type === 'goodbye' ? ['GOODBYE RAFA', 'LEFT', String(payload.serverName || 'PERSONAL')] : ['WELCOME RAFA', 'TO', String(payload.serverName || 'PERSONAL')],
     payload,
   );
   const [first, second, third] = lines.map((line) => escapeXml(String(line || '').toUpperCase()));
-  const accent = type === 'goodbye' ? '#d7d7d7' : '#8b5cf6';
-  const accentDark = type === 'goodbye' ? '#b6b6b6' : '#5b21b6';
   const memberBadge = payload.showMember === false ? '' : `
     <g>
-      <rect x="420" y="52" width="360" height="58" rx="16" fill="rgba(255,255,255,.14)" />
-      <text x="600" y="89" text-anchor="middle" font-size="30" font-family="Arial, Helvetica, sans-serif" font-weight="800" fill="#ffffff">MEMBER #${escapeXml(payload.memberCount || 11)}</text>
+      <rect x="470" y="76" width="260" height="48" rx="14" fill="rgba(255,255,255,.14)" />
+      <text x="600" y="107" text-anchor="middle" font-size="24" font-family="${FONT_STACK}" font-weight="800" letter-spacing=".04em" fill="#ffffff">MEMBER #${escapeXml(payload.memberCount || 11)}</text>
     </g>`;
-  const avatar = payload.showAvatar === false ? '' : renderAvatarCircle({ id: `avatar-${type}`, x: 510, y: 154, size: 180, avatarUrl: payload.avatarUrl || '', fallbackText: initial(payload.userName) });
+  const avatar = payload.showAvatar === false ? '' : renderAvatarCircle({ id: `avatar-${type}`, x: 520, y: 145, size: 160, avatarUrl: payload.avatarUrl || '', fallbackText: initial(payload.userName) });
   return `<?xml version="1.0" encoding="UTF-8"?>
   <svg xmlns="http://www.w3.org/2000/svg" width="${DEFAULT_WIDTH}" height="${DEFAULT_HEIGHT}" viewBox="0 0 ${DEFAULT_WIDTH} ${DEFAULT_HEIGHT}" role="img" aria-label="${escapeXml(type)} card preview">
-    <rect width="100%" height="100%" rx="28" fill="#08090d" />
-    ${bubbleSet()}
-    <path d="M-70 590 C 40 350, 260 390, 380 620 C 420 700, 280 744, 65 730 C -20 724, -92 680, -70 590Z" fill="${accentDark}" opacity="0.96" />
-    <path d="M980 -28 C 1090 -40, 1188 8, 1216 120 C 1225 154, 1200 188, 1140 192 C 1018 202, 934 146, 930 70 C 928 26, 940 -20, 980 -28Z" fill="${accent}" opacity="0.92" />
+    ${cardFrame(type)}
     ${memberBadge}
     ${avatar}
-    <g fill="#ffffff" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900">
-      <text x="600" y="470" font-size="64">${first || ''}</text>
-      <text x="600" y="534" font-size="30">${second || ''}</text>
-      <text x="600" y="592" font-size="52">${third || ''}</text>
+    <g fill="#ffffff" text-anchor="middle" font-family="${FONT_STACK}">
+      <text x="600" y="362" font-size="54" font-weight="800" letter-spacing=".015em">${first || ''}</text>
+      <text x="600" y="414" font-size="28" font-weight="700" letter-spacing=".08em">${second || ''}</text>
+      <text x="600" y="470" font-size="50" font-weight="800" letter-spacing=".015em">${third || ''}</text>
     </g>
   </svg>`;
 }
@@ -104,22 +123,20 @@ function renderLevelUpPreviewSvg(payload = {}) {
   const totalXp = Math.max(requiredXp, toNumber(payload.totalXp, 15420));
   const progress = Math.max(2, Math.min(100, Math.round((currentXp / requiredXp) * 100)));
   const username = escapeXml(String(payload.userName || 'Rafa').toUpperCase());
-  const avatar = renderAvatarCircle({ id: 'avatar-levelup', x: 72, y: 154, size: 190, avatarUrl: payload.avatarUrl || '', fallbackText: initial(payload.userName), ring: 'rgba(255,255,255,.16)' });
+  const avatar = renderAvatarCircle({ id: 'avatar-levelup', x: 72, y: 150, size: 150, avatarUrl: payload.avatarUrl || '', fallbackText: initial(payload.userName), ring: 'rgba(255,255,255,.16)' });
   return `<?xml version="1.0" encoding="UTF-8"?>
   <svg xmlns="http://www.w3.org/2000/svg" width="${DEFAULT_WIDTH}" height="${DEFAULT_HEIGHT}" viewBox="0 0 ${DEFAULT_WIDTH} ${DEFAULT_HEIGHT}" role="img" aria-label="Level up card preview">
-    <rect width="100%" height="100%" rx="28" fill="#08090d" />
-    ${bubbleSet()}
-    <path d="M-52 624 C 40 384, 300 402, 376 658 C 396 726, 286 760, 98 744 C 14 736, -78 704, -52 624Z" fill="#d0d0d0" opacity="0.75" />
+    ${cardFrame('welcome')}
     ${avatar}
-    <g fill="#ffffff" font-family="Arial, Helvetica, sans-serif">
-      <text x="350" y="214" font-size="72" font-weight="900">LEVEL UP!</text>
-      <text x="350" y="282" font-size="38" font-weight="700">${username}</text>
-      <text x="930" y="188" font-size="28" font-weight="700" fill="rgba(255,255,255,.74)">LEVEL</text>
-      <text x="930" y="240" font-size="48" font-weight="900">${level} &gt; ${nextLevel}</text>
-      <text x="930" y="292" font-size="30" font-weight="800">${formatNumber(currentXp)} / ${formatNumber(requiredXp)} XP</text>
-      <rect x="350" y="366" width="760" height="74" rx="37" fill="rgba(255,255,255,.36)" />
-      <rect x="350" y="366" width="${Math.max(50, Math.round(760 * (progress / 100)))}" height="74" rx="37" fill="#ffffff" />
-      <text x="600" y="558" text-anchor="middle" font-size="34" font-weight="800">TOTAL : ${formatNumber(totalXp)} XP</text>
+    <g fill="#ffffff" font-family="${FONT_STACK}">
+      <text x="328" y="190" font-size="54" font-weight="800" letter-spacing=".015em">LEVEL UP!</text>
+      <text x="328" y="246" font-size="34" font-weight="700">${username}</text>
+      <text x="884" y="174" font-size="24" font-weight="700" fill="rgba(255,255,255,.78)" letter-spacing=".06em">LEVEL</text>
+      <text x="884" y="224" font-size="42" font-weight="800">${level} &gt; ${nextLevel}</text>
+      <text x="884" y="272" font-size="26" font-weight="800">${formatNumber(currentXp)}/${formatNumber(requiredXp)} XP</text>
+      <rect x="328" y="314" width="730" height="56" rx="28" fill="rgba(255,255,255,.42)" />
+      <rect x="328" y="314" width="${Math.max(52, Math.round(730 * (progress / 100)))}" height="56" rx="28" fill="#ffffff" />
+      <text x="610" y="430" text-anchor="middle" font-size="30" font-weight="800">TOTAL : ${formatNumber(totalXp)} XP</text>
     </g>
   </svg>`;
 }

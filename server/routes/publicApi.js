@@ -1,6 +1,7 @@
 const express = require('express');
-const { requestBotApi, requestBotApiBuffer, getBotApiDiagnostics } = require('../api/botApi');
+const { requestBotApi, getBotApiDiagnostics } = require('../api/botApi');
 const { readSession } = require('../authSession');
+const { renderPreviewSvg } = require('../previewRenderer');
 
 const router = express.Router();
 const DISCORD_API = 'https://discord.com/api/v10';
@@ -63,17 +64,7 @@ function requireAuth(req, res, next) {
   return next();
 }
 
-const previewRateBuckets = new Map();
 function requirePreviewAccess(req, res, next) {
-  const key = req.sessionData?.user?.id || req.ip || req.socket?.remoteAddress || 'preview';
-  const now = Date.now();
-  const current = previewRateBuckets.get(key);
-  const bucket = !current || now - current.startedAt >= 60_000
-    ? { startedAt: now, count: 0 }
-    : current;
-  bucket.count += 1;
-  previewRateBuckets.set(key, bucket);
-  if (bucket.count > 120) return res.status(429).json({ ok: false, error: 'Too many preview requests. Wait a moment and try again.' });
   if (req.body?.demo === true) return next();
   return requireAuth(req, res, next);
 }
@@ -593,28 +584,19 @@ function normalizeLevelRewardsPayload(data = {}) {
 
 router.post('/dashboard/preview/:kind', requirePreviewAccess, async (req, res) => {
   try {
-    const kind = String(req.params.kind || '').trim().toLowerCase();
-    if (!['welcome', 'goodbye', 'level-up'].includes(kind)) {
-      return res.status(400).json({ ok: false, error: 'Unsupported preview type.' });
-    }
-
-    const sessionUser = req.sessionData?.user || {};
+    const kind = String(req.params.kind || '').trim();
     const payload = req.body && typeof req.body === 'object' ? req.body : {};
-    const result = await requestBotApiBuffer(`/api/previews/${encodeURIComponent(kind)}`, {
-      method: 'POST',
-      timeoutMs: 12_000,
-      body: JSON.stringify({
-        ...payload,
-        userName: payload.userName || sessionUser.globalName || sessionUser.username || 'Rafa',
-        displayName: payload.displayName || payload.userName || sessionUser.globalName || sessionUser.username || 'Rafa',
-      }),
+    const sessionUser = req.sessionData?.user || {};
+    const svg = renderPreviewSvg(kind, {
+      ...payload,
+      userName: payload.userName || sessionUser.globalName || sessionUser.username || 'Rafa',
+      memberCount: payload.memberCount || 11,
+      serverName: payload.serverName || 'PERSONAL',
+      avatarUrl: payload.avatarUrl || null,
     });
-
-    res.setHeader('Content-Type', result.contentType.startsWith('image/') ? result.contentType : 'image/png');
-    res.setHeader('Cache-Control', 'private, no-store, max-age=0');
-    return res.send(result.buffer);
+    res.json({ ok: true, kind, svg, updatedAt: new Date().toISOString() });
   } catch (err) {
-    return res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not generate preview.' });
+    res.status(err.statusCode || 400).json({ ok: false, error: err.message || 'Could not generate preview.' });
   }
 });
 

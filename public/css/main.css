@@ -8330,17 +8330,18 @@ body.has-dashboard-status {
   width: min(100%, 38rem);
   min-height: 12rem;
   margin-top: 10px;
-  border-radius: 18px;
+  border-radius: 22px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.08);
-  background: linear-gradient(180deg, rgba(8,9,14,.98), rgba(9,10,17,.94));
+  background: linear-gradient(135deg, rgba(12,17,28,.58), rgba(49,27,83,.28));
   box-shadow: 0 18px 40px rgba(0,0,0,.24);
 }
 .dash-live-preview img {
   display: block;
   width: 100%;
   height: auto;
-  background: #08090d;
+  aspect-ratio: 1200 / 560;
+  background: transparent;
 }
 .dash-live-preview-state {
   display: grid;
