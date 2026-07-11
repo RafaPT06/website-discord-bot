@@ -1,6 +1,7 @@
 const express = require('express');
 const { requestBotApi, getBotApiDiagnostics } = require('../api/botApi');
 const { readSession } = require('../authSession');
+const { renderPreviewSvg } = require('../previewRenderer');
 
 const router = express.Router();
 const DISCORD_API = 'https://discord.com/api/v10';
@@ -61,6 +62,11 @@ function requireAuth(req, res, next) {
   if (!session?.user) return res.status(401).json({ ok: false, error: 'Login required.' });
   req.sessionData = session;
   return next();
+}
+
+function requirePreviewAccess(req, res, next) {
+  if (req.body?.demo === true) return next();
+  return requireAuth(req, res, next);
 }
 
 function hasManageGuild(permissions) {
@@ -574,6 +580,25 @@ function normalizeLevelRewardsPayload(data = {}) {
   return { ...data, ok: data?.ok !== false, rewards: raw };
 }
 
+
+
+router.post('/dashboard/preview/:kind', requirePreviewAccess, async (req, res) => {
+  try {
+    const kind = String(req.params.kind || '').trim();
+    const payload = req.body && typeof req.body === 'object' ? req.body : {};
+    const sessionUser = req.sessionData?.user || {};
+    const svg = renderPreviewSvg(kind, {
+      ...payload,
+      userName: payload.userName || sessionUser.globalName || sessionUser.username || 'Rafa',
+      memberCount: payload.memberCount || 11,
+      serverName: payload.serverName || 'PERSONAL',
+      avatarUrl: payload.avatarUrl || null,
+    });
+    res.json({ ok: true, kind, svg, updatedAt: new Date().toISOString() });
+  } catch (err) {
+    res.status(err.statusCode || 400).json({ ok: false, error: err.message || 'Could not generate preview.' });
+  }
+});
 
 router.get('/dashboard/servers/:guildId/roles', requireAuth, requireManageableInstalledServer, async (req, res) => {
   const roleData = await getDashboardServerRoles(req.params.guildId);

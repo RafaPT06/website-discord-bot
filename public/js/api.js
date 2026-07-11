@@ -197,3 +197,12 @@ export async function deleteLevelReward(guildId, level) {
   clearServerCaches(guildId, 'leveling');
   return data;
 }
+
+export function requestDashboardPreview(kind, payload, { signal } = {}) {
+  return fetchJson(`/api/dashboard/preview/${encodeURIComponent(kind)}`, {
+    method: 'POST',
+    timeoutMs: 12000,
+    signal,
+    body: JSON.stringify({ ...(payload || {}), demo: isDemoRoute() }),
+  });
+}

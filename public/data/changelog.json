@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-11",
+    "title": "Live server-rendered dashboard previews",
+    "items": [
+      "Replaced the fake welcome and leveling mockups with live server-rendered image previews that update while typing, without saving or refreshing the page.",
+      "Added dedicated dashboard preview endpoints for welcome, goodbye and level-up cards, including safe demo-mode support.",
+      "Kept the Discord-style message wrappers in the dashboard while swapping the card body itself to generated SVG previews based on the current unsaved values."
+    ]
+  },
+  {
     "date": "2026-07-10",
     "title": "Moderation responsive width fix",
     "items": [

@@ -14,6 +14,7 @@ import {
   getModerationAccess,
   addModerationAccessUser,
   removeModerationAccessUser,
+  requestDashboardPreview,
 } from './api.js';
 import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
@@ -264,6 +265,122 @@ function avatarHtml(className = 'dash-user-avatar') {
   return img ? `<span class="${className}"><img src="${escapeHtml(img)}" alt="" /></span>` : `<span class="${className}">${letter}</span>`;
 }
 function initial(name = 'M') { return escapeHtml(String(name || 'M').trim().charAt(0).toUpperCase() || 'M'); }
+
+const previewResponseCache = new Map();
+const previewTimers = new WeakMap();
+const previewControllers = new WeakMap();
+
+function previewDataUrl(svg = '') {
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+function livePreviewShell(kind, alt, label = 'Generating preview…') {
+  return `<div class="dash-live-preview is-loading" data-live-preview="${escapeHtml(kind)}"><img alt="${escapeHtml(alt)}" loading="lazy" hidden /><div class="dash-live-preview-state"><strong>${escapeHtml(label)}</strong><span>Updates live while you edit.</span></div></div>`;
+}
+function previewCacheKey(kind, payload) {
+  return `${kind}:${stableStringify(payload)}`;
+}
+function setPreviewState(host, state, message, detail) {
+  if (!host) return;
+  host.classList.toggle('is-loading', state === 'loading');
+  host.classList.toggle('is-error', state === 'error');
+  const stateBox = host.querySelector('.dash-live-preview-state');
+  if (stateBox) stateBox.innerHTML = `<strong>${escapeHtml(message || 'Preview')}</strong><span>${escapeHtml(detail || '')}</span>`;
+}
+async function runLivePreview(host, kind, payload) {
+  if (!host || !payload) return;
+  const key = previewCacheKey(kind, payload);
+  const cached = previewResponseCache.get(key);
+  const img = host.querySelector('img');
+  if (cached && img) {
+    img.src = cached;
+    img.hidden = false;
+    setPreviewState(host, 'ready', 'Preview ready', '');
+    return;
+  }
+  previewControllers.get(host)?.abort?.();
+  const controller = new AbortController();
+  previewControllers.set(host, controller);
+  setPreviewState(host, 'loading', 'Generating preview…', 'Updates live while you edit.');
+  try {
+    const data = await requestDashboardPreview(kind, payload, { signal: controller.signal });
+    if (controller.signal.aborted) return;
+    const dataUrl = previewDataUrl(data.svg || '');
+    previewResponseCache.set(key, dataUrl);
+    if (img) {
+      img.src = dataUrl;
+      img.hidden = false;
+    }
+    setPreviewState(host, 'ready', 'Preview ready', '');
+  } catch (err) {
+    if (controller.signal.aborted) return;
+    setPreviewState(host, 'error', 'Preview unavailable', err.message || 'The live preview could not be generated.');
+  }
+}
+function scheduleLivePreview(host, kind, payload, delay = 220) {
+  if (!host || !payload) return;
+  const existing = previewTimers.get(host);
+  if (existing) clearTimeout(existing);
+  const timeout = setTimeout(() => {
+    runLivePreview(host, kind, payload);
+    previewTimers.delete(host);
+  }, delay);
+  previewTimers.set(host, timeout);
+}
+function buildWelcomePreviewPayload(server, settings, kind = 'welcome') {
+  return {
+    kind,
+    serverName: server?.name || 'PERSONAL',
+    userName: activeName(),
+    avatarUrl: userAvatarUrl(activeUser(), 256),
+    memberCount: Number(server?.memberCount || 11),
+    showMember: settings.showMember !== false,
+    showAvatar: settings.showAvatar !== false,
+    message: kind === 'goodbye' ? (settings.goodbyeMessage || 'Goodbye {user}.') : (settings.welcomeMessage || 'WELCOME {user}\nTO\n{server}'),
+  };
+}
+function hydrateWelcomePreview(server, settings) {
+  const welcomeHost = document.querySelector('[data-live-preview="welcome"]');
+  const goodbyeHost = document.querySelector('[data-live-preview="goodbye"]');
+  if (welcomeHost && settings.welcomeStyle !== 'Text only') scheduleLivePreview(welcomeHost, 'welcome', buildWelcomePreviewPayload(server, settings, 'welcome'));
+  if (goodbyeHost && settings.goodbyeStyle !== 'Text only') scheduleLivePreview(goodbyeHost, 'goodbye', buildWelcomePreviewPayload(server, settings, 'goodbye'));
+}
+function levelPreviewStats(settings = {}) {
+  if (isDemoMode()) {
+    const progress = Math.min(100, Math.round((DEMO_LEVELING.xp / DEMO_LEVELING.nextLevelXp) * 100));
+    return {
+      level: DEMO_LEVELING.level,
+      nextLevel: DEMO_LEVELING.level + 1,
+      currentXp: DEMO_LEVELING.xp,
+      requiredXp: DEMO_LEVELING.nextLevelXp,
+      totalXp: DEMO_LEVELING.xp + 10600,
+      progress,
+    };
+  }
+  const xpPerMessage = Math.max(1, Number(settings.xpPerMessage || settings.xp || 15));
+  const level = 10;
+  const requiredXp = 999;
+  const currentXp = Math.min(requiredXp - 1, Math.max(30, xpPerMessage * 32));
+  return {
+    level,
+    nextLevel: level + 1,
+    currentXp,
+    requiredXp,
+    totalXp: currentXp + 10240,
+    progress: Math.min(100, Math.round((currentXp / requiredXp) * 100)),
+  };
+}
+function buildLevelPreviewPayload(server, settings) {
+  return {
+    serverName: server?.name || 'PERSONAL',
+    userName: activeName(),
+    avatarUrl: userAvatarUrl(activeUser(), 256),
+    ...levelPreviewStats(settings),
+  };
+}
+function hydrateLevelPreview(server, settings, host = document.querySelector('[data-live-preview="level-up"]')) {
+  if (!host) return;
+  scheduleLivePreview(host, 'level-up', buildLevelPreviewPayload(server, settings));
+}
 function serverIcon(server, className = 'dash-server-icon') {
   if (server?.iconUrl) return `<span class="${className}"><img src="${escapeHtml(server.iconUrl)}" alt="" loading="lazy" /></span>`;
   return `<span class="${className} ${className}-fallback">${initial(server?.name || 'M')}</span>`;
@@ -555,13 +672,6 @@ function welcomePage(server) {
 function renderTemplate(template, server) {
   return String(template || '').replaceAll('{user}', 'Rafa').replaceAll('{server}', server.name).replaceAll('{memberCount}', '11');
 }
-function welcomeCard(server, settings) {
-  const text = renderTemplate(settings.welcomeMessage, server).split('\n').map(x => x.trim()).filter(Boolean);
-  const first = text[0] || 'WELCOME RAFA';
-  const second = text[1] || 'TO';
-  const third = text[2] || server.name;
-  return `<div class="dash-discord-card"><div class="bg"></div>${settings.showMember ? `<div class="member">MEMBER #11</div>` : ''}${settings.showAvatar ? `<div class="big-avatar">R</div>` : ''}<div class="card-text"><strong>${escapeHtml(first.toUpperCase())}</strong><span>${escapeHtml(second.toUpperCase())}</span><b>${escapeHtml(third.toUpperCase())}</b></div></div>`;
-}
 function messagePreviewLine(server, template, fallback) {
   return renderTemplate(template || fallback, server).split('\n').map(x => x.trim()).filter(Boolean).join(' ');
 }
@@ -573,21 +683,35 @@ function selectedChannelName(server, channelId, fallback) {
 function welcomePreview(server, settings) {
   const welcomeText = messagePreviewLine(server, settings.welcomeMessage, `Welcome {user} to {server}!`);
   const goodbyeText = messagePreviewLine(server, settings.goodbyeMessage, `Goodbye {user}.`);
-  return `<article class="dash-card dash-preview" data-welcome-preview><span>Live Preview</span><h2>Discord preview</h2><p>Welcome and goodbye are separate bot settings.</p><div class="dash-discord-stack"><div class="dash-discord-message"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.welcomeChannelId, 'welcome')}</small></div><p>${escapeHtml(welcomeText)}</p>${settings.welcomeStyle === 'Text only' ? '' : welcomeCard(server, settings)}</div></div><div class="dash-discord-message goodbye"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.goodbyeChannelId, 'bye')}</small></div><p>${escapeHtml(goodbyeText)}</p></div></div></div><small class="preview-note">This is a preview. The actual Discord message can look slightly different depending on device size.</small></article>`;
+  const welcomeCardMarkup = settings.welcomeStyle === 'Text only' ? '' : livePreviewShell('welcome', 'Welcome card preview');
+  const goodbyeCardMarkup = settings.goodbyeStyle === 'Text only' ? '' : livePreviewShell('goodbye', 'Goodbye card preview');
+  return `<article class="dash-card dash-preview" data-welcome-preview><span>Live Preview</span><h2>Discord preview</h2><p>Welcome and goodbye are separate bot settings. Card previews update live using the current unsaved values.</p><div class="dash-discord-stack"><div class="dash-discord-message"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.welcomeChannelId, 'welcome')}</small></div><p>${escapeHtml(welcomeText)}</p>${welcomeCardMarkup}</div></div><div class="dash-discord-message goodbye"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.goodbyeChannelId, 'bye')}</small></div><p>${escapeHtml(goodbyeText)}</p>${goodbyeCardMarkup}</div></div></div><small class="preview-note">These previews regenerate live and do not require saving first.</small></article>`;
 }
 function updateWelcomePreview(server, form) {
   const preview = document.querySelector('[data-welcome-preview]');
   if (!preview) return;
   const settings = getFormValues(form);
   preview.outerHTML = welcomePreview(server, settings);
+  hydrateWelcomePreview(server, settings);
 }
 
 function levelingPage(server) {
   const s = readSettings(server.id, 'leveling', { enabled:true, xpPerMessage:15, cooldownSeconds:60, channelId:'demo-ch-level-up', stackRoles:true }, server);
   const rewards = Array.isArray(server?.settings?.levelRewards) ? server.settings.levelRewards : [];
   const firstRole = guildRoles(server)[0]?.id || '';
-  return `<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xpPerMessage','XP per message',s.xpPerMessage ?? s.xp,1)}${numberField('cooldownSeconds','Cooldown seconds',s.cooldownSeconds ?? s.cooldown,5)}${channelSelectField(server,'channelId','Level-up channel',s.channelId ?? s.channel,'level-up')}${switchField('stackRoles',s.stackRoles !== false,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><div class="dash-level-preview"><strong>${isDemoMode() ? `Demo rank #${DEMO_LEVELING.rank} · Level ${DEMO_LEVELING.level}` : 'Level reward preview'}</strong><span>${isDemoMode() ? `${formatNumber(DEMO_LEVELING.xp)} / ${formatNumber(DEMO_LEVELING.nextLevelXp)} XP` : `${formatNumber(s.xpPerMessage || 15)} XP/message · ${formatNumber(s.cooldownSeconds || 60)}s cooldown`}</span><div><i style="width:${isDemoMode() ? Math.min(100, Math.round((DEMO_LEVELING.xp / DEMO_LEVELING.nextLevelXp) * 100)) : 82}%"></i></div></div><div class="dash-role-table" data-level-rewards><div class="dash-role-table-head"><strong>Reward roles</strong></div><div class="dash-inline-form dash-reward-editor">${numberField('rewardLevel','Reward level',5,1)}${roleSelectField(server,'rewardRoleId','Reward role',firstRole)}<button type="button" class="dash-save-btn" data-add-level-reward>Add Role</button></div>${rewards.length ? rewards.map((r) => `<div class="dash-role-row"><span>Level ${escapeHtml(r.level)}</span><strong>@${escapeHtml(r.roleName || r.role || r.roleId)}</strong><button type="button" data-remove-level-reward="${escapeHtml(r.level)}">Remove</button></div>`).join('') : emptyState('No reward roles configured.', 'Add a level and role above to make level rewards real.')}</div><small class="preview-note">Reward roles are now loaded from and saved through the bot API.</small></article></form>`;
+  const previewStats = levelPreviewStats(s);
+  return `<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xpPerMessage','XP per message',s.xpPerMessage ?? s.xp,1)}${numberField('cooldownSeconds','Cooldown seconds',s.cooldownSeconds ?? s.cooldown,5)}${channelSelectField(server,'channelId','Level-up channel',s.channelId ?? s.channel,'level-up')}${switchField('stackRoles',s.stackRoles !== false,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><p>A live preview of the level-up card using the current unsaved values.</p>${livePreviewShell('level-up', 'Level up card preview')}<div class="dash-level-meta" data-level-preview-meta><strong>Level ${formatNumber(previewStats.level)} → ${formatNumber(previewStats.nextLevel)}</strong><span>${formatNumber(previewStats.currentXp)} / ${formatNumber(previewStats.requiredXp)} XP · ${previewStats.progress}% progress</span></div><div class="dash-role-table" data-level-rewards><div class="dash-role-table-head"><strong>Reward roles</strong></div><div class="dash-inline-form dash-reward-editor">${numberField('rewardLevel','Reward level',5,1)}${roleSelectField(server,'rewardRoleId','Reward role',firstRole)}<button type="button" class="dash-save-btn" data-add-level-reward>Add Role</button></div>${rewards.length ? rewards.map((r) => `<div class="dash-role-row"><span>Level ${escapeHtml(r.level)}</span><strong>@${escapeHtml(r.roleName || r.role || r.roleId)}</strong><button type="button" data-remove-level-reward="${escapeHtml(r.level)}">Remove</button></div>`).join('') : emptyState('No reward roles configured.', 'Add a level and role above to make level rewards real.')}</div><small class="preview-note">Reward roles are loaded from and saved through the bot API.</small></article></form>`;
 }
+function updateLevelingPreview(server, form) {
+  const host = document.querySelector('[data-live-preview="level-up"]');
+  const meta = document.querySelector('[data-level-preview-meta]');
+  if (!host || !meta) return;
+  const settings = getFormValues(form);
+  const stats = levelPreviewStats(settings);
+  meta.innerHTML = `<strong>Level ${escapeHtml(formatNumber(stats.level))} → ${escapeHtml(formatNumber(stats.nextLevel))}</strong><span>${escapeHtml(formatNumber(stats.currentXp))} / ${escapeHtml(formatNumber(stats.requiredXp))} XP · ${escapeHtml(stats.progress)}% progress</span>`;
+  hydrateLevelPreview(server, settings, host);
+}
+
 function logsPage(server) {
   const s = readSettings(server.id, 'logs', { enabled:false, channelId:'demo-ch-logs', messageEvents:true, memberEvents:true, moderationEvents:true, voiceEvents:false }, server);
   return `<form class="dash-designer" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Logs</span><h2>Logs</h2><p>Configure real bot log channels and event tracking for ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable logs','Send selected events to a log channel.')}<hr/>${channelSelectField(server,'channelId','Log channel',s.channelId ?? s.channel,'logs')}${switchField('messageEvents',s.messageEvents ?? s.messages,'Message logs','Track message delete and edit events.')}${switchField('memberEvents',s.memberEvents ?? s.members,'Member logs','Track joins and leaves.')}${switchField('moderationEvents',s.moderationEvents ?? s.moderation,'Moderation logs','Track warnings, bans and automod actions.')}${switchField('voiceEvents',s.voiceEvents ?? s.voice,'Voice logs','Track voice channel joins and leaves.')}${saveBtn()}</article><article class="dash-card"><span>Live examples</span><h2>Tracked activity</h2><div class="dash-log-status-grid">${logStatus('Message Logs', s.messageEvents ?? s.messages)}${logStatus('Member Logs', s.memberEvents ?? s.members)}${logStatus('Voice Logs', s.voiceEvents ?? s.voice)}${logStatus('Moderation Logs', s.moderationEvents ?? s.moderation)}</div>${logExample('Member joined','A real member join event can be logged by the bot.','success')}${logExample('Message deleted','Deleted and edited messages are logged when enabled.','warn')}${logExample('Moderation action','Automod actions are sent to logs when enabled.','mod')}</article></form>`;
@@ -813,6 +937,7 @@ function attachSettingsForm(server, section) {
     setDraft(server.id, section, payloadForSection(section, values));
     syncSectionStatus(form, section);
     if (section === 'welcome') updateWelcomePreview(server, form);
+    if (section === 'leveling') updateLevelingPreview(server, form);
     if (section === 'logs') updateLogsPreview(form);
     syncSectionStatus(form, section);
   };
@@ -861,6 +986,7 @@ function attachSettingsForm(server, section) {
     e.preventDefault();
     await saveDirtyTabs(server.id);
   });
+  refreshFormPreview();
 }
 
 
