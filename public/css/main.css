@@ -8340,7 +8340,14 @@ body.has-dashboard-status {
   display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: auto;
   background: #08090d;
+}
+/* Once a PNG is ready, let its intrinsic aspect ratio define the wrapper height.
+   This prevents Android font scaling from turning the loading min-height into
+   a large empty band below the rendered card. */
+.dash-live-preview:not(.is-loading):not(.is-error) {
+  min-height: 0;
 }
 .dash-live-preview-state {
   display: grid;
