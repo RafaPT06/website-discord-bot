@@ -1,0 +1,108 @@
+name: Apply preview Unicode and background fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/fix-preview-unicode-background.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply preview fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          renderer_path = Path('server/previewRenderer.js')
+          renderer = renderer_path.read_text(encoding='utf-8')
+          old_stack = 'const FONT_STACK = `Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Segoe UI Symbol", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;'
+          new_stack = 'const FONT_STACK = `Inter,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,Segoe UI Emoji,Apple Color Emoji,Noto Color Emoji,sans-serif`;'
+          if old_stack in renderer:
+              renderer = renderer.replace(old_stack, new_stack, 1)
+          elif new_stack not in renderer:
+              raise SystemExit('Expected preview font stack was not found.')
+
+          renderer = renderer.replace(
+              '<g fill="#ffffff" text-anchor="middle" font-family="${FONT_STACK}">',
+              '<g fill="#ffffff" text-anchor="middle" font-family="${FONT_STACK}" style="font-variant-emoji:emoji">',
+          )
+          renderer = renderer.replace(
+              '<g fill="#ffffff" font-family="${FONT_STACK}">',
+              '<g fill="#ffffff" font-family="${FONT_STACK}" style="font-variant-emoji:emoji">',
+          )
+          renderer = renderer.replace(' font-weight="800" letter-spacing=".015em">${first || \'\'}</text>', ' font-weight="800">${first || \'\'}</text>')
+          renderer = renderer.replace(' font-weight="800" letter-spacing=".015em">${third || \'\'}</text>', ' font-weight="800">${third || \'\'}</text>')
+          renderer_path.write_text(renderer, encoding='utf-8')
+
+          css_path = Path('public/css/live-preview-fixes.css')
+          css_path.write_text('''/* Final live-preview overrides: preserve loading/error states, then let the generated card blend into the Discord mockup once ready. */
+          .dash-live-preview:not(.is-loading):not(.is-error) {
+            min-height: 0;
+            border-color: transparent;
+            background: transparent;
+            box-shadow: none;
+          }
+
+          .dash-live-preview:not(.is-loading):not(.is-error) img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: auto;
+            object-fit: contain;
+            background: transparent;
+          }
+
+          .dash-live-preview:not(.is-loading):not(.is-error) .dash-live-preview-state {
+            display: none;
+          }
+          ''', encoding='utf-8')
+
+          for html_name in ('public/dashboard.html', 'public/demo.html'):
+              html_path = Path(html_name)
+              html = html_path.read_text(encoding='utf-8')
+              marker = '  <link rel="stylesheet" href="/css/main.css" />\n'
+              addition = marker + '  <link rel="stylesheet" href="/css/live-preview-fixes.css" />\n'
+              if '/css/live-preview-fixes.css' not in html:
+                  if marker not in html:
+                      raise SystemExit(f'Main stylesheet marker missing in {html_name}.')
+                  html = html.replace(marker, addition, 1)
+                  html_path.write_text(html, encoding='utf-8')
+
+          changelog_path = Path('public/data/changelog.json')
+          changelog = json.loads(changelog_path.read_text(encoding='utf-8'))
+          title = 'Unicode preview text and background fix'
+          if not any(entry.get('title') == title for entry in changelog if isinstance(entry, dict)):
+              changelog.insert(0, {
+                  'date': '2026-07-11',
+                  'title': title,
+                  'items': [
+                      'Corrected the SVG font-family markup and added emoji-capable system fallbacks so preview usernames, server names, accents and emoji render without being converted into question marks.',
+                      'Removed the invisible ready-state gradient layer that was leaving a dark shade across the lower part of generated cards.',
+                      'Made loaded preview frames transparent and intrinsic-height while preserving the existing loading and error placeholders.'
+                  ]
+              })
+              changelog_path.write_text(json.dumps(changelog, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+          PY
+
+          node --check server/previewRenderer.js
+          python -m json.tool public/data/changelog.json >/dev/null
+          rm .github/workflows/fix-preview-unicode-background.yml
+
+      - name: Commit fixes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/previewRenderer.js public/css/live-preview-fixes.css public/dashboard.html public/demo.html public/data/changelog.json .github/workflows/fix-preview-unicode-background.yml
+          git commit -m "Fix preview Unicode text and background shade"
+          git push origin HEAD:main
