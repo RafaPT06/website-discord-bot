@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-11",
+    "title": "Restored exact bot-rendered PNG previews",
+    "items": [
+      "Removed the duplicate website SVG card renderer and restored the preview proxy to the Discord bot PNG renderer.",
+      "Welcome, goodbye and level-up previews now use the same Unicode-aware text, emoji rendering, spacing and background as the actual bot cards.",
+      "Kept live unsaved previews, request cancellation, bounded object-URL caching, demo support and transparent loaded preview frames."
+    ]
+  },
+  {
+    "date": "2026-07-11",
     "title": "Unicode preview text and background fix",
     "items": [
       "Corrected the SVG font-family markup and added emoji-capable system fallbacks so preview usernames, server names, accents and emoji render without being converted into question marks.",

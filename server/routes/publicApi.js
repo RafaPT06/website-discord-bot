@@ -1,7 +1,6 @@
 const express = require('express');
-const { requestBotApi, getBotApiDiagnostics } = require('../api/botApi');
+const { requestBotApi, requestBotApiBuffer, getBotApiDiagnostics } = require('../api/botApi');
 const { readSession } = require('../authSession');
-const { renderPreviewSvg } = require('../previewRenderer');
 
 const router = express.Router();
 const DISCORD_API = 'https://discord.com/api/v10';
@@ -584,19 +583,28 @@ function normalizeLevelRewardsPayload(data = {}) {
 
 router.post('/dashboard/preview/:kind', requirePreviewAccess, async (req, res) => {
   try {
-    const kind = String(req.params.kind || '').trim();
-    const payload = req.body && typeof req.body === 'object' ? req.body : {};
+    const kind = String(req.params.kind || '').trim().toLowerCase();
+    if (!['welcome', 'goodbye', 'level-up'].includes(kind)) {
+      return res.status(400).json({ ok: false, error: 'Unsupported preview type.' });
+    }
+
     const sessionUser = req.sessionData?.user || {};
-    const svg = renderPreviewSvg(kind, {
-      ...payload,
-      userName: payload.userName || sessionUser.globalName || sessionUser.username || 'Rafa',
-      memberCount: payload.memberCount || 11,
-      serverName: payload.serverName || 'PERSONAL',
-      avatarUrl: payload.avatarUrl || null,
+    const payload = req.body && typeof req.body === 'object' ? req.body : {};
+    const result = await requestBotApiBuffer(`/api/previews/${encodeURIComponent(kind)}`, {
+      method: 'POST',
+      timeoutMs: 12_000,
+      body: JSON.stringify({
+        ...payload,
+        userName: payload.userName || sessionUser.globalName || sessionUser.username || 'Rafa',
+        displayName: payload.displayName || payload.userName || sessionUser.globalName || sessionUser.username || 'Rafa',
+      }),
     });
-    res.json({ ok: true, kind, svg, updatedAt: new Date().toISOString() });
+
+    res.setHeader('Content-Type', result.contentType.startsWith('image/') ? result.contentType : 'image/png');
+    res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+    return res.send(result.buffer);
   } catch (err) {
-    res.status(err.statusCode || 400).json({ ok: false, error: err.message || 'Could not generate preview.' });
+    return res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not generate preview.' });
   }
 });
 
