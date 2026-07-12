@@ -3,6 +3,8 @@ const SAVE_BAR_SELECTOR = '[data-global-save-bar]';
 const SAVE_BUTTON_SELECTOR = '[data-save-drafts]';
 const DEMO_PATH = /^\/demo(?:\/|$)/;
 
+let syncFrame = 0;
+
 function isDemoMode() {
   return DEMO_PATH.test(window.location.pathname);
 }
@@ -14,14 +16,25 @@ function simulationButtons(root = document) {
 function syncSimulationLabels() {
   if (isDemoMode()) return;
   const hasUnsavedChanges = Boolean(document.querySelector(SAVE_BAR_SELECTOR));
+
   for (const button of simulationButtons()) {
     if (!button.dataset.baseSimulationLabel) {
       button.dataset.baseSimulationLabel = button.textContent.trim() || 'Run Simulation';
     }
     if (button.disabled || button.dataset.saveSimulationBusy === 'true') continue;
+
     const base = button.dataset.baseSimulationLabel;
-    button.textContent = hasUnsavedChanges ? `Save & ${base}` : base;
+    const nextLabel = hasUnsavedChanges ? `Save & ${base}` : base;
+    if (button.textContent.trim() !== nextLabel) button.textContent = nextLabel;
   }
+}
+
+function queueSimulationLabelSync() {
+  if (syncFrame) return;
+  syncFrame = requestAnimationFrame(() => {
+    syncFrame = 0;
+    syncSimulationLabels();
+  });
 }
 
 function showSaveFailure(button) {
@@ -53,7 +66,8 @@ function waitForSave(timeoutMs = 18000) {
 }
 
 document.addEventListener('click', async (event) => {
-  const button = event.target.closest(SIMULATION_SELECTOR);
+  const target = event.target instanceof Element ? event.target : null;
+  const button = target?.closest(SIMULATION_SELECTOR);
   if (!button || isDemoMode() || button.dataset.skipSaveGuard === 'true') return;
 
   const saveBar = document.querySelector(SAVE_BAR_SELECTOR);
@@ -79,7 +93,7 @@ document.addEventListener('click', async (event) => {
 
   if (!saved) {
     showSaveFailure(button);
-    syncSimulationLabels();
+    queueSimulationLabelSync();
     return;
   }
 
@@ -88,7 +102,7 @@ document.addEventListener('click', async (event) => {
   delete button.dataset.skipSaveGuard;
 }, true);
 
-const observer = new MutationObserver(syncSimulationLabels);
+const observer = new MutationObserver(queueSimulationLabelSync);
 observer.observe(document.documentElement, { childList: true, subtree: true });
-window.addEventListener('pageshow', syncSimulationLabels);
-queueMicrotask(syncSimulationLabels);
+window.addEventListener('pageshow', queueSimulationLabelSync);
+queueSimulationLabelSync();
