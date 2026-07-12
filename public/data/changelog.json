@@ -9,7 +9,8 @@
       "Kept dashboard content tall enough for the footer to remain at the end of the page instead of appearing immediately below short tabs.",
       "Added a clear production warning when BOT_API_TOKEN is missing, isolated welcome/goodbye delivery from activity logging failures, and stabilized profile-card backgrounds.",
       "Standardized every level-up message to use the American English spelling leveled.",
-      "Redesigned goodbye profile cards with a distinct farewell badge, warmer rose-purple treatment, thank-you copy and a compact optional member badge."
+      "Redesigned goodbye profile cards with a distinct farewell badge, warmer rose-purple treatment, thank-you copy and a compact optional member badge.",
+      "Unified Discord embeds, welcome/goodbye, leveling, profile, leaderboard, stats and achievement cards around coordinated Meowz violet and lilac accents."
     ]
   },
   {
