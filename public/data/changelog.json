@@ -10,7 +10,7 @@
       "Added a clear production warning when BOT_API_TOKEN is missing, isolated welcome/goodbye delivery from activity logging failures, and stabilized profile-card backgrounds.",
       "Standardized every level-up message to use the American English spelling leveled.",
       "Redesigned goodbye profile cards with a distinct farewell badge, warmer rose-purple treatment, thank-you copy and a compact optional member badge.",
-      "Unified Discord embeds, welcome/goodbye, leveling, profile, leaderboard, stats and achievement cards around coordinated Meowz violet and lilac accents."
+      "Standardized every Discord embed and branded card accent to the exact same Meowz purple (#8B5CF6), including welcome, goodbye, leveling, profiles, leaderboards, stats and achievements."
     ]
   },
   {
