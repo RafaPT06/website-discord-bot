@@ -8,7 +8,8 @@
       "Expanded the desktop dashboard canvas and welcome preview layout while preserving the existing responsive tablet and mobile flow.",
       "Kept dashboard content tall enough for the footer to remain at the end of the page instead of appearing immediately below short tabs.",
       "Added a clear production warning when BOT_API_TOKEN is missing, isolated welcome/goodbye delivery from activity logging failures, and stabilized profile-card backgrounds.",
-      "Standardized every level-up message to use the American English spelling leveled."
+      "Standardized every level-up message to use the American English spelling leveled.",
+      "Redesigned goodbye profile cards with a distinct farewell badge, warmer rose-purple treatment, thank-you copy and a compact optional member badge."
     ]
   },
   {
