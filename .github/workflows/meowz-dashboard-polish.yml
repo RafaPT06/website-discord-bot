@@ -1,0 +1,233 @@
+name: Meowz dashboard stability polish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/meowz-dashboard-polish.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply dashboard polish
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import json
+
+          Path('public/js/dashboard-simulation-guard.js').write_text(r'''const SIMULATION_SELECTOR = '[data-simulation-event]';
+          const SAVE_BAR_SELECTOR = '[data-global-save-bar]';
+          const SAVE_BUTTON_SELECTOR = '[data-save-drafts]';
+          const DEMO_PATH = /^\/demo(?:\/|$)/;
+
+          function isDemoMode() {
+            return DEMO_PATH.test(window.location.pathname);
+          }
+
+          function simulationButtons(root = document) {
+            return [...root.querySelectorAll(SIMULATION_SELECTOR)];
+          }
+
+          function syncSimulationLabels() {
+            if (isDemoMode()) return;
+            const hasUnsavedChanges = Boolean(document.querySelector(SAVE_BAR_SELECTOR));
+            for (const button of simulationButtons()) {
+              if (!button.dataset.baseSimulationLabel) {
+                button.dataset.baseSimulationLabel = button.textContent.trim() || 'Run Simulation';
+              }
+              if (button.disabled || button.dataset.saveSimulationBusy === 'true') continue;
+              const base = button.dataset.baseSimulationLabel;
+              button.textContent = hasUnsavedChanges ? `Save & ${base}` : base;
+            }
+          }
+
+          function showSaveFailure(button) {
+            const panel = button.closest('[data-simulation-panel]');
+            const result = panel?.querySelector('[data-simulation-result]');
+            if (!result) return;
+            result.hidden = false;
+            result.className = 'dash-simulation-result is-error';
+            result.textContent = 'Settings could not be saved. Fix the save error before running this simulation.';
+          }
+
+          function waitForSave(timeoutMs = 18000) {
+            if (!document.querySelector(SAVE_BAR_SELECTOR)) return Promise.resolve(true);
+            return new Promise((resolve) => {
+              let settled = false;
+              const finish = (value) => {
+                if (settled) return;
+                settled = true;
+                observer.disconnect();
+                clearTimeout(timeout);
+                resolve(value);
+              };
+              const observer = new MutationObserver(() => {
+                if (!document.querySelector(SAVE_BAR_SELECTOR)) finish(true);
+              });
+              observer.observe(document.body, { childList: true, subtree: true });
+              const timeout = setTimeout(() => finish(false), timeoutMs);
+            });
+          }
+
+          document.addEventListener('click', async (event) => {
+            const button = event.target.closest(SIMULATION_SELECTOR);
+            if (!button || isDemoMode() || button.dataset.skipSaveGuard === 'true') return;
+
+            const saveBar = document.querySelector(SAVE_BAR_SELECTOR);
+            const saveButton = saveBar?.querySelector(SAVE_BUTTON_SELECTOR);
+            if (!saveBar || !saveButton) return;
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            if (!button.dataset.baseSimulationLabel) {
+              button.dataset.baseSimulationLabel = button.textContent.trim() || 'Run Simulation';
+            }
+
+            button.dataset.saveSimulationBusy = 'true';
+            button.disabled = true;
+            button.textContent = 'Saving settings…';
+            saveButton.click();
+
+            const saved = await waitForSave();
+            button.dataset.saveSimulationBusy = 'false';
+            button.disabled = false;
+            button.textContent = button.dataset.baseSimulationLabel;
+
+            if (!saved) {
+              showSaveFailure(button);
+              syncSimulationLabels();
+              return;
+            }
+
+            button.dataset.skipSaveGuard = 'true';
+            button.click();
+            delete button.dataset.skipSaveGuard;
+          }, true);
+
+          const observer = new MutationObserver(syncSimulationLabels);
+          observer.observe(document.documentElement, { childList: true, subtree: true });
+          window.addEventListener('pageshow', syncSimulationLabels);
+          queueMicrotask(syncSimulationLabels);
+          '''.replace('\n          ', '\n').lstrip())
+
+          Path('public/css/dashboard-polish.css').write_text(r'''/* Dashboard-only stability and desktop layout overrides. */
+          body.dashboard-app-body {
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+          }
+
+          body.dashboard-app-body .dashboard-app-root {
+            flex: 1 0 auto;
+            min-height: calc(100svh - 10rem) !important;
+          }
+
+          body.dashboard-app-body .footer-card {
+            flex: 0 0 auto;
+          }
+
+          @media (min-width: 1180px) {
+            body.dashboard-app-body .nav,
+            body.dashboard-app-body .footer-card {
+              width: min(1480px, calc(100% - 2rem));
+            }
+
+            body.dashboard-app-body .dash-shell {
+              grid-template-columns: clamp(15rem, 18vw, 17.5rem) minmax(0, 1fr);
+            }
+
+            body.dashboard-app-body .dash-content {
+              width: min(100% - 2rem, 1500px) !important;
+              max-width: none !important;
+              padding-bottom: clamp(4rem, 7vw, 6rem) !important;
+            }
+          }
+
+          @media (min-width: 1280px) {
+            body.dashboard-app-body .dash-welcome-layout {
+              grid-template-columns: minmax(0, 1.12fr) minmax(23rem, .88fr) !important;
+              gap: clamp(1.25rem, 2vw, 2rem) !important;
+              align-items: start;
+            }
+
+            body.dashboard-app-body .dash-welcome-preview-column,
+            body.dashboard-app-body .dash-sticky-column {
+              min-width: 0;
+            }
+
+            body.dashboard-app-body .dash-welcome-preview-column .dash-card,
+            body.dashboard-app-body .dash-sticky-column .dash-card {
+              width: 100%;
+            }
+          }
+
+          @media (max-width: 1179px) {
+            body.dashboard-app-body .dashboard-app-root {
+              min-height: calc(100svh - 8rem) !important;
+            }
+          }
+          '''.replace('\n          ', '\n').lstrip())
+
+          for filename in ('public/dashboard.html', 'public/demo.html'):
+              path = Path(filename)
+              text = path.read_text()
+              if '/css/dashboard-polish.css' not in text:
+                  text = text.replace(
+                      '  <link rel="stylesheet" href="/css/live-preview-fixes.css" />',
+                      '  <link rel="stylesheet" href="/css/live-preview-fixes.css" />\n  <link rel="stylesheet" href="/css/dashboard-polish.css" />',
+                  )
+              if '/js/dashboard-simulation-guard.js' not in text:
+                  text = text.replace(
+                      '  <script type="module" src="/js/main.js"></script>',
+                      '  <script type="module" src="/js/main.js"></script>\n  <script type="module" src="/js/dashboard-simulation-guard.js"></script>',
+                  )
+              path.write_text(text)
+
+          changelog_path = Path('public/data/changelog.json')
+          changelog = json.loads(changelog_path.read_text())
+          title = 'Dashboard simulation and bot stability polish'
+          if not any(entry.get('title') == title for entry in changelog):
+              changelog.insert(0, {
+                  'date': '2026-07-12',
+                  'title': title,
+                  'items': [
+                      'Added Save & Simulate behavior so Discord test events use the current dashboard values instead of silently using older saved settings.',
+                      'Expanded the desktop dashboard canvas and welcome preview layout while preserving the existing responsive tablet and mobile flow.',
+                      'Kept dashboard content tall enough for the footer to remain at the end of the page instead of appearing immediately below short tabs.',
+                      'Hardened production bot API startup, isolated welcome/goodbye delivery from activity logging failures, and stabilized profile-card backgrounds.',
+                      'Standardized every level-up message to use the American English spelling leveled.',
+                  ],
+              })
+          changelog_path.write_text(json.dumps(changelog, ensure_ascii=False, indent=2) + '\n')
+          PY
+
+      - name: Validate dashboard assets
+        run: |
+          node --check public/js/dashboard-simulation-guard.js
+          python -m json.tool public/data/changelog.json >/dev/null
+          grep -q '/css/dashboard-polish.css' public/dashboard.html
+          grep -q '/js/dashboard-simulation-guard.js' public/dashboard.html
+          grep -q '/css/dashboard-polish.css' public/demo.html
+          grep -q '/js/dashboard-simulation-guard.js' public/demo.html
+
+      - name: Commit changes
+        run: |
+          git config user.name "Meowz Automation"
+          git config user.email "actions@github.com"
+          git add public
+          if git diff --cached --quiet; then
+            echo "No dashboard changes required."
+            exit 0
+          fi
+          git commit -m "Polish dashboard simulations and desktop layout"
+          git push
