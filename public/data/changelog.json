@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-07-12",
+    "title": "Dashboard simulation and bot stability polish",
+    "items": [
+      "Added Save & Simulate behavior so Discord test events use the current dashboard values instead of silently using older saved settings.",
+      "Expanded the desktop dashboard canvas and welcome preview layout while preserving the existing responsive tablet and mobile flow.",
+      "Kept dashboard content tall enough for the footer to remain at the end of the page instead of appearing immediately below short tabs.",
+      "Hardened production bot API startup, isolated welcome/goodbye delivery from activity logging failures, and stabilized profile-card backgrounds.",
+      "Standardized every level-up message to use the American English spelling leveled."
+    ]
+  },
+  {
+    "date": "2026-07-12",
     "title": "Profile welcome cards and dashboard simulations",
     "items": [
       "Rebuilt welcome and goodbye images as compact profile cards focused on the member avatar, username and optional member number while keeping the full custom message in Discord.",
