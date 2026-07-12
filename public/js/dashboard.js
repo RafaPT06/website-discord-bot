@@ -355,11 +355,11 @@ function buildWelcomePreviewPayload(server, settings, kind = 'welcome') {
     showMember: settings.showMember !== false,
     showAvatar: settings.showAvatar !== false,
     message: kind === 'goodbye'
-      ? `GOODBYE\n{user}\n${String(server?.name || '').trim() || 'PERSONAL'}`
-      : `WELCOME\n{user}\n${String(server?.name || '').trim() || 'PERSONAL'}`,
+      ? 'GOODBYE\n{user}'
+      : 'WELCOME\n{user}',
     messageTemplate: kind === 'goodbye'
-      ? `GOODBYE\n{user}\n${String(server?.name || '').trim() || 'PERSONAL'}`
-      : `WELCOME\n{user}\n${String(server?.name || '').trim() || 'PERSONAL'}`,
+      ? 'GOODBYE\n{user}'
+      : 'WELCOME\n{user}',
   };
 }
 function hydrateWelcomePreview(server, settings) {
