@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-12",
+    "title": "Dashboard purple consistency",
+    "items": [
+      "Aligned the dashboard background glow, active tabs, switches, badges, navigation accents and preview surroundings to the exact Meowz purple (#8B5CF6).",
+      "Removed the remaining legacy #7C3AED dashboard accents while preserving the existing cyan secondary highlights and responsive layouts.",
+      "Matched legacy fallback preview cards to the same purple used by the live bot-rendered welcome, goodbye and level-up PNG previews."
+    ]
+  },
+  {
+    "date": "2026-07-12",
     "title": "Dashboard simulation and bot stability polish",
     "items": [
       "Added Save & Simulate behavior so Discord test events use the current dashboard values instead of silently using older saved settings.",
