@@ -198,6 +198,16 @@ export async function deleteLevelReward(guildId, level) {
   return data;
 }
 
+
+export async function simulateDashboardEvent(guildId, event, payload = {}) {
+  if (isDemoRoute()) throw new Error('Demo mode is read-only. Real Discord events are disabled.');
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/simulations/${encodeURIComponent(event)}`, {
+    method: 'POST',
+    timeoutMs: 20000,
+    body: JSON.stringify(payload || {}),
+  });
+}
+
 export async function requestDashboardPreview(kind, payload, { signal } = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 12000);

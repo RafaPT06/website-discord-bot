@@ -15,6 +15,7 @@ import {
   addModerationAccessUser,
   removeModerationAccessUser,
   requestDashboardPreview,
+  simulateDashboardEvent,
 } from './api.js';
 import { escapeHtml, formatNumber } from './utils.js';
 import { showStatusToast } from './toast.js';
@@ -649,21 +650,25 @@ function serverHeader(server, active) {
 }
 function infoRow(label, value) { return `<div class="dash-info-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`; }
 
-function overviewPage(server) {
-  return `<section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome / Goodbye','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai-image-access','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section>`;
+function simulationPanel(title, description, events = []) {
+  const buttons = events.map(({ event, label, primary = false }) => `<button type="button" class="${primary ? 'dash-save-btn' : 'dash-secondary-btn'} dash-simulation-btn" data-simulation-event="${escapeHtml(event)}">${escapeHtml(label)}</button>`).join('');
+  return `<article class="dash-card dash-simulation-card" data-simulation-panel><span>Simulation</span><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p><div class="dash-simulation-actions">${buttons}</div><div class="dash-simulation-result" data-simulation-result hidden aria-live="polite"></div><small class="preview-note">Discord simulations use the last saved settings and never grant XP, roles, warnings or punishments.</small></article>`;
 }
 
+function overviewPage(server) {
+  return `<section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome / Goodbye','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai-image-access','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section>${simulationPanel('Test bot connection', 'Verify that the website can reach Meowz and that the bot can see this server.', [{ event: 'connection', label: 'Test Connection', primary: true }])}`;
+}
 
 function welcomePage(server) {
   const s = readSettings(server.id, 'welcome', {
     welcomeEnabled: true,
     welcomeChannelId: 'demo-ch-welcome',
     welcomeStyle: 'Custom Card (Modern)',
-    welcomeMessage: 'WELCOME {user}\nTO\n{server}',
+    welcomeMessage: 'Welcome {user} to {server}!\n\nWe hope you have fun and enjoy!',
     goodbyeEnabled: false,
     goodbyeChannelId: 'demo-ch-goodbye',
     goodbyeStyle: 'Text only',
-    goodbyeMessage: 'Goodbye {user}. We hope to see you again soon.',
+    goodbyeMessage: 'Goodbye {user}, hope you had fun!',
     showMember: true,
     showAvatar: true,
   }, server);
@@ -672,30 +677,35 @@ function welcomePage(server) {
   s.welcomeStyle = s.welcomeStyle ?? 'Custom Card (Modern)';
   s.goodbyeStyle = s.goodbyeStyle ?? 'Text only';
 
-  return `<form class="dash-designer dash-designer-wide" data-settings-form="welcome" data-guild-id="${escapeHtml(server.id)}">
-    <article class="dash-card dash-form-card">
-      <div class="dash-card-head"><div><span>Welcome Messages</span><h2>Welcome Messages</h2><p>Configure the message Meowz sends when someone joins ${escapeHtml(server.name)}.</p></div><b class="status ${s.welcomeEnabled?'enabled':''}">${s.welcomeEnabled?'Enabled':'Disabled'}</b></div>
-      ${switchField('welcomeEnabled',s.welcomeEnabled,'Enable welcome messages','Send a message when someone joins the server.')}
-      <hr/>
-      ${channelSelectField(server,'welcomeChannelId','Welcome Channel',s.welcomeChannelId,'welcome')}
-      <label class="dash-field"><span>Welcome Style</span><select name="welcomeStyle"><option ${s.welcomeStyle === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option><option ${s.welcomeStyle === 'Text only' ? 'selected' : ''}>Text only</option></select></label>
-      ${variableButtons('welcomeMessage')}
-      ${textareaField('welcomeMessage','Welcome Message',s.welcomeMessage,200)}
-      <div class="dash-option-list">${switchField('showMember',s.showMember,'Show member number on the card','Display the member position in the server.')}${switchField('showAvatar',s.showAvatar,'Show avatar on the card','Display the member avatar on the welcome card.')}</div>
-    </article>
+  return `<form class="dash-designer dash-designer-wide dash-welcome-layout" data-settings-form="welcome" data-guild-id="${escapeHtml(server.id)}">
+    <div class="dash-welcome-settings-stack">
+      <article class="dash-card dash-form-card">
+        <div class="dash-card-head"><div><span>Welcome Messages</span><h2>Welcome Messages</h2><p>Configure the Discord message Meowz sends when someone joins ${escapeHtml(server.name)}.</p></div><b class="status ${s.welcomeEnabled?'enabled':''}">${s.welcomeEnabled?'Enabled':'Disabled'}</b></div>
+        ${switchField('welcomeEnabled',s.welcomeEnabled,'Enable welcome messages','Send a message when someone joins the server.')}
+        <hr/>
+        ${channelSelectField(server,'welcomeChannelId','Welcome Channel',s.welcomeChannelId,'welcome')}
+        <label class="dash-field"><span>Welcome Style</span><select name="welcomeStyle"><option ${s.welcomeStyle === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option><option ${s.welcomeStyle === 'Text only' ? 'selected' : ''}>Text only</option></select></label>
+        ${variableButtons('welcomeMessage')}
+        ${textareaField('welcomeMessage','Welcome Message',s.welcomeMessage,200)}
+        <div class="dash-option-list">${switchField('showMember',s.showMember,'Show member number on the card','Display the member position in the server.')}${switchField('showAvatar',s.showAvatar,'Show avatar on the card','Display the member avatar on the profile card.')}</div>
+      </article>
 
-    <article class="dash-card dash-form-card">
-      <div class="dash-card-head"><div><span>Goodbye Messages</span><h2>Goodbye Messages</h2><p>Configure the separate leave message and destination channel.</p></div><b class="status ${s.goodbyeEnabled?'enabled':''}">${s.goodbyeEnabled?'Enabled':'Disabled'}</b></div>
-      ${switchField('goodbyeEnabled',s.goodbyeEnabled,'Enable goodbye messages','Send a message when someone leaves the server.')}
-      <hr/>
-      ${channelSelectField(server,'goodbyeChannelId','Goodbye Channel',s.goodbyeChannelId,'bye')}
-      <label class="dash-field"><span>Goodbye Style</span><select name="goodbyeStyle"><option ${s.goodbyeStyle === 'Text only' ? 'selected' : ''}>Text only</option><option ${s.goodbyeStyle === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option></select></label>
-      ${variableButtons('goodbyeMessage')}
-      ${textareaField('goodbyeMessage','Goodbye Message',s.goodbyeMessage,200)}
-      <small class="preview-note">Welcome and goodbye channels are saved through the bot API as separate Discord settings.</small>
-      ${saveBtn()}
-    </article>
-    ${welcomePreview(server,s)}
+      <article class="dash-card dash-form-card">
+        <div class="dash-card-head"><div><span>Goodbye Messages</span><h2>Goodbye Messages</h2><p>Configure the separate leave message and destination channel.</p></div><b class="status ${s.goodbyeEnabled?'enabled':''}">${s.goodbyeEnabled?'Enabled':'Disabled'}</b></div>
+        ${switchField('goodbyeEnabled',s.goodbyeEnabled,'Enable goodbye messages','Send a message when someone leaves the server.')}
+        <hr/>
+        ${channelSelectField(server,'goodbyeChannelId','Goodbye Channel',s.goodbyeChannelId,'bye')}
+        <label class="dash-field"><span>Goodbye Style</span><select name="goodbyeStyle"><option ${s.goodbyeStyle === 'Text only' ? 'selected' : ''}>Text only</option><option ${s.goodbyeStyle === 'Custom Card (Modern)' ? 'selected' : ''}>Custom Card (Modern)</option></select></label>
+        ${variableButtons('goodbyeMessage')}
+        ${textareaField('goodbyeMessage','Goodbye Message',s.goodbyeMessage,200)}
+        <small class="preview-note">The message text stays in Discord. Custom cards are compact profile cards with avatar, username and optional member number.</small>
+        ${saveBtn()}
+      </article>
+    </div>
+    <aside class="dash-welcome-preview-column dash-sticky-column">
+      ${welcomePreview(server,s)}
+      ${simulationPanel('Send test events', 'Send safe welcome and goodbye simulations to the saved Discord channels.', [{ event: 'welcome', label: 'Simulate Join', primary: true }, { event: 'goodbye', label: 'Simulate Leave' }])}
+    </aside>
   </form>`;
 }
 function renderTemplate(template, server) {
@@ -714,7 +724,7 @@ function welcomePreview(server, settings) {
   const goodbyeText = messagePreviewLine(server, settings.goodbyeMessage, `Goodbye {user}.`);
   const welcomeCardMarkup = settings.welcomeStyle === 'Text only' ? '' : livePreviewShell('welcome', 'Welcome card preview');
   const goodbyeCardMarkup = settings.goodbyeStyle === 'Text only' ? '' : livePreviewShell('goodbye', 'Goodbye card preview');
-  return `<article class="dash-card dash-preview" data-welcome-preview><span>Live Preview</span><h2>Discord preview</h2><p>Welcome and goodbye are separate bot settings. Card previews update live using the current unsaved values.</p><div class="dash-discord-stack"><div class="dash-discord-message"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.welcomeChannelId, 'welcome')}</small></div><p>${escapeHtml(welcomeText)}</p>${welcomeCardMarkup}</div></div><div class="dash-discord-message goodbye"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.goodbyeChannelId, 'bye')}</small></div><p>${escapeHtml(goodbyeText)}</p>${goodbyeCardMarkup}</div></div></div><small class="preview-note">These previews regenerate live and do not require saving first.</small></article>`;
+  return `<article class="dash-card dash-preview" data-welcome-preview><span>Live Preview</span><h2>Discord preview</h2><p>The Discord message remains fully editable. The attached image is a compact profile card that avoids long-text wrapping.</p><div class="dash-discord-stack"><div class="dash-discord-message"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.welcomeChannelId, 'welcome')}</small></div><p>${escapeHtml(welcomeText)}</p>${welcomeCardMarkup}</div></div><div class="dash-discord-message goodbye"><div class="bot-avatar">M</div><div><div class="msg-head"><strong>Meowz</strong><em>APP</em><small>${selectedChannelName(server, settings.goodbyeChannelId, 'bye')}</small></div><p>${escapeHtml(goodbyeText)}</p>${goodbyeCardMarkup}</div></div></div><small class="preview-note">These previews regenerate live and do not require saving first.</small></article>`;
 }
 function updateWelcomePreview(server, form) {
   const preview = document.querySelector('[data-welcome-preview]');
@@ -729,7 +739,7 @@ function levelingPage(server) {
   const rewards = Array.isArray(server?.settings?.levelRewards) ? server.settings.levelRewards : [];
   const firstRole = guildRoles(server)[0]?.id || '';
   const previewStats = levelPreviewStats(s);
-  return `<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xpPerMessage','XP per message',s.xpPerMessage ?? s.xp,1)}${numberField('cooldownSeconds','Cooldown seconds',s.cooldownSeconds ?? s.cooldown,5)}${channelSelectField(server,'channelId','Level-up channel',s.channelId ?? s.channel,'level-up')}${switchField('stackRoles',s.stackRoles !== false,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><p>A live preview of the level-up card using the current unsaved values.</p>${livePreviewShell('level-up', 'Level up card preview')}<div class="dash-level-meta" data-level-preview-meta><strong>Level ${formatNumber(previewStats.level)} → ${formatNumber(previewStats.nextLevel)}</strong><span>${formatNumber(previewStats.currentXp)} / ${formatNumber(previewStats.requiredXp)} XP · ${previewStats.progress}% progress</span></div><div class="dash-role-table" data-level-rewards><div class="dash-role-table-head"><strong>Reward roles</strong></div><div class="dash-inline-form dash-reward-editor">${numberField('rewardLevel','Reward level',5,1)}${roleSelectField(server,'rewardRoleId','Reward role',firstRole)}<button type="button" class="dash-save-btn" data-add-level-reward>Add Role</button></div>${rewards.length ? rewards.map((r) => `<div class="dash-role-row"><span>Level ${escapeHtml(r.level)}</span><strong>@${escapeHtml(r.roleName || r.role || r.roleId)}</strong><button type="button" data-remove-level-reward="${escapeHtml(r.level)}">Remove</button></div>`).join('') : emptyState('No reward roles configured.', 'Add a level and role above to make level rewards real.')}</div><small class="preview-note">Reward roles are loaded from and saved through the bot API.</small></article></form>`;
+  return `<form class="dash-designer" data-settings-form="leveling" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Leveling System</span><h2>Leveling</h2><p>Configure XP, cooldowns and level-up messages.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable leveling','Members earn XP when they chat.')}<hr/>${numberField('xpPerMessage','XP per message',s.xpPerMessage ?? s.xp,1)}${numberField('cooldownSeconds','Cooldown seconds',s.cooldownSeconds ?? s.cooldown,5)}${channelSelectField(server,'channelId','Level-up channel',s.channelId ?? s.channel,'level-up')}${switchField('stackRoles',s.stackRoles !== false,'Keep previous level roles','Do not remove older rewards when members level up.')}${saveBtn()}</article><div class="dash-section-stack dash-sticky-column"><article class="dash-card"><span>Preview</span><h2>Level rewards</h2><p>A live preview of the level-up card using the current unsaved values.</p>${livePreviewShell('level-up', 'Level up card preview')}<div class="dash-level-meta" data-level-preview-meta><strong>Level ${formatNumber(previewStats.level)} → ${formatNumber(previewStats.nextLevel)}</strong><span>${formatNumber(previewStats.currentXp)} / ${formatNumber(previewStats.requiredXp)} XP · ${previewStats.progress}% progress</span></div><div class="dash-role-table" data-level-rewards><div class="dash-role-table-head"><strong>Reward roles</strong></div><div class="dash-inline-form dash-reward-editor">${numberField('rewardLevel','Reward level',5,1)}${roleSelectField(server,'rewardRoleId','Reward role',firstRole)}<button type="button" class="dash-save-btn" data-add-level-reward>Add Role</button></div>${rewards.length ? rewards.map((r) => `<div class="dash-role-row"><span>Level ${escapeHtml(r.level)}</span><strong>@${escapeHtml(r.roleName || r.role || r.roleId)}</strong><button type="button" data-remove-level-reward="${escapeHtml(r.level)}">Remove</button></div>`).join('') : emptyState('No reward roles configured.', 'Add a level and role above to make level rewards real.')}</div><small class="preview-note">Reward roles are loaded from and saved through the bot API.</small></article>${simulationPanel('Simulate level-up', 'Send a level-up card without changing XP or granting reward roles.', [{ event: 'level-up', label: 'Simulate Level Up', primary: true }])}</div></form>`;
 }
 function updateLevelingPreview(server, form) {
   const host = document.querySelector('[data-live-preview="level-up"]');
@@ -743,7 +753,7 @@ function updateLevelingPreview(server, form) {
 
 function logsPage(server) {
   const s = readSettings(server.id, 'logs', { enabled:false, channelId:'demo-ch-logs', messageEvents:true, memberEvents:true, moderationEvents:true, voiceEvents:false }, server);
-  return `<form class="dash-designer" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Logs</span><h2>Logs</h2><p>Configure real bot log channels and event tracking for ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable logs','Send selected events to a log channel.')}<hr/>${channelSelectField(server,'channelId','Log channel',s.channelId ?? s.channel,'logs')}${switchField('messageEvents',s.messageEvents ?? s.messages,'Message logs','Track message delete and edit events.')}${switchField('memberEvents',s.memberEvents ?? s.members,'Member logs','Track joins and leaves.')}${switchField('moderationEvents',s.moderationEvents ?? s.moderation,'Moderation logs','Track warnings, bans and automod actions.')}${switchField('voiceEvents',s.voiceEvents ?? s.voice,'Voice logs','Track voice channel joins and leaves.')}${saveBtn()}</article><article class="dash-card"><span>Live examples</span><h2>Tracked activity</h2><div class="dash-log-status-grid">${logStatus('Message Logs', s.messageEvents ?? s.messages)}${logStatus('Member Logs', s.memberEvents ?? s.members)}${logStatus('Voice Logs', s.voiceEvents ?? s.voice)}${logStatus('Moderation Logs', s.moderationEvents ?? s.moderation)}</div>${logExample('Member joined','A real member join event can be logged by the bot.','success')}${logExample('Message deleted','Deleted and edited messages are logged when enabled.','warn')}${logExample('Moderation action','Automod actions are sent to logs when enabled.','mod')}</article></form>`;
+  return `<form class="dash-designer" data-settings-form="logs" data-guild-id="${escapeHtml(server.id)}"><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Logs</span><h2>Logs</h2><p>Configure real bot log channels and event tracking for ${escapeHtml(server.name)}.</p></div><b class="status ${s.enabled?'enabled':''}">${s.enabled?'Enabled':'Disabled'}</b></div>${switchField('enabled',s.enabled,'Enable logs','Send selected events to a log channel.')}<hr/>${channelSelectField(server,'channelId','Log channel',s.channelId ?? s.channel,'logs')}${switchField('messageEvents',s.messageEvents ?? s.messages,'Message logs','Track message delete and edit events.')}${switchField('memberEvents',s.memberEvents ?? s.members,'Member logs','Track joins and leaves.')}${switchField('moderationEvents',s.moderationEvents ?? s.moderation,'Moderation logs','Track warnings, bans and automod actions.')}${switchField('voiceEvents',s.voiceEvents ?? s.voice,'Voice logs','Track voice channel joins and leaves.')}${saveBtn()}</article><div class="dash-section-stack"><article class="dash-card"><span>Live examples</span><h2>Tracked activity</h2><div class="dash-log-status-grid">${logStatus('Message Logs', s.messageEvents ?? s.messages)}${logStatus('Member Logs', s.memberEvents ?? s.members)}${logStatus('Voice Logs', s.voiceEvents ?? s.voice)}${logStatus('Moderation Logs', s.moderationEvents ?? s.moderation)}</div>${logExample('Member joined','A real member join event can be logged by the bot.','success')}${logExample('Message deleted','Deleted and edited messages are logged when enabled.','warn')}${logExample('Moderation action','Automod actions are sent to logs when enabled.','mod')}</article>${simulationPanel('Send log examples', 'Send safe sample embeds for each saved log category.', [{ event: 'log-member', label: 'Member Join' }, { event: 'log-message', label: 'Message Delete' }, { event: 'log-moderation', label: 'Moderation' }, { event: 'log-voice', label: 'Voice Activity' }])}</div></form>`;
 }
 function logStatus(label, enabled) { return `<div class="dash-log-status ${enabled ? 'on' : 'off'}"><span>${escapeHtml(label)}</span><strong>${enabled ? 'Enabled' : 'Disabled'}</strong></div>`; }
 function logExample(title, text, type) { return `<div class="dash-log-example ${type}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>`; }
@@ -767,11 +777,11 @@ function moderationPage(server) {
       ${userAccessForm('moderation', 'Search user or paste ID')}
       <div data-moderation-access-list aria-live="polite">${emptyState('Loading bypass list...', 'Please wait.')}</div>
     </article>
-    <article class="dash-card dash-automation-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article>
+    <div class="dash-section-stack"><article class="dash-card dash-automation-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article>${simulationPanel('Simulate automod', 'Send a safe automod test embed. It does not delete a message or punish a member.', [{ event: 'moderation', label: 'Simulate Automod', primary: true }])}</div>
   </section>`;
 }
 function aiPage(server) {
-  return `<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>${userAccessForm('ai', 'Search user or paste ID')}<small class="preview-note">Bot owner and users with Manage Server permission have access by default. Manual users can be added by username search or Discord ID.</small></article><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article></section>`;
+  return `<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>${userAccessForm('ai', 'Search user or paste ID')}<small class="preview-note">Bot owner and users with Manage Server permission have access by default. Manual users can be added by username search or Discord ID.</small></article><div class="dash-section-stack"><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article>${simulationPanel('Test your access', 'Ask the bot whether your current Discord account can use AI image editing in this server.', [{ event: 'image-access', label: 'Test AI Access', primary: true }])}</div></section>`;
 }
 async function loadAiAccess(guildId) {
   const holder = document.querySelector('[data-ai-access-list]');
@@ -919,6 +929,10 @@ function payloadForSection(section, values) {
       goodbyeChannelId: values.goodbyeChannelId || null,
       welcomeMessage: values.welcomeMessage || '',
       goodbyeMessage: values.goodbyeMessage || '',
+      welcomeStyle: values.welcomeStyle || 'Custom Card (Modern)',
+      goodbyeStyle: values.goodbyeStyle || 'Text only',
+      showMember: Boolean(values.showMember),
+      showAvatar: Boolean(values.showAvatar),
     };
   }
   if (section === 'leveling') {
@@ -1177,9 +1191,49 @@ function updatePersistentServerChrome(server, section) {
     separator.hidden = active === 'overview';
   });
 }
+function attachSimulationControls(server) {
+  const host = document.querySelector('[data-server-tab-content]');
+  if (!host || host.dataset.simulationsAttached === 'true') return;
+  host.dataset.simulationsAttached = 'true';
+  host.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-simulation-event]');
+    if (!button || !host.contains(button)) return;
+    if (isDemoMode()) { readOnlyDemoToast(); return; }
+    const panel = button.closest('[data-simulation-panel]');
+    const result = panel?.querySelector('[data-simulation-result]');
+    const simulationEvent = button.dataset.simulationEvent;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Running...';
+    panel?.querySelectorAll('[data-simulation-event]').forEach((item) => { if (item !== button) item.disabled = true; });
+    try {
+      const state = serverDraftState(server.id);
+      if (state.dirty.size) showStatusToast('info', 'Using saved settings', 'Save pending changes first when you want the Discord simulation to use them.');
+      const data = await simulateDashboardEvent(server.id, simulationEvent);
+      if (result) {
+        result.hidden = false;
+        result.className = 'dash-simulation-result is-success';
+        result.textContent = data.message || 'Simulation completed.';
+      }
+      showStatusToast('success', 'Simulation completed', data.message || 'The bot completed the test.');
+    } catch (err) {
+      if (result) {
+        result.hidden = false;
+        result.className = 'dash-simulation-result is-error';
+        result.textContent = err.message || 'Simulation failed.';
+      }
+      showStatusToast('error', 'Simulation failed', err.message || 'Could not run the test event.');
+    } finally {
+      button.textContent = original;
+      panel?.querySelectorAll('[data-simulation-event]').forEach((item) => { item.disabled = false; });
+    }
+  });
+}
+
 function attachActiveSection(server, active) {
   attachSettingsForm(server, active);
   attachGlobalSaveBar(server);
+  attachSimulationControls(server);
   if (active === 'ai-image-access') attachAiPage(server);
   if (active === 'moderation') attachModerationAccess(server);
   const form = document.querySelector(`[data-settings-form="${CSS.escape(active)}"]`);

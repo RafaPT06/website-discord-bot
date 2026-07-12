@@ -679,6 +679,25 @@ router.put('/dashboard/servers/:guildId/moderation', requireAuth, requireManagea
 });
 
 
+
+router.post('/dashboard/servers/:guildId/simulations/:event', requireAuth, requireManageableInstalledServer, async (req, res) => {
+  try {
+    const event = String(req.params.event || '').trim().toLowerCase();
+    const allowed = new Set(['connection', 'welcome', 'goodbye', 'level-up', 'image-access', 'log-message', 'log-member', 'log-moderation', 'log-voice', 'moderation']);
+    if (!allowed.has(event)) return res.status(400).json({ ok: false, error: 'Unsupported simulation event.' });
+    const data = await requestBotApi(`/api/guilds/${encodeURIComponent(req.params.guildId)}/simulations/${encodeURIComponent(event)}`, {
+      method: 'POST',
+      timeoutMs: 20_000,
+      body: JSON.stringify({
+        userId: req.sessionData?.user?.id || null,
+      }),
+    });
+    return res.json(data);
+  } catch (err) {
+    return res.status(err.statusCode || 502).json({ ok: false, error: err.message || 'Could not run the simulation.' });
+  }
+});
+
 router.get('/dashboard/servers/:guildId/users/search', requireAuth, requireManageableInstalledServer, async (req, res) => {
   const query = String(req.query.q || req.query.query || '').trim();
   const limit = Math.max(1, Math.min(25, Number(req.query.limit || '10') || 10));

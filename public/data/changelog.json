@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-07-12",
+    "title": "Profile welcome cards and dashboard simulations",
+    "items": [
+      "Rebuilt welcome and goodbye images as compact profile cards focused on the member avatar, username and optional member number while keeping the full custom message in Discord.",
+      "Added safe website-triggered simulations across Overview, Welcome/Goodbye, Leveling, AI Image Access, Logs and Moderation without granting XP, roles, warnings or punishments.",
+      "Reorganized the Welcome/Goodbye tab into a wide two-column desktop layout with a sticky live preview and restored normal single-column behavior on tablets and phones.",
+      "Fixed voice-log persistence and returned anti-spam, link-filter and invite-filter values through the bot API so dashboard toggles reload accurately.",
+      "Improved dashboard minimum-height and footer flow so desktop pages use the available screen instead of ending immediately after short tab content.",
+      "Completed the warning system with /warn, /warnings and /clear_warnings, database-backed history, moderation logs and ban-event logging."
+    ]
+  },
+  {
     "date": "2026-07-11",
     "title": "Restored exact bot-rendered PNG previews",
     "items": [
