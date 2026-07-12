@@ -1,3 +1,87 @@
+/* Shared dashboard brand token: every visible purple accent resolves to the exact Meowz purple. */
+:root {
+  --meowz-purple: #8b5cf6;
+  --meowz-purple-rgb: 139, 92, 246;
+}
+
+/* Replace legacy #7c3aed dashboard accents without changing the cyan secondary accent. */
+body.dashboard-app-body {
+  background:
+    radial-gradient(circle at 76% 18%, rgba(139, 92, 246, .18), transparent 34%),
+    radial-gradient(circle at 12% 92%, rgba(34, 211, 238, .18), transparent 32%),
+    #070911;
+}
+
+.dash-brand-mark,
+.dash-current-icon,
+.dash-user-avatar,
+.app-logo-mark,
+.app-current-server-icon,
+.app-page-server-icon,
+.app-list-server-icon,
+.app-user-avatar,
+.access-avatar,
+.dash-owner-toggle button.is-active,
+.owner-view-switch button.is-active,
+.app-switch-row input:checked + .app-switch-ui {
+  background: linear-gradient(135deg, var(--meowz-purple), #22d3ee);
+}
+
+.dash-primary-small,
+.app-action-button {
+  background: linear-gradient(135deg, var(--meowz-purple), #22d3ee);
+  box-shadow: 0 10px 26px rgba(139, 92, 246, .25);
+}
+
+.dash-tabs a.is-active,
+.app-section-tabs a.is-active {
+  color: #fff;
+  border-color: rgba(139, 92, 246, .55);
+  background: linear-gradient(135deg, rgba(139, 92, 246, .46), rgba(139, 92, 246, .14));
+}
+
+.dash-side-nav a.is-active,
+.app-sidebar-nav a.is-active {
+  color: #c4b5fd;
+  background: linear-gradient(135deg, rgba(139, 92, 246, .38), rgba(139, 92, 246, .14));
+}
+
+.dash-help-card,
+.app-help-card {
+  border-color: rgba(139, 92, 246, .22);
+  background: linear-gradient(135deg, rgba(139, 92, 246, .18), rgba(255, 255, 255, .035));
+}
+
+.dash-user-pill em,
+.app-user-button em {
+  background: rgba(139, 92, 246, .78);
+}
+
+.bot-avatar,
+.discord-avatar-small {
+  border-color: var(--meowz-purple);
+}
+
+.level-preview,
+.dash-level-preview {
+  background: linear-gradient(135deg, rgba(139, 92, 246, .20), rgba(34, 211, 238, .12));
+}
+
+.level-preview i,
+.dash-level-preview i {
+  background: linear-gradient(90deg, var(--meowz-purple), #22d3ee);
+}
+
+/* Keep legacy fallback/mock cards aligned with the same purple used by bot-rendered PNG previews. */
+.welcome-card-image::before,
+.welcome-card-image::after,
+.discord-welcome-bg::before,
+.discord-welcome-bg::after,
+.dash-discord-card .bg::before,
+.dash-discord-card .bg::after {
+  background: var(--meowz-purple);
+}
+
 /* Final live-preview overrides: preserve loading/error states, then let the generated card blend into the Discord mockup once ready. */
 .dash-live-preview:not(.is-loading):not(.is-error) {
   min-height: 0;
