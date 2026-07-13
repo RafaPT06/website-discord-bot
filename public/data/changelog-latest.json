@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-13",
+    "title": "Cleaner desktop dashboard chrome",
+    "items": [
+      "Removed repeated desktop branding, account details and duplicate Owner View controls now that the global navbar already provides them.",
+      "Kept the server context and dashboard-specific navigation while removing duplicated Documentation and Changelog links from the sidebar.",
+      "Rebuilt the desktop footer as a compact dark application bar and corrected the shell height so the bottom of short pages no longer feels detached."
+    ]
+  },
+  {
+    "date": "2026-07-13",
     "title": "Full-width desktop dashboard shell",
     "items": [
       "Removed the desktop gaps around the top navigation, dashboard application shell and footer so the dashboard reaches every viewport edge.",
