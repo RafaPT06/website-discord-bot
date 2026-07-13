@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-13",
+    "title": "Floating save controls and goodbye card polish",
+    "items": [
+      "Moved the dashboard's unsaved changes controls into a compact floating glass card with responsive Discard and Save Changes actions.",
+      "Pinned save, error and simulation status messages inside the visible viewport so mobile users can always see confirmation and failure feedback.",
+      "Redesigned goodbye cards with a cleaner layered purple frame, stronger avatar focus, wider text spacing and a server-name footer without a member-number badge."
+    ]
+  },
+  {
     "date": "2026-07-12",
     "title": "Dashboard purple consistency",
     "items": [
