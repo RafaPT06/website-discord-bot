@@ -7,6 +7,8 @@ let syncFrame = 0;
 let syncing = false;
 let syncPending = false;
 let removedGuildId = null;
+let selectedGuild = null;
+let selectedSource = null;
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -20,6 +22,17 @@ function escapeHtml(value) {
 function currentGuildId() {
   const match = window.location.pathname.match(/^\/dashboard\/server\/([^/]+)(?:\/[^/]+)?\/?$/);
   return match ? decodeURIComponent(match[1]) : null;
+}
+
+function guildIdFromServerLink(link) {
+  if (!link?.href) return null;
+  try {
+    const url = new URL(link.href, window.location.origin);
+    const match = url.pathname.match(/^\/dashboard\/server\/([^/]+)(?:\/[^/]+)?\/?$/);
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch {
+    return null;
+  }
 }
 
 function isOwnerView() {
@@ -59,77 +72,55 @@ function openDialog(dialog) {
   else dialog.setAttribute('open', '');
 }
 
-function ownerControlsMarkup(guild) {
-  const guildName = escapeHtml(guild.name);
-  const guildId = escapeHtml(guild.id);
-  return `
-    <article class="dash-card dash-owner-danger-zone" data-owner-server-controls="${guildId}">
-      <div class="dash-owner-danger-head">
-        <div>
-          <span>Owner controls</span>
-          <h2>Remove Meowz from this server</h2>
-          <p>This disconnects Meowz from <strong>${guildName}</strong>. The bot will stop responding there immediately.</p>
-        </div>
-        <button type="button" class="dash-danger-btn" data-open-owner-remove>Remove Meowz</button>
+function ensureRemovalDialog() {
+  let dialog = document.querySelector('[data-owner-remove-dialog]');
+  if (dialog) return dialog;
+
+  dialog = document.createElement('dialog');
+  dialog.className = 'dash-owner-remove-dialog';
+  dialog.setAttribute('data-owner-remove-dialog', '');
+  dialog.innerHTML = `
+    <form method="dialog" class="dash-owner-remove-surface" data-owner-remove-form>
+      <div class="dash-owner-remove-icon" aria-hidden="true">!</div>
+      <div>
+        <span>Permanent server action</span>
+        <h2 data-owner-remove-title>Remove Meowz?</h2>
+        <p>Meowz will immediately leave the Discord server. To confirm, type the server name exactly:</p>
+        <strong class="dash-owner-confirm-name" data-owner-confirm-name></strong>
       </div>
-      <small class="dash-owner-danger-note">Only the configured Meowz owner can use this action. Server data is kept unless it is removed separately.</small>
-    </article>
-    <dialog class="dash-owner-remove-dialog" data-owner-remove-dialog aria-labelledby="owner-remove-title-${guildId}">
-      <form method="dialog" class="dash-owner-remove-surface" data-owner-remove-form>
-        <div class="dash-owner-remove-icon" aria-hidden="true">!</div>
-        <div>
-          <span>Permanent server action</span>
-          <h2 id="owner-remove-title-${guildId}">Remove Meowz from ${guildName}?</h2>
-          <p>Meowz will immediately leave the Discord server. To confirm, type the server name exactly:</p>
-          <strong class="dash-owner-confirm-name">${guildName}</strong>
-        </div>
-        <label class="dash-field">
-          <span>Server name</span>
-          <input type="text" name="confirmation" autocomplete="off" spellcheck="false" placeholder="${guildName}" data-owner-remove-confirmation />
-        </label>
-        <div class="dash-owner-remove-actions">
-          <button type="button" class="dash-secondary-btn" data-cancel-owner-remove>Cancel</button>
-          <button type="submit" class="dash-danger-btn" data-confirm-owner-remove disabled>Remove Meowz</button>
-        </div>
-      </form>
-    </dialog>`;
-}
+      <label class="dash-field">
+        <span>Server name</span>
+        <input type="text" name="confirmation" autocomplete="off" spellcheck="false" data-owner-remove-confirmation />
+      </label>
+      <div class="dash-owner-remove-actions">
+        <button type="button" class="dash-secondary-btn" data-cancel-owner-remove>Cancel</button>
+        <button type="submit" class="dash-danger-btn" data-confirm-owner-remove disabled>Remove Meowz</button>
+      </div>
+    </form>`;
+  document.body.appendChild(dialog);
 
-function attachOwnerControls(host, guild) {
-  if (!host || host.querySelector('[data-owner-server-controls]')) return;
-  host.insertAdjacentHTML('beforeend', ownerControlsMarkup(guild));
-
-  const card = host.querySelector('[data-owner-server-controls]');
-  const dialog = host.querySelector('[data-owner-remove-dialog]');
-  const form = dialog?.querySelector('[data-owner-remove-form]');
-  const input = dialog?.querySelector('[data-owner-remove-confirmation]');
-  const confirmButton = dialog?.querySelector('[data-confirm-owner-remove]');
-  const openButton = card?.querySelector('[data-open-owner-remove]');
-  const cancelButton = dialog?.querySelector('[data-cancel-owner-remove]');
+  const form = dialog.querySelector('[data-owner-remove-form]');
+  const input = dialog.querySelector('[data-owner-remove-confirmation]');
+  const confirmButton = dialog.querySelector('[data-confirm-owner-remove]');
+  const cancelButton = dialog.querySelector('[data-cancel-owner-remove]');
 
   const syncConfirmation = () => {
     if (!confirmButton) return;
-    confirmButton.disabled = String(input?.value || '').trim() !== String(guild.name);
+    confirmButton.disabled = !selectedGuild || String(input?.value || '').trim() !== String(selectedGuild.name);
   };
-
-  openButton?.addEventListener('click', () => {
-    if (input) input.value = '';
-    syncConfirmation();
-    openDialog(dialog);
-    requestAnimationFrame(() => input?.focus());
-  });
 
   cancelButton?.addEventListener('click', () => closeDialog(dialog));
   input?.addEventListener('input', syncConfirmation);
-  dialog?.addEventListener('click', (event) => {
+  dialog.addEventListener('click', (event) => {
     if (event.target === dialog) closeDialog(dialog);
   });
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const confirmation = String(input?.value || '').trim();
-    if (confirmation !== String(guild.name) || !confirmButton) return;
+    if (!selectedGuild || !confirmButton || String(input?.value || '').trim() !== String(selectedGuild.name)) return;
 
+    const guild = selectedGuild;
+    const source = selectedSource;
     confirmButton.disabled = true;
     confirmButton.textContent = 'Removing…';
     if (cancelButton) cancelButton.disabled = true;
@@ -143,7 +134,7 @@ function attachOwnerControls(host, guild) {
           accept: 'application/json',
           'content-type': 'application/json',
         },
-        body: JSON.stringify({ confirmation }),
+        body: JSON.stringify({ confirmation: String(input?.value || '').trim() }),
       });
       const data = await response.json().catch(() => null);
       if (!response.ok) throw new Error(data?.error || 'Could not remove Meowz from this server.');
@@ -151,10 +142,19 @@ function attachOwnerControls(host, guild) {
       removedGuildId = guild.id;
       ownerGuildCache = { at: 0, data: null };
       closeDialog(dialog);
-      if (card) {
-        card.classList.add('is-complete');
-        card.innerHTML = `<span>Owner controls</span><h2>Meowz was removed</h2><p>Meowz has left <strong>${escapeHtml(guild.name)}</strong>. Returning to the server list…</p>`;
+
+      if (source?.matches?.('[data-owner-server-controls]')) {
+        source.classList.add('is-complete');
+        source.innerHTML = `<span>Owner controls</span><h2>Meowz was removed</h2><p>Meowz has left <strong>${escapeHtml(guild.name)}</strong>. Returning to the server list…</p>`;
+      } else if (source?.matches?.('[data-owner-server-list-row]')) {
+        source.classList.add('is-complete');
+        const removeButton = source.querySelector('[data-owner-list-remove]');
+        if (removeButton) {
+          removeButton.disabled = true;
+          removeButton.textContent = 'Removed';
+        }
       }
+
       showStatusToast('success', 'Meowz removed from server', data?.message || `Meowz left ${guild.name}.`);
       setTimeout(() => window.location.assign('/dashboard'), 1500);
     } catch (err) {
@@ -163,6 +163,90 @@ function attachOwnerControls(host, guild) {
       if (cancelButton) cancelButton.disabled = false;
       syncConfirmation();
     }
+  });
+
+  return dialog;
+}
+
+function showRemovalDialog(guild, source) {
+  selectedGuild = guild;
+  selectedSource = source || null;
+  const dialog = ensureRemovalDialog();
+  const input = dialog.querySelector('[data-owner-remove-confirmation]');
+  const confirmButton = dialog.querySelector('[data-confirm-owner-remove]');
+  const cancelButton = dialog.querySelector('[data-cancel-owner-remove]');
+  const title = dialog.querySelector('[data-owner-remove-title]');
+  const name = dialog.querySelector('[data-owner-confirm-name]');
+
+  if (title) title.textContent = `Remove Meowz from ${guild.name}?`;
+  if (name) name.textContent = guild.name;
+  if (input) {
+    input.value = '';
+    input.placeholder = guild.name;
+  }
+  if (confirmButton) {
+    confirmButton.disabled = true;
+    confirmButton.textContent = 'Remove Meowz';
+  }
+  if (cancelButton) cancelButton.disabled = false;
+
+  openDialog(dialog);
+  requestAnimationFrame(() => input?.focus());
+}
+
+function overviewControlsMarkup(guild) {
+  const guildName = escapeHtml(guild.name);
+  const guildId = escapeHtml(guild.id);
+  return `
+    <article class="dash-card dash-owner-danger-zone" data-owner-server-controls="${guildId}">
+      <div class="dash-owner-danger-head">
+        <div>
+          <span>Owner controls</span>
+          <h2>Remove Meowz from this server</h2>
+          <p>This disconnects Meowz from <strong>${guildName}</strong>. The bot will stop responding there immediately.</p>
+        </div>
+        <button type="button" class="dash-danger-btn" data-open-owner-remove>Remove Meowz</button>
+      </div>
+      <small class="dash-owner-danger-note">Only the configured Meowz owner can use this action. Server data is kept unless it is removed separately.</small>
+    </article>`;
+}
+
+function attachOverviewControls(host, guild) {
+  if (!host || host.querySelector('[data-owner-server-controls]')) return;
+  host.insertAdjacentHTML('beforeend', overviewControlsMarkup(guild));
+  const card = host.querySelector('[data-owner-server-controls]');
+  card?.querySelector('[data-open-owner-remove]')?.addEventListener('click', () => showRemovalDialog(guild, card));
+}
+
+function unwrapServerListControls() {
+  document.querySelectorAll('[data-owner-server-list-row]').forEach((wrapper) => {
+    const link = wrapper.querySelector(':scope > .dash-server-row');
+    if (link && wrapper.parentElement) wrapper.replaceWith(link);
+    else wrapper.remove();
+  });
+}
+
+function attachServerListControls(data) {
+  const installed = new Map((Array.isArray(data?.installed) ? data.installed : []).map((guild) => [String(guild.id), guild]));
+  document.querySelectorAll('.dash-list > .dash-server-row').forEach((link) => {
+    const guildId = guildIdFromServerLink(link);
+    const guild = guildId ? installed.get(String(guildId)) : null;
+    if (!guild || link.closest('[data-owner-server-list-row]')) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'dash-owner-server-list-row';
+    wrapper.setAttribute('data-owner-server-list-row', String(guild.id));
+    link.before(wrapper);
+    wrapper.appendChild(link);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'dash-owner-list-remove';
+    button.setAttribute('data-owner-list-remove', '');
+    button.setAttribute('aria-label', `Remove Meowz from ${guild.name}`);
+    button.textContent = 'Remove';
+    button.addEventListener('click', () => showRemovalDialog(guild, wrapper));
+    wrapper.appendChild(button);
   });
 }
 
@@ -175,21 +259,36 @@ async function syncOwnerControls() {
 
   syncing = true;
   try {
-    document.querySelectorAll('[data-owner-server-controls], [data-owner-remove-dialog]').forEach((node) => {
-      if (!isOwnerView() || !isOverviewTab()) node.remove();
-    });
+    if (!isOwnerView()) {
+      document.querySelectorAll('[data-owner-server-controls]').forEach((node) => node.remove());
+      unwrapServerListControls();
+      return;
+    }
+
+    const data = await loadOwnerGuilds();
+    if (!data?.isOwner || !data?.ownerMode) {
+      document.querySelectorAll('[data-owner-server-controls]').forEach((node) => node.remove());
+      unwrapServerListControls();
+      return;
+    }
 
     const guildId = currentGuildId();
-    if (!guildId || removedGuildId === guildId || !isOwnerView() || !isOverviewTab()) return;
+    if (!guildId) {
+      attachServerListControls(data);
+      return;
+    }
+
+    unwrapServerListControls();
+    if (removedGuildId === guildId || !isOverviewTab()) {
+      document.querySelectorAll('[data-owner-server-controls]').forEach((node) => node.remove());
+      return;
+    }
 
     const host = document.querySelector('[data-server-tab-content][data-active-section="overview"]');
     if (!host || host.querySelector('[data-owner-server-controls]')) return;
-
-    const data = await loadOwnerGuilds();
-    if (!data?.isOwner || !data?.ownerMode) return;
     const guild = (Array.isArray(data.installed) ? data.installed : []).find((item) => String(item.id) === guildId);
     if (!guild || !host.isConnected) return;
-    attachOwnerControls(host, guild);
+    attachOverviewControls(host, guild);
   } catch (err) {
     console.warn('Owner server controls unavailable:', err);
   } finally {
