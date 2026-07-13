@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2026-07-13",
+    "title": "Reliable bottom status and save stack",
+    "items": [
+      "Replaced the calculated status-card offsets with one shared bottom floating host for status feedback and unsaved changes.",
+      "Kept status messages directly above the save controls without relying on Android viewport-height guesses that could push them off screen.",
+      "Preserved the responsive glass styling, safe-area spacing, multi-tab draft saving and read-only demo behavior."
+    ]
+  }
+]

@@ -3,6 +3,17 @@ import { escapeHtml } from './utils.js';
 
 const changelogList = document.querySelector('[data-changelog-list]');
 
+async function getLatestChangelogEntries() {
+  try {
+    const response = await fetch('/data/changelog-latest.json', { cache: 'no-store' });
+    if (!response.ok) return [];
+    const entries = await response.json();
+    return Array.isArray(entries) ? entries : [];
+  } catch {
+    return [];
+  }
+}
+
 function normalizeEntry(entry) {
   const title = entry.title || entry.version || '';
   const date = entry.date || '';
@@ -45,10 +56,21 @@ function renderEntry(entry) {
 export async function loadChangelog() {
   if (!changelogList) return;
   try {
-    const entries = await getChangelog();
-    const visibleEntries = (Array.isArray(entries) ? entries : [])
+    const [latestEntries, entries] = await Promise.all([
+      getLatestChangelogEntries(),
+      getChangelog(),
+    ]);
+
+    const seen = new Set();
+    const visibleEntries = [...latestEntries, ...(Array.isArray(entries) ? entries : [])]
       .map(normalizeEntry)
-      .filter((entry) => entry.title && entry.date && entry.changes.length);
+      .filter((entry) => {
+        if (!entry.title || !entry.date || !entry.changes.length) return false;
+        const key = `${entry.date}:${entry.title}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
 
     changelogList.innerHTML = visibleEntries.length
       ? visibleEntries.map(renderEntry).join('')

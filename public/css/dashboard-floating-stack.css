@@ -1,0 +1,113 @@
+/* Final dashboard overlay layer: status feedback and unsaved changes share one bottom stack. */
+:root {
+  --dashboard-stack-bottom: max(.5rem, env(safe-area-inset-bottom));
+  --dashboard-stack-width: min(calc(100vw - 1rem), 42rem);
+  --dashboard-stack-gap: .55rem;
+}
+
+body.dashboard-app-body [data-server-save-host] {
+  position: fixed !important;
+  inset-inline-start: 50% !important;
+  inset-inline-end: auto !important;
+  inset-block-start: auto !important;
+  inset-block-end: var(--dashboard-stack-bottom) !important;
+  width: var(--dashboard-stack-width) !important;
+  max-width: none !important;
+  max-height: calc(100dvh - 1rem - env(safe-area-inset-bottom)) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  align-content: end !important;
+  gap: var(--dashboard-stack-gap) !important;
+  overflow-x: visible !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-width: none !important;
+  transform: translateX(-50%) !important;
+  z-index: 2400 !important;
+  pointer-events: none !important;
+}
+
+body.dashboard-app-body [data-server-save-host]::-webkit-scrollbar {
+  display: none !important;
+}
+
+body.dashboard-app-body [data-server-save-host]:not(:has(.dash-save-bar[data-global-save-bar])):not(:has(.status-toast)) {
+  display: none !important;
+}
+
+body.dashboard-app-body [data-server-save-host] > .toast-host {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  display: grid !important;
+  gap: var(--dashboard-stack-gap) !important;
+  overflow: visible !important;
+  transform: none !important;
+  z-index: auto !important;
+  pointer-events: none !important;
+  order: 1 !important;
+}
+
+body.dashboard-app-body [data-server-save-host] > .toast-host:empty {
+  display: none !important;
+}
+
+body.dashboard-app-body [data-server-save-host] .dash-save-bar[data-global-save-bar] {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  transform: none !important;
+  z-index: auto !important;
+  pointer-events: auto !important;
+  order: 2 !important;
+}
+
+/* Outside a server editor, status feedback still uses the same bottom floating card. */
+body.dashboard-app-body > .toast-host {
+  position: fixed !important;
+  inset-inline-start: 50% !important;
+  inset-inline-end: auto !important;
+  inset-block-start: auto !important;
+  inset-block-end: var(--dashboard-stack-bottom) !important;
+  width: var(--dashboard-stack-width) !important;
+  max-width: none !important;
+  max-height: calc(100dvh - 1rem - env(safe-area-inset-bottom)) !important;
+  margin: 0 !important;
+  display: grid !important;
+  align-content: end !important;
+  gap: var(--dashboard-stack-gap) !important;
+  overflow-x: visible !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  transform: translateX(-50%) !important;
+  z-index: 2400 !important;
+  pointer-events: none !important;
+}
+
+body.dashboard-app-body > .toast-host:empty {
+  display: none !important;
+}
+
+body.dashboard-app-body .toast-host .status-toast {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  pointer-events: auto !important;
+}
+
+@media (max-width: 560px) {
+  :root {
+    --dashboard-stack-width: min(calc(100vw - 1rem), 34rem);
+  }
+
+  body.dashboard-app-body [data-server-save-host],
+  body.dashboard-app-body > .toast-host {
+    max-height: calc(100dvh - .75rem - env(safe-area-inset-bottom)) !important;
+  }
+}
