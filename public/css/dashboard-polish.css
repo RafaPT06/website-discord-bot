@@ -54,3 +54,168 @@ body.dashboard-app-body .footer-card {
     min-height: calc(100svh - 8rem) !important;
   }
 }
+
+/* Floating unsaved-changes card, inspired by compact SaaS dashboard save bars. */
+[data-server-save-host] {
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+[data-server-save-host]:empty {
+  display: none !important;
+}
+
+.dash-save-bar {
+  position: fixed !important;
+  inset-inline-start: 50% !important;
+  inset-inline-end: auto !important;
+  inset-block-start: auto !important;
+  inset-block-end: max(.85rem, env(safe-area-inset-bottom)) !important;
+  width: min(calc(100vw - 1.5rem), 44rem) !important;
+  margin: 0 !important;
+  padding: .8rem !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: .85rem !important;
+  border: 1px solid rgba(255,255,255,.13) !important;
+  border-radius: 1.15rem !important;
+  background: rgba(8, 10, 20, .94) !important;
+  box-shadow: 0 1.4rem 4rem rgba(0,0,0,.52), inset 0 1px 0 rgba(255,255,255,.08) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(145%) !important;
+  backdrop-filter: blur(20px) saturate(145%) !important;
+  transform: translateX(-50%) !important;
+  z-index: 1500 !important;
+}
+
+.dash-save-bar > div:first-child {
+  min-width: 0;
+  display: grid !important;
+  gap: .18rem !important;
+}
+
+.dash-save-bar > div:first-child strong {
+  color: var(--text) !important;
+  font-size: .94rem !important;
+  line-height: 1.2 !important;
+}
+
+.dash-save-bar > div:first-child span {
+  overflow: hidden !important;
+  color: var(--muted) !important;
+  font-size: .76rem !important;
+  line-height: 1.3 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.dash-save-bar > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: .6rem !important;
+}
+
+.dash-save-bar .dash-secondary-btn,
+.dash-save-bar .dash-save-btn {
+  min-height: 3rem !important;
+  margin: 0 !important;
+  padding-inline: 1.1rem !important;
+  border-radius: .85rem !important;
+  font-size: .88rem !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.dash-save-bar .dash-secondary-btn {
+  border: 1px solid rgba(255,255,255,.1) !important;
+  background: rgba(255,255,255,.055) !important;
+  color: var(--text) !important;
+}
+
+.dash-save-bar .dash-save-btn {
+  min-width: 9.5rem !important;
+  border: 0 !important;
+  background: linear-gradient(135deg, var(--meowz-purple, #8b5cf6), #22d3ee) !important;
+  box-shadow: 0 .8rem 2rem rgba(34,211,238,.16) !important;
+}
+
+body.dashboard-app-body:has([data-global-save-bar]) .dashboard-app-root {
+  padding-bottom: clamp(7.5rem, 12vw, 9rem) !important;
+}
+
+/* Keep save/error/simulation feedback in the visible viewport above the floating save card. */
+.toast-host {
+  position: fixed !important;
+  inset: auto !important;
+  inset-block-start: max(.75rem, env(safe-area-inset-top)) !important;
+  inset-inline-start: 50% !important;
+  width: min(calc(100vw - 1rem), 34rem) !important;
+  max-height: calc(100dvh - 1.5rem) !important;
+  display: grid !important;
+  gap: .55rem !important;
+  overflow: visible !important;
+  pointer-events: none !important;
+  transform: translateX(-50%) !important;
+  z-index: 2200 !important;
+}
+
+.toast-host .status-toast {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  pointer-events: auto !important;
+}
+
+/* Prevent enabled/disabled status labels from being pushed outside compact card headers. */
+.dash-card-head > .status,
+.dash-card-head > b.status {
+  position: static !important;
+  align-self: flex-start !important;
+  flex: 0 0 auto !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 560px) {
+  .dash-save-bar {
+    width: min(calc(100vw - 1rem), 38rem) !important;
+    inset-block-end: max(.5rem, env(safe-area-inset-bottom)) !important;
+    grid-template-columns: 1fr !important;
+    gap: .62rem !important;
+    padding: .68rem !important;
+    border-radius: 1rem !important;
+  }
+
+  .dash-save-bar > div:first-child {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    align-items: center !important;
+    column-gap: .55rem !important;
+  }
+
+  .dash-save-bar > div:first-child strong {
+    font-size: .82rem !important;
+  }
+
+  .dash-save-bar > div:first-child span {
+    font-size: .7rem !important;
+  }
+
+  .dash-save-bar > div:last-child {
+    display: grid !important;
+    grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr) !important;
+  }
+
+  .dash-save-bar .dash-secondary-btn,
+  .dash-save-bar .dash-save-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 2.8rem !important;
+    padding-inline: .75rem !important;
+  }
+
+  .toast-host {
+    inset-block-start: max(.5rem, env(safe-area-inset-top)) !important;
+  }
+}
