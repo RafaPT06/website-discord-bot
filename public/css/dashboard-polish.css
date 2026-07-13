@@ -59,6 +59,8 @@ body.dashboard-app-body .footer-card {
   --dashboard-floating-bg: rgba(8, 10, 20, .96);
   --dashboard-floating-border: rgba(255, 255, 255, .13);
   --dashboard-floating-shadow: 0 1.35rem 4rem rgba(0, 0, 0, .52), inset 0 1px 0 rgba(255, 255, 255, .08);
+  --dashboard-visual-bottom-gap: 0px;
+  --dashboard-toast-lift: 0px;
 }
 
 /* The host remains in normal flow, but the actual save card is viewport-fixed. */
@@ -83,7 +85,7 @@ body.dashboard-app-body .footer-card {
   inset-inline-start: 50% !important;
   inset-inline-end: auto !important;
   inset-block-start: auto !important;
-  inset-block-end: max(.75rem, env(safe-area-inset-bottom)) !important;
+  inset-block-end: calc(max(.75rem, env(safe-area-inset-bottom)) + var(--dashboard-visual-bottom-gap, 0px)) !important;
   width: min(calc(100vw - 1.25rem), 42rem) !important;
   max-width: none !important;
   margin: 0 !important;
@@ -163,20 +165,22 @@ body.dashboard-app-body:has([data-global-save-bar]) .dash-content {
   padding-bottom: clamp(7rem, 12vw, 8.5rem) !important;
 }
 
-/* Status messages use the same floating-card treatment at the bottom of the viewport. */
+/* Status messages use the same floating-card treatment at the bottom of the visible viewport. */
 .toast-host {
   position: fixed !important;
   inset: auto !important;
   inset-inline-start: 50% !important;
   inset-inline-end: auto !important;
   inset-block-start: auto !important;
-  inset-block-end: max(.75rem, env(safe-area-inset-bottom)) !important;
+  inset-block-end: calc(max(.75rem, env(safe-area-inset-bottom)) + var(--dashboard-visual-bottom-gap, 0px) + var(--dashboard-toast-lift, 0px)) !important;
   width: min(calc(100vw - 1.25rem), 42rem) !important;
-  max-height: calc(100dvh - 1.5rem) !important;
+  max-height: calc(100dvh - var(--dashboard-visual-bottom-gap, 0px) - var(--dashboard-toast-lift, 0px) - 1.5rem) !important;
   display: grid !important;
   align-content: end !important;
   gap: .55rem !important;
-  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
   pointer-events: none !important;
   transform: translateX(-50%) !important;
   z-index: 2300 !important;
@@ -195,11 +199,6 @@ body.dashboard-app-body:has([data-global-save-bar]) .dash-content {
   pointer-events: auto !important;
 }
 
-/* When both are visible, feedback sits above the save controls instead of overlapping them. */
-body.dashboard-app-body:has([data-global-save-bar]) .toast-host {
-  inset-block-end: calc(max(.75rem, env(safe-area-inset-bottom)) + 5.5rem) !important;
-}
-
 /* Prevent enabled/disabled status labels from being pushed outside compact card headers. */
 .dash-card-head > .status,
 .dash-card-head > b.status {
@@ -214,7 +213,7 @@ body.dashboard-app-body:has([data-global-save-bar]) .toast-host {
   [data-server-save-host] .dash-save-bar[data-global-save-bar],
   .dash-save-bar[data-global-save-bar] {
     width: min(calc(100vw - 1rem), 34rem) !important;
-    inset-block-end: max(.5rem, env(safe-area-inset-bottom)) !important;
+    inset-block-end: calc(max(.5rem, env(safe-area-inset-bottom)) + var(--dashboard-visual-bottom-gap, 0px)) !important;
     grid-template-columns: 1fr !important;
     gap: .6rem !important;
     padding: .68rem !important;
@@ -256,11 +255,8 @@ body.dashboard-app-body:has([data-global-save-bar]) .toast-host {
 
   .toast-host {
     width: min(calc(100vw - 1rem), 34rem) !important;
-    inset-block-end: max(.5rem, env(safe-area-inset-bottom)) !important;
-  }
-
-  body.dashboard-app-body:has([data-global-save-bar]) .toast-host {
-    inset-block-end: calc(max(.5rem, env(safe-area-inset-bottom)) + 8rem) !important;
+    inset-block-end: calc(max(.5rem, env(safe-area-inset-bottom)) + var(--dashboard-visual-bottom-gap, 0px) + var(--dashboard-toast-lift, 0px)) !important;
+    max-height: calc(100dvh - var(--dashboard-visual-bottom-gap, 0px) - var(--dashboard-toast-lift, 0px) - 1rem) !important;
   }
 
   .toast-host .status-toast {
