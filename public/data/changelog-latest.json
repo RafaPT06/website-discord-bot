@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-13",
+    "title": "Owner-only server removal controls",
+    "items": [
+      "Added a protected Owner View danger zone that can remove Meowz from a selected Discord server through the website.",
+      "Requires typing the exact server name before the destructive action is enabled and rechecks the configured bot owner on the backend.",
+      "Routes the request through the secured bot API so the bot leaves the selected server without exposing the Discord bot token to the browser."
+    ]
+  },
+  {
+    "date": "2026-07-13",
     "title": "Reliable bottom status and save stack",
     "items": [
       "Replaced the calculated status-card offsets with one shared bottom floating host for status feedback and unsaved changes.",
