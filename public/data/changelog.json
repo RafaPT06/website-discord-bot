@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-13",
+    "title": "Visible bottom status stacking",
+    "items": [
+      "Replaced the fixed mobile toast offset with live measurement of the actual unsaved-changes card height.",
+      "Kept status messages inside the visible Android browser viewport while the address bar, keyboard or safe area changes.",
+      "Made bottom status feedback automatically move back down when the unsaved-changes card disappears."
+    ]
+  },
+  {
+    "date": "2026-07-13",
     "title": "Bottom floating save and status cards",
     "items": [
       "Moved save confirmations, errors and simulation feedback from the top of the screen to a bottom-centered floating status card.",
