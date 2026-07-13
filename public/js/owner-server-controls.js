@@ -24,17 +24,6 @@ function currentGuildId() {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function guildIdFromServerLink(link) {
-  if (!link?.href) return null;
-  try {
-    const url = new URL(link.href, window.location.origin);
-    const match = url.pathname.match(/^\/dashboard\/server\/([^/]+)(?:\/[^/]+)?\/?$/);
-    return match ? decodeURIComponent(match[1]) : null;
-  } catch {
-    return null;
-  }
-}
-
 function isOwnerView() {
   return localStorage.getItem(OWNER_VIEW_STORAGE_KEY) === 'owner';
 }
@@ -146,13 +135,6 @@ function ensureRemovalDialog() {
       if (source?.matches?.('[data-owner-server-controls]')) {
         source.classList.add('is-complete');
         source.innerHTML = `<span>Owner controls</span><h2>Meowz was removed</h2><p>Meowz has left <strong>${escapeHtml(guild.name)}</strong>. Returning to the server list…</p>`;
-      } else if (source?.matches?.('[data-owner-server-list-row]')) {
-        source.classList.add('is-complete');
-        const removeButton = source.querySelector('[data-owner-list-remove]');
-        if (removeButton) {
-          removeButton.disabled = true;
-          removeButton.textContent = 'Removed';
-        }
       }
 
       showStatusToast('success', 'Meowz removed from server', data?.message || `Meowz left ${guild.name}.`);
@@ -218,38 +200,6 @@ function attachOverviewControls(host, guild) {
   card?.querySelector('[data-open-owner-remove]')?.addEventListener('click', () => showRemovalDialog(guild, card));
 }
 
-function unwrapServerListControls() {
-  document.querySelectorAll('[data-owner-server-list-row]').forEach((wrapper) => {
-    const link = wrapper.querySelector(':scope > .dash-server-row');
-    if (link && wrapper.parentElement) wrapper.replaceWith(link);
-    else wrapper.remove();
-  });
-}
-
-function attachServerListControls(data) {
-  const installed = new Map((Array.isArray(data?.installed) ? data.installed : []).map((guild) => [String(guild.id), guild]));
-  document.querySelectorAll('.dash-list > .dash-server-row').forEach((link) => {
-    const guildId = guildIdFromServerLink(link);
-    const guild = guildId ? installed.get(String(guildId)) : null;
-    if (!guild || link.closest('[data-owner-server-list-row]')) return;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'dash-owner-server-list-row';
-    wrapper.setAttribute('data-owner-server-list-row', String(guild.id));
-    link.before(wrapper);
-    wrapper.appendChild(link);
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'dash-owner-list-remove';
-    button.setAttribute('data-owner-list-remove', '');
-    button.setAttribute('aria-label', `Remove Meowz from ${guild.name}`);
-    button.textContent = 'Remove';
-    button.addEventListener('click', () => showRemovalDialog(guild, wrapper));
-    wrapper.appendChild(button);
-  });
-}
-
 async function syncOwnerControls() {
   syncFrame = 0;
   if (syncing) {
@@ -259,33 +209,17 @@ async function syncOwnerControls() {
 
   syncing = true;
   try {
-    if (!isOwnerView()) {
-      document.querySelectorAll('[data-owner-server-controls]').forEach((node) => node.remove());
-      unwrapServerListControls();
-      return;
-    }
-
-    const data = await loadOwnerGuilds();
-    if (!data?.isOwner || !data?.ownerMode) {
-      document.querySelectorAll('[data-owner-server-controls]').forEach((node) => node.remove());
-      unwrapServerListControls();
-      return;
-    }
-
     const guildId = currentGuildId();
-    if (!guildId) {
-      attachServerListControls(data);
-      return;
-    }
-
-    unwrapServerListControls();
-    if (removedGuildId === guildId || !isOverviewTab()) {
+    if (!guildId || removedGuildId === guildId || !isOwnerView() || !isOverviewTab()) {
       document.querySelectorAll('[data-owner-server-controls]').forEach((node) => node.remove());
       return;
     }
 
     const host = document.querySelector('[data-server-tab-content][data-active-section="overview"]');
     if (!host || host.querySelector('[data-owner-server-controls]')) return;
+
+    const data = await loadOwnerGuilds();
+    if (!data?.isOwner || !data?.ownerMode) return;
     const guild = (Array.isArray(data.installed) ? data.installed : []).find((item) => String(item.id) === guildId);
     if (!guild || !host.isConnected) return;
     attachOverviewControls(host, guild);
