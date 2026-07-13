@@ -1,0 +1,48 @@
+/* Desktop dashboard is an application shell, not a centered marketing-page card. */
+@media (min-width: 981px) {
+  body.dashboard-app-body {
+    width: 100%;
+    min-height: 100dvh;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.dashboard-app-body .nav[data-global-navbar] {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding-inline: clamp(1rem, 2.25vw, 2rem) !important;
+    border-top: 0 !important;
+    border-inline: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  body.dashboard-app-body .dashboard-app-root,
+  body.dashboard-app-body .dashboard-app,
+  body.dashboard-app-body [data-dashboard-home],
+  body.dashboard-app-body [data-server-detail],
+  body.dashboard-app-body [data-server-detail-content],
+  body.dashboard-app-body .dash-shell {
+    width: 100% !important;
+    max-width: none !important;
+    margin-inline: 0 !important;
+  }
+
+  body.dashboard-app-body .dashboard-app-root {
+    padding-top: 0 !important;
+  }
+
+  body.dashboard-app-body .dash-shell {
+    border-radius: 0 !important;
+  }
+
+  body.dashboard-app-body .footer-card,
+  body.dashboard-app-body .dashboard-app-root + .footer-card {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-inline: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 0 !important;
+  }
+}
