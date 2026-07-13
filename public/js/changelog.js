@@ -1,7 +1,11 @@
 import { escapeHtml } from './utils.js';
 
 const changelogList = document.querySelector('[data-changelog-list]');
-const CHANGELOG_SOURCES = ['/data/changelog-latest.json', '/data/changelog.json'];
+const CHANGELOG_SOURCES = [
+  '/data/changelog-latest.json',
+  '/data/changelog.json',
+  '/data/changelog-foundation.json',
+];
 
 let changelogEntries = [];
 let selectedMonth = 'all';
@@ -123,7 +127,7 @@ function availableMonths() {
 
 function renderChangelog() {
   const months = availableMonths();
-  if (selectedMonth !== 'all' && !months.includes(selectedMonth)) selectedMonth = months[0] || 'all';
+  if (selectedMonth !== 'all' && !months.includes(selectedMonth)) selectedMonth = 'all';
 
   const visible = selectedMonth === 'all'
     ? changelogEntries
@@ -203,7 +207,7 @@ export async function loadChangelog() {
 
   const months = availableMonths();
   const requestedMonth = new URLSearchParams(window.location.search).get('month');
-  selectedMonth = requestedMonth && months.includes(requestedMonth) ? requestedMonth : (months[0] || 'all');
+  selectedMonth = requestedMonth && months.includes(requestedMonth) ? requestedMonth : 'all';
   renderChangelog();
 }
 

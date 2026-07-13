@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-13",
+    "title": "Restored complete changelog history",
+    "items": [
+      "Restored the original June 2026 launch, Discord preview, live stats and public changelog entries that were left behind when the archive moved to the data folder.",
+      "Changed the changelog default back to All months so older updates remain visible instead of looking deleted.",
+      "Kept month filtering available for focused browsing without hiding the full project history on first load."
+    ]
+  },
+  {
+    "date": "2026-07-13",
     "title": "Reliable changelog archive and month filters",
     "items": [
       "Made the latest and archived changelog files load independently so one unavailable source no longer blanks the entire page.",
