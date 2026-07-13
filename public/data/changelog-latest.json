@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-13",
+    "title": "Reliable changelog archive and month filters",
+    "items": [
+      "Made the latest and archived changelog files load independently so one unavailable source no longer blanks the entire page.",
+      "Added month grouping, a responsive month filter and URL-backed archive selection for easier browsing as the update history grows.",
+      "Added a retry state for real loading failures while continuing to show every valid entry that is still available."
+    ]
+  },
+  {
+    "date": "2026-07-13",
     "title": "Cleaner desktop dashboard chrome",
     "items": [
       "Removed repeated desktop branding, account details and duplicate Owner View controls now that the global navbar already provides them.",
