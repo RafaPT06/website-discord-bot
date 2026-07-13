@@ -5,6 +5,7 @@ const OWNER_GUILD_CACHE_MS = 15_000;
 let ownerGuildCache = { at: 0, data: null };
 let syncFrame = 0;
 let syncing = false;
+let syncPending = false;
 let removedGuildId = null;
 
 function escapeHtml(value) {
@@ -131,7 +132,7 @@ function attachOwnerControls(host, guild) {
 
     confirmButton.disabled = true;
     confirmButton.textContent = 'Removing…';
-    cancelButton && (cancelButton.disabled = true);
+    if (cancelButton) cancelButton.disabled = true;
 
     try {
       const response = await fetch(`/api/dashboard/servers/${encodeURIComponent(guild.id)}/bot`, {
@@ -158,7 +159,6 @@ function attachOwnerControls(host, guild) {
       setTimeout(() => window.location.assign('/dashboard'), 1500);
     } catch (err) {
       showStatusToast('error', 'Could not remove Meowz', err.message || 'The removal request failed.');
-      confirmButton.disabled = false;
       confirmButton.textContent = 'Remove Meowz';
       if (cancelButton) cancelButton.disabled = false;
       syncConfirmation();
@@ -168,7 +168,11 @@ function attachOwnerControls(host, guild) {
 
 async function syncOwnerControls() {
   syncFrame = 0;
-  if (syncing) return;
+  if (syncing) {
+    syncPending = true;
+    return;
+  }
+
   syncing = true;
   try {
     document.querySelectorAll('[data-owner-server-controls], [data-owner-remove-dialog]').forEach((node) => {
@@ -190,10 +194,18 @@ async function syncOwnerControls() {
     console.warn('Owner server controls unavailable:', err);
   } finally {
     syncing = false;
+    if (syncPending) {
+      syncPending = false;
+      scheduleSync();
+    }
   }
 }
 
 function scheduleSync() {
+  if (syncing) {
+    syncPending = true;
+    return;
+  }
   if (syncFrame) return;
   syncFrame = requestAnimationFrame(syncOwnerControls);
 }
