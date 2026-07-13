@@ -59,7 +59,7 @@ router.delete('/dashboard/servers/:guildId/bot', requireAuth, requireOwner, asyn
       method: 'POST',
       timeoutMs: 15_000,
       body: JSON.stringify({
-        requestedBy: req.sessionData.user.id,
+        userId: req.sessionData.user.id,
       }),
     });
 
