@@ -1,6 +1,9 @@
 /* Desktop dashboard is an application shell, not a centered marketing-page card. */
 @media (min-width: 981px) {
   body.dashboard-app-body {
+    --dashboard-sidebar-width: 18.75rem;
+    --dashboard-nav-height: 4.25rem;
+    --dashboard-footer-height: 3.65rem;
     width: 100%;
     min-height: 100dvh;
     margin: 0 !important;
@@ -10,6 +13,7 @@
   body.dashboard-app-body .nav[data-global-navbar] {
     width: 100% !important;
     max-width: none !important;
+    min-height: var(--dashboard-nav-height);
     margin: 0 !important;
     padding-inline: clamp(1rem, 2.25vw, 2rem) !important;
     border-top: 0 !important;
@@ -29,20 +33,74 @@
   }
 
   body.dashboard-app-body .dashboard-app-root {
+    min-height: 0 !important;
     padding-top: 0 !important;
   }
 
   body.dashboard-app-body .dash-shell {
+    min-height: calc(100dvh - var(--dashboard-nav-height) - var(--dashboard-footer-height)) !important;
+    grid-template-columns: var(--dashboard-sidebar-width) minmax(0, 1fr) !important;
     border-radius: 0 !important;
+  }
+
+  /* The global navbar already owns branding and account controls. */
+  body.dashboard-app-body .dash-sidebar .dash-brand-row,
+  body.dashboard-app-body .dash-topbar .dash-user-pill,
+  body.dashboard-app-body .dash-page-title .dash-owner-inline {
+    display: none !important;
+  }
+
+  /* Keep server context in the sidebar, but remove the redundant dashboard card on home. */
+  body.dashboard-app-body .dash-shell:not([data-dashboard-server-shell]) .dash-current-server {
+    display: none !important;
+  }
+
+  /* Documentation and changelog already exist in the global navbar. */
+  body.dashboard-app-body .dash-sidebar > nav.dash-side-nav.muted:nth-of-type(2) {
+    display: none !important;
+  }
+
+  body.dashboard-app-body .dash-top-actions {
+    margin-inline-start: auto;
   }
 
   body.dashboard-app-body .footer-card,
   body.dashboard-app-body .dashboard-app-root + .footer-card {
     width: 100% !important;
     max-width: none !important;
+    min-height: var(--dashboard-footer-height) !important;
     margin: 0 !important;
+    padding: .72rem clamp(1rem, 2vw, 2rem) .72rem calc(var(--dashboard-sidebar-width) + clamp(1rem, 2vw, 2rem)) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: .35rem 1rem !important;
+    flex-wrap: wrap !important;
+    border-top: 1px solid rgba(255, 255, 255, .08) !important;
     border-inline: 0 !important;
     border-bottom: 0 !important;
     border-radius: 0 !important;
+    background: rgba(7, 9, 17, .94) !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.08) !important;
+    backdrop-filter: blur(16px) saturate(1.08) !important;
+  }
+
+  body.dashboard-app-body .footer-card p {
+    margin: 0 !important;
+    color: rgba(255, 255, 255, .66) !important;
+    font-size: .76rem !important;
+    line-height: 1.35 !important;
+  }
+
+  body.dashboard-app-body .footer-card p:first-child {
+    color: rgba(255, 255, 255, .86) !important;
+    font-weight: 800 !important;
+  }
+}
+
+@media (min-width: 1180px) {
+  body.dashboard-app-body {
+    --dashboard-sidebar-width: clamp(15rem, 18vw, 17.5rem);
   }
 }
