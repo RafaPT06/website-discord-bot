@@ -3,7 +3,7 @@
     "date": "2026-07-13",
     "title": "Owner-only server removal controls",
     "items": [
-      "Added a protected Owner View danger zone that can remove Meowz from a selected Discord server through the website.",
+      "Added a protected Remove action directly beside every installed server in Owner View, with the same action also available from the server Overview page.",
       "Requires typing the exact server name before the destructive action is enabled and rechecks the configured bot owner on the backend.",
       "Routes the request through the secured bot API so the bot leaves the selected server without exposing the Discord bot token to the browser."
     ]
