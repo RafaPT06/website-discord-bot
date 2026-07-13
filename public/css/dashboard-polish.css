@@ -55,7 +55,13 @@ body.dashboard-app-body .footer-card {
   }
 }
 
-/* Floating unsaved-changes card, inspired by compact SaaS dashboard save bars. */
+:root {
+  --dashboard-floating-bg: rgba(8, 10, 20, .96);
+  --dashboard-floating-border: rgba(255, 255, 255, .13);
+  --dashboard-floating-shadow: 0 1.35rem 4rem rgba(0, 0, 0, .52), inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+
+/* The host remains in normal flow, but the actual save card is viewport-fixed. */
 [data-server-save-host] {
   min-height: 0 !important;
   margin: 0 !important;
@@ -66,27 +72,35 @@ body.dashboard-app-body .footer-card {
   display: none !important;
 }
 
-.dash-save-bar {
+/*
+ * Match or exceed the specificity of the late main.css inline-save reset.
+ * Without this selector, the consolidated stylesheet forces the card back
+ * into document flow even though dashboard-polish.css loads afterwards.
+ */
+[data-server-save-host] .dash-save-bar[data-global-save-bar],
+.dash-save-bar[data-global-save-bar] {
   position: fixed !important;
   inset-inline-start: 50% !important;
   inset-inline-end: auto !important;
   inset-block-start: auto !important;
-  inset-block-end: max(.85rem, env(safe-area-inset-bottom)) !important;
-  width: min(calc(100vw - 1.5rem), 44rem) !important;
+  inset-block-end: max(.75rem, env(safe-area-inset-bottom)) !important;
+  width: min(calc(100vw - 1.25rem), 42rem) !important;
+  max-width: none !important;
   margin: 0 !important;
-  padding: .8rem !important;
+  padding: .78rem !important;
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) auto !important;
   align-items: center !important;
-  gap: .85rem !important;
-  border: 1px solid rgba(255,255,255,.13) !important;
+  gap: .8rem !important;
+  border: 1px solid var(--dashboard-floating-border) !important;
   border-radius: 1.15rem !important;
-  background: rgba(8, 10, 20, .94) !important;
-  box-shadow: 0 1.4rem 4rem rgba(0,0,0,.52), inset 0 1px 0 rgba(255,255,255,.08) !important;
+  background: var(--dashboard-floating-bg) !important;
+  box-shadow: var(--dashboard-floating-shadow) !important;
   -webkit-backdrop-filter: blur(20px) saturate(145%) !important;
   backdrop-filter: blur(20px) saturate(145%) !important;
   transform: translateX(-50%) !important;
-  z-index: 1500 !important;
+  z-index: 2100 !important;
+  pointer-events: auto !important;
 }
 
 .dash-save-bar > div:first-child {
@@ -110,18 +124,21 @@ body.dashboard-app-body .footer-card {
   white-space: nowrap !important;
 }
 
-.dash-save-bar > div:last-child {
+[data-server-save-host] .dash-save-bar > div:last-child,
+.dash-save-bar[data-global-save-bar] > div:last-child {
   display: flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
   gap: .6rem !important;
+  flex-wrap: nowrap !important;
 }
 
 .dash-save-bar .dash-secondary-btn,
 .dash-save-bar .dash-save-btn {
   min-height: 3rem !important;
+  min-width: 0 !important;
   margin: 0 !important;
-  padding-inline: 1.1rem !important;
+  padding-inline: 1.05rem !important;
   border-radius: .85rem !important;
   font-size: .88rem !important;
   font-weight: 900 !important;
@@ -129,8 +146,8 @@ body.dashboard-app-body .footer-card {
 }
 
 .dash-save-bar .dash-secondary-btn {
-  border: 1px solid rgba(255,255,255,.1) !important;
-  background: rgba(255,255,255,.055) !important;
+  border: 1px solid rgba(255, 255, 255, .1) !important;
+  background: rgba(255, 255, 255, .055) !important;
   color: var(--text) !important;
 }
 
@@ -138,34 +155,49 @@ body.dashboard-app-body .footer-card {
   min-width: 9.5rem !important;
   border: 0 !important;
   background: linear-gradient(135deg, var(--meowz-purple, #8b5cf6), #22d3ee) !important;
-  box-shadow: 0 .8rem 2rem rgba(34,211,238,.16) !important;
+  box-shadow: 0 .8rem 2rem rgba(34, 211, 238, .16) !important;
 }
 
-body.dashboard-app-body:has([data-global-save-bar]) .dashboard-app-root {
-  padding-bottom: clamp(7.5rem, 12vw, 9rem) !important;
+/* Leave enough scroll clearance for the overlay without turning it into page content. */
+body.dashboard-app-body:has([data-global-save-bar]) .dash-content {
+  padding-bottom: clamp(7rem, 12vw, 8.5rem) !important;
 }
 
-/* Keep save/error/simulation feedback in the visible viewport above the floating save card. */
+/* Status messages use the same floating-card treatment at the bottom of the viewport. */
 .toast-host {
   position: fixed !important;
   inset: auto !important;
-  inset-block-start: max(.75rem, env(safe-area-inset-top)) !important;
   inset-inline-start: 50% !important;
-  width: min(calc(100vw - 1rem), 34rem) !important;
+  inset-inline-end: auto !important;
+  inset-block-start: auto !important;
+  inset-block-end: max(.75rem, env(safe-area-inset-bottom)) !important;
+  width: min(calc(100vw - 1.25rem), 42rem) !important;
   max-height: calc(100dvh - 1.5rem) !important;
   display: grid !important;
+  align-content: end !important;
   gap: .55rem !important;
   overflow: visible !important;
   pointer-events: none !important;
   transform: translateX(-50%) !important;
-  z-index: 2200 !important;
+  z-index: 2300 !important;
 }
 
 .toast-host .status-toast {
   width: 100% !important;
   max-width: none !important;
   margin: 0 !important;
+  border: 1px solid var(--dashboard-floating-border) !important;
+  border-radius: 1.15rem !important;
+  background: var(--dashboard-floating-bg) !important;
+  box-shadow: var(--dashboard-floating-shadow) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(145%) !important;
+  backdrop-filter: blur(20px) saturate(145%) !important;
   pointer-events: auto !important;
+}
+
+/* When both are visible, feedback sits above the save controls instead of overlapping them. */
+body.dashboard-app-body:has([data-global-save-bar]) .toast-host {
+  inset-block-end: calc(max(.75rem, env(safe-area-inset-bottom)) + 5.5rem) !important;
 }
 
 /* Prevent enabled/disabled status labels from being pushed outside compact card headers. */
@@ -179,11 +211,12 @@ body.dashboard-app-body:has([data-global-save-bar]) .dashboard-app-root {
 }
 
 @media (max-width: 560px) {
-  .dash-save-bar {
-    width: min(calc(100vw - 1rem), 38rem) !important;
+  [data-server-save-host] .dash-save-bar[data-global-save-bar],
+  .dash-save-bar[data-global-save-bar] {
+    width: min(calc(100vw - 1rem), 34rem) !important;
     inset-block-end: max(.5rem, env(safe-area-inset-bottom)) !important;
     grid-template-columns: 1fr !important;
-    gap: .62rem !important;
+    gap: .6rem !important;
     padding: .68rem !important;
     border-radius: 1rem !important;
   }
@@ -202,9 +235,11 @@ body.dashboard-app-body:has([data-global-save-bar]) .dashboard-app-root {
     font-size: .7rem !important;
   }
 
-  .dash-save-bar > div:last-child {
+  [data-server-save-host] .dash-save-bar > div:last-child,
+  .dash-save-bar[data-global-save-bar] > div:last-child {
     display: grid !important;
     grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr) !important;
+    gap: .55rem !important;
   }
 
   .dash-save-bar .dash-secondary-btn,
@@ -212,10 +247,23 @@ body.dashboard-app-body:has([data-global-save-bar]) .dashboard-app-root {
     width: 100% !important;
     min-width: 0 !important;
     min-height: 2.8rem !important;
-    padding-inline: .75rem !important;
+    padding-inline: .7rem !important;
+  }
+
+  body.dashboard-app-body:has([data-global-save-bar]) .dash-content {
+    padding-bottom: 9rem !important;
   }
 
   .toast-host {
-    inset-block-start: max(.5rem, env(safe-area-inset-top)) !important;
+    width: min(calc(100vw - 1rem), 34rem) !important;
+    inset-block-end: max(.5rem, env(safe-area-inset-bottom)) !important;
+  }
+
+  body.dashboard-app-body:has([data-global-save-bar]) .toast-host {
+    inset-block-end: calc(max(.5rem, env(safe-area-inset-bottom)) + 8rem) !important;
+  }
+
+  .toast-host .status-toast {
+    border-radius: 1rem !important;
   }
 }

@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-13",
+    "title": "Bottom floating save and status cards",
+    "items": [
+      "Moved save confirmations, errors and simulation feedback from the top of the screen to a bottom-centered floating status card.",
+      "Fixed the unsaved-changes controls so the consolidated dashboard stylesheet can no longer force them back into normal page flow.",
+      "Matched the unsaved-changes and status cards with the same compact glass styling, safe-area spacing and responsive mobile width."
+    ]
+  },
+  {
+    "date": "2026-07-13",
     "title": "Floating save controls and goodbye card polish",
     "items": [
       "Moved the dashboard's unsaved changes controls into a compact floating glass card with responsive Discard and Save Changes actions.",
