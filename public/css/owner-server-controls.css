@@ -1,0 +1,264 @@
+/* Owner-only destructive server controls. */
+.dash-owner-danger-zone {
+  margin-top: clamp(1rem, 2vw, 1.4rem) !important;
+  border-color: rgba(251, 113, 133, .34) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(251, 113, 133, .13), transparent 34%),
+    linear-gradient(145deg, rgba(35, 13, 28, .88), rgba(12, 13, 27, .9)) !important;
+  box-shadow: 0 1.25rem 3.5rem rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+}
+
+.dash-owner-danger-zone.is-complete {
+  border-color: rgba(57, 229, 140, .3) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(57, 229, 140, .12), transparent 34%),
+    linear-gradient(145deg, rgba(10, 31, 26, .88), rgba(12, 13, 27, .9)) !important;
+}
+
+.dash-owner-danger-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.dash-owner-danger-head > div {
+  min-width: 0;
+}
+
+.dash-owner-danger-zone h2 {
+  margin: .45rem 0 .5rem;
+}
+
+.dash-owner-danger-zone p strong {
+  color: var(--text);
+}
+
+.dash-owner-danger-note {
+  display: block;
+  margin-top: .95rem;
+  padding-top: .9rem;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  color: rgba(255, 255, 255, .55);
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+/* Owner View exposes removal directly beside every installed server. */
+.dash-owner-server-list-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: .55rem;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.dash-owner-server-list-row > .dash-server-row {
+  min-width: 0;
+  width: 100%;
+  margin: 0 !important;
+}
+
+.dash-owner-server-list-row.is-complete {
+  opacity: .62;
+  transform: scale(.995);
+}
+
+.dash-owner-list-remove {
+  min-width: 4.9rem;
+  min-height: 100%;
+  padding: .65rem .8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(251, 113, 133, .3);
+  border-radius: .85rem;
+  background: linear-gradient(155deg, rgba(83, 18, 39, .72), rgba(35, 12, 27, .88));
+  color: #fda4af;
+  font: inherit;
+  font-size: .76rem;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, color .16s ease;
+}
+
+.dash-owner-list-remove:hover:not(:disabled),
+.dash-owner-list-remove:focus-visible:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(251, 113, 133, .56);
+  background: linear-gradient(155deg, rgba(138, 24, 59, .86), rgba(55, 14, 35, .94));
+  color: #fff;
+}
+
+.dash-owner-list-remove:disabled {
+  cursor: default;
+  border-color: rgba(57, 229, 140, .24);
+  background: rgba(57, 229, 140, .08);
+  color: #86efac;
+}
+
+.dash-danger-btn {
+  min-height: 2.9rem;
+  padding: .72rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(251, 113, 133, .5);
+  border-radius: .9rem;
+  background: linear-gradient(135deg, rgba(225, 29, 72, .96), rgba(244, 63, 94, .88));
+  color: #fff;
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 950;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 .75rem 1.8rem rgba(190, 18, 60, .2), inset 0 1px 0 rgba(255, 255, 255, .16);
+  transition: transform .16s ease, filter .16s ease, opacity .16s ease;
+}
+
+.dash-danger-btn:hover:not(:disabled),
+.dash-danger-btn:focus-visible:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.dash-danger-btn:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.dash-owner-remove-dialog {
+  width: min(calc(100vw - 1.25rem), 34rem);
+  max-width: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  overflow: visible;
+}
+
+.dash-owner-remove-dialog::backdrop {
+  background: rgba(3, 5, 13, .7);
+  -webkit-backdrop-filter: blur(.55rem) saturate(1.05);
+  backdrop-filter: blur(.55rem) saturate(1.05);
+}
+
+.dash-owner-remove-surface {
+  padding: clamp(1rem, 3.5vw, 1.4rem);
+  display: grid;
+  gap: 1rem;
+  border: 1px solid rgba(251, 113, 133, .34);
+  border-radius: 1.35rem;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(251, 113, 133, .16), transparent 32%),
+    linear-gradient(160deg, rgba(13, 14, 29, .985), rgba(20, 10, 24, .98));
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, .58), inset 0 1px 0 rgba(255, 255, 255, .08);
+  -webkit-backdrop-filter: blur(1.25rem) saturate(1.15);
+  backdrop-filter: blur(1.25rem) saturate(1.15);
+}
+
+.dash-owner-remove-surface > div:nth-child(2) > span {
+  display: block;
+  color: #fb7185;
+  font-size: .72rem;
+  font-weight: 950;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.dash-owner-remove-surface h2 {
+  margin: .45rem 0 .55rem;
+  font-size: clamp(1.35rem, 5vw, 1.8rem);
+  letter-spacing: -.035em;
+}
+
+.dash-owner-remove-surface p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.dash-owner-remove-icon {
+  width: 2.9rem;
+  height: 2.9rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(251, 113, 133, .42);
+  border-radius: 1rem;
+  background: rgba(251, 113, 133, .13);
+  color: #fda4af;
+  font-size: 1.25rem;
+  font-weight: 1000;
+}
+
+.dash-owner-confirm-name {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: .75rem;
+  padding: .45rem .7rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: .7rem;
+  background: rgba(255, 255, 255, .055);
+  color: #fff;
+  font-size: .85rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-owner-remove-surface .dash-field {
+  margin: 0 !important;
+}
+
+.dash-owner-remove-surface input {
+  width: 100%;
+  min-height: 3.1rem;
+}
+
+.dash-owner-remove-actions {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  gap: .7rem;
+}
+
+.dash-owner-remove-actions > button {
+  width: 100%;
+  min-width: 0 !important;
+}
+
+@media (max-width: 640px) {
+  .dash-owner-danger-head {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .dash-owner-danger-head .dash-danger-btn {
+    width: 100%;
+  }
+
+  .dash-owner-server-list-row {
+    grid-template-columns: 1fr;
+    gap: .4rem;
+  }
+
+  .dash-owner-list-remove {
+    width: 100%;
+    min-height: 2.45rem;
+    border-radius: .75rem;
+  }
+
+  .dash-owner-remove-dialog {
+    width: min(calc(100vw - 1rem), 34rem);
+  }
+}
+
+@media (max-width: 390px) {
+  .dash-owner-remove-actions {
+    grid-template-columns: 1fr;
+  }
+}

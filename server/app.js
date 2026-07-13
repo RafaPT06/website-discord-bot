@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const { router: publicApiRouter } = require('./routes/publicApi');
+const { router: ownerAdminRouter } = require('./routes/ownerAdmin');
 const { router: authRouter } = require('./routes/auth');
 const { notFoundHandler } = require('./middleware/notFound');
 
@@ -27,6 +28,7 @@ function createApp() {
 
   app.use(express.static(publicPath));
 
+  app.use('/api', ownerAdminRouter);
   app.use('/api', publicApiRouter);
   app.use('/auth', authRouter);
 
