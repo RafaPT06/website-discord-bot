@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-13",
+    "title": "Custom changelog month picker",
+    "items": [
+      "Replaced the native month dropdown with a Meowz-styled glass picker.",
+      "Added click-outside closing, selected states and responsive mobile behavior.",
+      "Added full keyboard navigation and focus restoration while keeping the native select as a fallback."
+    ]
+  },
+  {
+    "date": "2026-07-13",
     "title": "Restored complete changelog history",
     "items": [
       "Restored the original June 2026 launch, Discord preview, live stats and public changelog entries that were left behind when the archive moved to the data folder.",
