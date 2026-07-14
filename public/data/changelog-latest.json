@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-14",
+    "title": "Cleaner dashboard top and footer spacing",
+    "items": [
+      "Removed the duplicate desktop viewport height reserved by the outer dashboard section, eliminating the empty cyan glow strip that appeared above the footer.",
+      "Added consistent responsive spacing between the dashboard topbar and page content across the server list, Settings and every server tab.",
+      "Kept the full-height sticky sidebar, compact application footer, authenticated routes and read-only demo layout unchanged."
+    ]
+  },
+  {
+    "date": "2026-07-14",
     "title": "Live website update detection and protected refreshes",
     "items": [
       "Added a no-cache deployment version check that notifies open browser tabs when a newer Meowz website release is available without requiring a manual page refresh.",
