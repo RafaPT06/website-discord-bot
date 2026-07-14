@@ -32,13 +32,26 @@ function currentLanguage() {
   return raw.split('-')[0] || 'en';
 }
 
+function markSettingsLayout(settingsForm) {
+  settingsForm.classList.add('dash-settings-dark-only');
+
+  const languageCard = settingsForm.querySelector('select[name="language"]')?.closest('.dash-card');
+  languageCard?.classList.add('dash-settings-language-card');
+
+  const futureCard = settingsForm.querySelector('.dash-feature-grid.compact')?.closest('.dash-card');
+  futureCard?.classList.add('dash-settings-future-card');
+}
+
 function cleanSettingsPage(root = document) {
   root.querySelectorAll?.('[data-theme-toggle]').forEach((toggle) => {
     toggle.closest('.dash-card')?.remove();
   });
 
-  const settingsForm = root.querySelector?.('[data-dashboard-settings]');
+  const settingsForm = root.querySelector?.('[data-dashboard-settings]')
+    || (root.matches?.('[data-dashboard-settings]') ? root : null);
   if (!settingsForm) return;
+
+  markSettingsLayout(settingsForm);
 
   const intro = settingsForm.parentElement?.querySelector('.dash-page-title p');
   if (intro) intro.textContent = SETTINGS_COPY[currentLanguage()] || SETTINGS_COPY.en;
