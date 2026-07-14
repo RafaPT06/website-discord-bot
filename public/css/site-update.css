@@ -1,0 +1,185 @@
+.site-update-host {
+  position: fixed;
+  top: max(.7rem, env(safe-area-inset-top));
+  left: 50%;
+  z-index: 12000;
+  width: min(calc(100vw - 1rem), 42rem);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.site-update-card {
+  position: relative;
+  width: 100%;
+  padding: .9rem;
+  display: grid;
+  grid-template-columns: 2.65rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .8rem;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 1rem;
+  background:
+    linear-gradient(145deg, rgba(8, 11, 25, .98), rgba(18, 12, 35, .97)) padding-box,
+    linear-gradient(135deg, rgba(34, 211, 238, .58), rgba(139, 92, 246, .78)) border-box;
+  color: #f7f7fb;
+  box-shadow: 0 1.35rem 4rem rgba(0, 0, 0, .52), inset 0 1px 0 rgba(255, 255, 255, .08);
+  -webkit-backdrop-filter: blur(1.35rem) saturate(1.18);
+  backdrop-filter: blur(1.35rem) saturate(1.18);
+  pointer-events: auto;
+  animation: site-update-enter .22s ease-out both;
+}
+
+.site-update-card::before {
+  content: "";
+  position: absolute;
+  inset: auto auto -5rem -3rem;
+  width: 11rem;
+  height: 11rem;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, .16);
+  filter: blur(2.2rem);
+  pointer-events: none;
+}
+
+.site-update-card[data-state="failed"] {
+  background:
+    linear-gradient(145deg, rgba(22, 10, 24, .99), rgba(25, 10, 28, .98)) padding-box,
+    linear-gradient(135deg, rgba(251, 113, 133, .72), rgba(139, 92, 246, .72)) border-box;
+}
+
+.site-update-icon {
+  position: relative;
+  width: 2.65rem;
+  height: 2.65rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(34, 211, 238, .25);
+  border-radius: .8rem;
+  background: linear-gradient(145deg, rgba(34, 211, 238, .16), rgba(139, 92, 246, .2));
+  color: #67e8f9;
+  font-size: 1.25rem;
+  font-weight: 950;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+
+.site-update-card[data-busy="true"] .site-update-icon {
+  color: transparent;
+}
+
+.site-update-card[data-busy="true"] .site-update-icon::after {
+  content: "";
+  width: 1.05rem;
+  height: 1.05rem;
+  border: .16rem solid rgba(255, 255, 255, .25);
+  border-top-color: #67e8f9;
+  border-radius: 999px;
+  animation: site-update-spin .7s linear infinite;
+}
+
+.site-update-copy {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  gap: .18rem;
+}
+
+.site-update-copy strong {
+  color: #fff;
+  font-size: .96rem;
+  line-height: 1.25;
+}
+
+.site-update-copy span {
+  color: rgba(229, 231, 245, .74);
+  font-size: .79rem;
+  line-height: 1.45;
+}
+
+.site-update-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .55rem;
+}
+
+.site-update-button {
+  min-height: 2.55rem;
+  padding: 0 .9rem;
+  border: 1px solid transparent;
+  border-radius: .78rem;
+  font: inherit;
+  font-size: .79rem;
+  font-weight: 900;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform .16s ease, filter .16s ease, opacity .16s ease;
+}
+
+.site-update-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.site-update-button:focus-visible {
+  outline: .18rem solid rgba(103, 232, 249, .28);
+  outline-offset: .14rem;
+}
+
+.site-update-button:disabled {
+  cursor: wait;
+  opacity: .58;
+}
+
+.site-update-button-primary {
+  background: linear-gradient(135deg, #8b5cf6, #22d3ee);
+  color: #fff;
+  box-shadow: 0 .7rem 1.7rem rgba(34, 211, 238, .15);
+}
+
+@keyframes site-update-enter {
+  from { opacity: 0; transform: translateY(-.65rem) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes site-update-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .site-update-host {
+    top: max(.5rem, env(safe-area-inset-top));
+    width: min(calc(100vw - .75rem), 36rem);
+  }
+
+  .site-update-card {
+    padding: .78rem;
+    grid-template-columns: 2.35rem minmax(0, 1fr);
+    gap: .65rem;
+    border-radius: .9rem;
+  }
+
+  .site-update-icon {
+    width: 2.35rem;
+    height: 2.35rem;
+    border-radius: .7rem;
+  }
+
+  .site-update-actions {
+    grid-column: 1 / -1;
+  }
+
+  .site-update-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-update-card,
+  .site-update-button,
+  .site-update-card[data-busy="true"] .site-update-icon::after {
+    animation: none;
+    transition: none;
+  }
+}
