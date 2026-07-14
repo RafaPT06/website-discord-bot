@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-14",
+    "title": "Dark-only Meowz theme",
+    "items": [
+      "Removed the Light theme option from Settings so the website consistently follows the bot's dark purple visual identity.",
+      "Forced dark color-scheme metadata and runtime state on every public, dashboard, demo and error page, including browsers that still had Light saved locally.",
+      "Removed the standalone light-theme stylesheets while preserving language preferences, Owner/User view, custom dropdowns and read-only demo behavior."
+    ]
+  },
+  {
+    "date": "2026-07-14",
     "title": "Dashboard preview, sidebar and desktop grid polish",
     "items": [
       "Rebuilt the Welcome and Goodbye preview column in normal document flow so generated cards and simulation controls can no longer overlap.",
