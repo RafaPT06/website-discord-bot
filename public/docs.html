@@ -29,6 +29,9 @@
     })();
   </script>
   <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/light-public-base.css" />
+  <link rel="stylesheet" href="/css/light-docs.css" />
+  <link rel="stylesheet" href="/css/modal-audit.css" />
 </head>
 <body>
   <div class="bg-glow bg-glow-one"></div>
@@ -110,8 +113,8 @@
 
       <div class="command-sheet-backdrop" data-command-sheet-backdrop hidden></div>
 
-      <div class="page-modal-backdrop" data-page-modal hidden>
-        <div class="page-modal" role="dialog" aria-modal="true" aria-labelledby="page-modal-title">
+      <div class="page-modal-backdrop" data-page-modal hidden aria-hidden="true">
+        <div class="page-modal" role="dialog" aria-modal="true" aria-labelledby="page-modal-title" tabindex="-1">
           <div class="page-modal-top">
             <div>
               <h3 id="page-modal-title">Go to page</h3>
@@ -130,8 +133,6 @@
         </div>
       </div>
     </section>
-
-
   </main>
 
   <footer class="footer-card">
