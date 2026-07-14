@@ -1,4 +1,5 @@
 import { initTheme } from './components/theme.js';
+import { initI18n } from './components/i18n.js';
 import { mountNavbar } from './components/navbar.js';
 import { initAuth } from './auth.js';
 import { initNavigation } from './navigation.js';
@@ -40,6 +41,7 @@ async function bootPageModules() {
 
 async function boot() {
   initTheme();
+  initI18n();
   mountNavbar();
   initNavigation();
   setFooterYear();
