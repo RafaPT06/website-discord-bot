@@ -1,4 +1,5 @@
-import { getStoredLanguage, setStoredLanguage } from './i18n.js';
+import { getStoredLanguage, setStoredLanguage, t } from './i18n.js';
+import { showStatusToast } from '../toast.js';
 
 const SELECTOR = 'select[name="language"]';
 const LEGACY_COPY = 'The selector is ready for future translations. English remains the active dashboard copy for now.';
@@ -34,7 +35,9 @@ export function initLanguagePreferences() {
   document.addEventListener('change', (event) => {
     const select = event.target.closest?.(SELECTOR);
     if (!select) return;
+    event.stopImmediatePropagation();
     setStoredLanguage(select.value);
+    showStatusToast('success', t('Language updated'), t('Your language preference is now active across the website.'));
   });
 
   const observer = new MutationObserver((mutations) => {
