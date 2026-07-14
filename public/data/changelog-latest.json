@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-14",
+    "title": "Dashboard preview, sidebar and desktop grid polish",
+    "items": [
+      "Rebuilt the Welcome and Goodbye preview column in normal document flow so generated cards and simulation controls can no longer overlap.",
+      "Moved the Leveling simulation panel across the full desktop content width, removed the accidental shell gutter and made the desktop sidebar independently scrollable so its help card stays reachable.",
+      "Improved light-mode status badges and inactive switches, server-card truncation, sidebar labels, simulation contrast and shared custom-select chevrons."
+    ]
+  },
+  {
+    "date": "2026-07-14",
     "title": "Complete light mode, custom selects and reliable save feedback",
     "items": [
       "Corrected remaining light-mode text, badges, empty states, role rows, log examples, preview copy, server pills and mobile dashboard drawer contrast.",
