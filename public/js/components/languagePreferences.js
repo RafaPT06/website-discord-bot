@@ -38,7 +38,7 @@ export function initLanguagePreferences() {
     event.stopImmediatePropagation();
     setStoredLanguage(select.value);
     showStatusToast('success', t('Language updated'), t('Your language preference is now active across the website.'));
-  });
+  }, true);
 
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
