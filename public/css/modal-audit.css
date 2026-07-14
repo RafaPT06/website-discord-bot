@@ -1,0 +1,82 @@
+/* Cross-page dialog geometry and focus polish. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary-2);
+  outline-offset: 3px;
+}
+
+.page-modal-backdrop {
+  min-height: 100dvh;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.page-modal {
+  width: min(32.5rem, 100%);
+  max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  margin: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dash-owner-remove-dialog[open] {
+  position: fixed;
+  inset: 0;
+  width: min(calc(100vw - 1.25rem), 34rem);
+  max-height: calc(100dvh - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  margin: auto;
+  overflow: auto;
+}
+
+.dash-owner-remove-surface {
+  max-height: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+body:has(.page-modal-backdrop:not([hidden])),
+body:has(.dash-owner-remove-dialog[open]) {
+  overflow: hidden;
+}
+
+.dash-field-note {
+  display: block;
+  margin-top: .45rem;
+  color: var(--muted);
+  font-size: .75rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 560px) {
+  .page-modal-backdrop {
+    padding: max(.65rem, env(safe-area-inset-top)) max(.65rem, env(safe-area-inset-right)) max(.65rem, env(safe-area-inset-bottom)) max(.65rem, env(safe-area-inset-left));
+  }
+
+  .page-modal {
+    padding: 1rem;
+    border-radius: 1.15rem;
+  }
+
+  .page-modal-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .page-modal-actions {
+    position: sticky;
+    bottom: 0;
+    padding-top: .65rem;
+  }
+
+  .dash-owner-remove-dialog[open] {
+    width: min(calc(100vw - .8rem), 34rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
