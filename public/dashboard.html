@@ -24,19 +24,14 @@
   <link rel="stylesheet" href="/css/visual-followup.css" />
   <link rel="stylesheet" href="/css/site-final-audit.css" />
   <link rel="stylesheet" href="/css/dashboard-layout-followup.css" />
+  <link rel="stylesheet" href="/css/settings-dark-layout.css" />
 </head>
 <body class="dashboard-app-body">
   <div class="bg-glow bg-glow-one"></div>
   <div class="bg-glow bg-glow-two"></div>
-
   <header class="nav" data-global-navbar>
-    <a class="brand" href="/" aria-label="Meowz home">
-      <span class="brand-icon" data-bot-avatar-small>M</span>
-      <span data-bot-name-short>Meowz</span>
-    </a>
-    <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
+    <a class="brand" href="/" aria-label="Meowz home"><span class="brand-icon" data-bot-avatar-small>M</span><span data-bot-name-short>Meowz</span></a>
+    <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="nav-links" data-nav-links aria-label="Main navigation">
       <a href="/" data-nav-link data-route="/">Home</a>
       <a href="/dashboard" data-nav-link data-route="/dashboard" data-auth-only hidden>Dashboard</a>
@@ -46,30 +41,11 @@
       <div class="auth-area auth-loading" data-auth-area>Checking login...</div>
     </nav>
   </header>
-
   <main id="top" class="dashboard-app-root">
-    <section class="dashboard-app" data-dashboard hidden>
-      <div data-dashboard-home></div>
-      <div data-server-detail hidden>
-        <div data-server-detail-content></div>
-      </div>
-    </section>
-
-    <section class="dashboard-login-screen" data-dashboard-guest hidden>
-      <div class="dashboard-login-card">
-        <span class="dashboard-card-label">Dashboard</span>
-        <h1>Login required</h1>
-        <p>Connect your Discord account to manage Meowz servers.</p>
-        <a class="btn btn-primary" href="/auth/discord">Login with Discord</a>
-      </div>
-    </section>
+    <section class="dashboard-app" data-dashboard hidden><div data-dashboard-home></div><div data-server-detail hidden><div data-server-detail-content></div></div></section>
+    <section class="dashboard-login-screen" data-dashboard-guest hidden><div class="dashboard-login-card"><span class="dashboard-card-label">Dashboard</span><h1>Login required</h1><p>Connect your Discord account to manage Meowz servers.</p><a class="btn btn-primary" href="/auth/discord">Login with Discord</a></div></section>
   </main>
-
-  <footer class="footer-card">
-    <p>© <span data-footer-year></span> <span data-footer-bot-name>Meowz</span>. All rights reserved.</p>
-    <p>Made by Rafa (@atuaprima_)</p>
-  </footer>
-
+  <footer class="footer-card"><p>© <span data-footer-year></span> <span data-footer-bot-name>Meowz</span>. All rights reserved.</p><p>Made by Rafa (@atuaprima_)</p></footer>
   <script type="module" src="/js/main.js"></script>
   <script type="module" src="/js/language.js"></script>
   <script type="module" src="/js/dashboard-simulation-guard.js"></script>
