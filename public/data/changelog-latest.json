@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-14",
+    "title": "Website-wide visual audit and live language preferences",
+    "items": [
+      "Connected the language selector in Settings to live website and dashboard translations for English, Portuguese, Spanish, German and French, with the preference saved locally.",
+      "Audited centered dialogs and added visible-viewport sizing, safe-area spacing, internal scrolling, focus restoration and keyboard focus containment.",
+      "Corrected light mode surfaces across the homepage, navigation, documentation, changelog, dashboard, floating status controls and owner-only removal dialog."
+    ]
+  },
+  {
     "date": "2026-07-13",
     "title": "Improved changelog month picker layout",
     "items": [

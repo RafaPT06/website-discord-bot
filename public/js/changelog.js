@@ -1,4 +1,5 @@
 import { escapeHtml } from './utils.js';
+import { getLocale } from './components/i18n.js';
 
 const changelogList = document.querySelector('[data-changelog-list]');
 const CHANGELOG_SOURCES = [
@@ -69,13 +70,13 @@ function monthLabel(key) {
   const match = String(key || '').match(/^(\d{4})-(\d{2})$/);
   if (!match) return 'Other updates';
   const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, 1));
-  return new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(date);
+  return new Intl.DateTimeFormat(getLocale(), { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(date);
 }
 
 function displayDate(value) {
   const date = new Date(`${value}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(getLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -224,4 +225,8 @@ changelogList?.addEventListener('click', (event) => {
   if (!retry) return;
   changelogList.innerHTML = '<article class="changelog-card skeleton-block"></article><article class="changelog-card skeleton-block"></article>';
   loadChangelog();
+});
+
+window.addEventListener('meowz:language-change', () => {
+  if (changelogEntries.length) renderChangelog();
 });

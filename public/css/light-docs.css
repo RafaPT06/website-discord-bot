@@ -1,0 +1,31 @@
+/* Documentation and pagination light theme corrections. */
+:root[data-theme="light"] :is(.commands-table-wrap,.command-detail-panel,.page-modal) {
+  border-color: rgba(15,23,42,.12);
+  background-color: rgba(255,255,255,.86);
+  color: var(--text);
+  box-shadow: 0 1.1rem 3.25rem rgba(69,55,116,.11);
+}
+
+:root[data-theme="light"] :is(.page-modal-backdrop,.command-sheet-backdrop) { background: rgba(45,38,65,.3); }
+
+:root[data-theme="light"] :is(.page-modal-close,.page-modal-grid button,.page-modal-actions button,.pagination button,.category-tabs button,.copy-command) {
+  border-color: rgba(15,23,42,.12);
+  background: rgba(15,23,42,.045);
+  color: var(--text);
+}
+
+:root[data-theme="light"] :is(.category-tabs button:hover,.pagination button:hover,.page-modal-grid button:hover,.page-modal-actions button:hover) {
+  background: rgba(139,92,246,.09);
+}
+
+:root[data-theme="light"] .page-modal-input {
+  border-color: rgba(139,92,246,.35);
+  background: rgba(255,255,255,.94);
+  color: var(--text);
+}
+
+:root[data-theme="light"] :is(.commands-table th,.command-details-row td) { background: rgba(15,23,42,.04); }
+:root[data-theme="light"] .command-detail-top { background: linear-gradient(135deg, rgba(139,92,246,.12), rgba(34,211,238,.08)); }
+:root[data-theme="light"] .command-row:hover,
+:root[data-theme="light"] .command-row.is-selected { background: rgba(139,92,246,.08); }
+:root[data-theme="light"] .command-row.is-selected .command-name { color: #312e81; }
