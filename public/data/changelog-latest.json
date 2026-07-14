@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-14",
+    "title": "Live website update detection and protected refreshes",
+    "items": [
+      "Added a no-cache deployment version check that notifies open browser tabs when a newer Meowz website release is available without requiring a manual page refresh.",
+      "Automatically saves every pending dashboard section before refreshing when an update is detected, and blocks the refresh if any save fails so unsaved work remains on the page.",
+      "Added a persistent translated update card, focus and visibility checks, cross-tab update sharing and safe read-only behavior in demo mode."
+    ]
+  },
+  {
+    "date": "2026-07-14",
     "title": "Continuous desktop dashboard sidebar",
     "items": [
       "Extended the dark sidebar rail through the full dashboard shell so the cyan page glow no longer appears underneath the navigation on short pages or near the footer.",
