@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-13",
+    "title": "Improved changelog month picker layout",
+    "items": [
+      "Kept the month picker menu inside the archive toolbar on tablets and phones so it no longer covers the month heading or changelog cards.",
+      "Reduced mobile control sizing and spacing while keeping the Meowz cyan and purple glass styling.",
+      "Clarified the picker menu labels and preserved keyboard navigation, click-outside closing and native-select fallback behavior."
+    ]
+  },
+  {
+    "date": "2026-07-13",
     "title": "Custom changelog month picker",
     "items": [
       "Replaced the native month dropdown with a Meowz-styled glass picker.",
