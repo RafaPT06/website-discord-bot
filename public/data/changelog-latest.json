@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-15",
+    "title": "Consistent dashboard section spacing",
+    "items": [
+      "Added a shared 20px grid gap between every top-level section inside server dashboard tabs.",
+      "Applied the same spacing rhythm to Overview, Welcome/Goodbye, Leveling, AI Image Access, Logs and Moderation on desktop, tablet and mobile.",
+      "Normalized direct tab children so cards no longer touch or depend on page-specific margins while preserving responsive internal grids."
+    ]
+  },
+  {
     "date": "2026-07-14",
     "title": "Cleaner dashboard top and footer spacing",
     "items": [
