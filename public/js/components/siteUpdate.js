@@ -9,6 +9,7 @@ const COPY = {
     updatedTitle: 'Website updated',
     updatedBody: 'A newer version of Meowz is ready. Refresh to use the latest changes.',
     refresh: 'Refresh now',
+    refreshingBody: 'Loading the newest Meowz website version…',
     savingTitle: 'Website updated',
     savingBody: 'Saving your pending dashboard changes before refreshing…',
     savedTitle: 'Changes saved',
@@ -22,6 +23,7 @@ const COPY = {
     updatedTitle: 'Website atualizado',
     updatedBody: 'Está disponível uma versão mais recente do Meowz. Atualiza a página para usares as alterações mais recentes.',
     refresh: 'Atualizar agora',
+    refreshingBody: 'A carregar a versão mais recente do website do Meowz…',
     savingTitle: 'Website atualizado',
     savingBody: 'A guardar as alterações pendentes do painel antes de atualizar…',
     savedTitle: 'Alterações guardadas',
@@ -35,6 +37,7 @@ const COPY = {
     updatedTitle: 'Sitio web actualizado',
     updatedBody: 'Hay una versión más reciente de Meowz. Actualiza la página para usar los últimos cambios.',
     refresh: 'Actualizar ahora',
+    refreshingBody: 'Cargando la versión más reciente del sitio de Meowz…',
     savingTitle: 'Sitio web actualizado',
     savingBody: 'Guardando los cambios pendientes del panel antes de actualizar…',
     savedTitle: 'Cambios guardados',
@@ -48,6 +51,7 @@ const COPY = {
     updatedTitle: 'Website aktualisiert',
     updatedBody: 'Eine neuere Meowz-Version ist verfügbar. Aktualisiere die Seite, um die neuesten Änderungen zu verwenden.',
     refresh: 'Jetzt aktualisieren',
+    refreshingBody: 'Die neueste Meowz-Website-Version wird geladen…',
     savingTitle: 'Website aktualisiert',
     savingBody: 'Ausstehende Dashboard-Änderungen werden vor dem Aktualisieren gespeichert…',
     savedTitle: 'Änderungen gespeichert',
@@ -61,6 +65,7 @@ const COPY = {
     updatedTitle: 'Site mis à jour',
     updatedBody: 'Une version plus récente de Meowz est disponible. Actualisez la page pour utiliser les dernières modifications.',
     refresh: 'Actualiser maintenant',
+    refreshingBody: 'Chargement de la version la plus récente du site Meowz…',
     savingTitle: 'Site mis à jour',
     savingBody: 'Enregistrement des modifications du tableau de bord avant l’actualisation…',
     savedTitle: 'Modifications enregistrées',
@@ -127,7 +132,7 @@ function renderNotice(state = noticeState) {
   noticeState = state;
   const host = ensureNoticeHost();
   const copy = currentCopy();
-  const busy = state === 'saving' || state === 'saved';
+  const busy = state === 'saving' || state === 'saved' || state === 'refreshing';
   const failed = state === 'failed';
   const title = state === 'saving'
     ? copy.savingTitle
@@ -140,11 +145,13 @@ function renderNotice(state = noticeState) {
     ? copy.savingBody
     : state === 'saved'
       ? copy.savedBody
-      : failed
-        ? copy.failedBody
-        : isDemoMode()
-          ? copy.demoBody
-          : copy.updatedBody;
+      : state === 'refreshing'
+        ? copy.refreshingBody
+        : failed
+          ? copy.failedBody
+          : isDemoMode()
+            ? copy.demoBody
+            : copy.updatedBody;
   const buttonLabel = failed ? copy.retry : copy.refresh;
   const icon = failed ? '!' : '↻';
 
@@ -173,6 +180,21 @@ function clearPollTimer() {
 
 function finishReload() {
   setTimeout(() => window.location.reload(), 650);
+}
+
+function lockDashboardEdits() {
+  const tabContent = document.querySelector('[data-server-tab-content]');
+  if (!tabContent) return () => {};
+
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLElement && tabContent.contains(activeElement)) activeElement.blur();
+  tabContent.setAttribute('inert', '');
+  tabContent.dataset.siteUpdateLocked = '';
+
+  return () => {
+    tabContent.removeAttribute('inert');
+    delete tabContent.dataset.siteUpdateLocked;
+  };
 }
 
 function waitForDashboardSave() {
@@ -214,14 +236,17 @@ async function saveAndRefresh() {
   refreshInFlight = true;
 
   if (!hasPendingDashboardChanges() || isDemoMode()) {
-    renderNotice('saved');
+    renderNotice('refreshing');
     finishReload();
     return;
   }
 
+  const unlock = lockDashboardEdits();
   renderNotice('saving');
+  await new Promise((resolve) => requestAnimationFrame(resolve));
   const result = await waitForDashboardSave();
   if (!result.ok) {
+    unlock();
     refreshInFlight = false;
     renderNotice('failed');
     return;
