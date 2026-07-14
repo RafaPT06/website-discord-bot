@@ -84,8 +84,8 @@ function enhanceSelect(select) {
       hidden
     >
       <div class="changelog-select-menu-head" aria-hidden="true">
-        <span>Browse archive</span>
-        <small>${select.options.length} views</small>
+        <span>Choose a month</span>
+        <small>${select.options.length} options</small>
       </div>
       <div class="changelog-select-options">
         ${[...select.options].map((option, index) => optionMarkup(option, pickerId, index)).join('')}
