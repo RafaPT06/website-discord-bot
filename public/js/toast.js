@@ -10,28 +10,35 @@ const STATUS_MESSAGES = {
 
 let toastHost = null;
 let placementObserver = null;
+let saveResizeObserver = null;
+let observedSaveBar = null;
 let placementFrame = 0;
 
-function activeSaveHost() {
-  return Array.from(document.querySelectorAll('[data-server-save-host]'))
-    .find((host) => host.querySelector('.dash-save-bar[data-global-save-bar]')) || null;
+function visibleSaveBar() {
+  return [...document.querySelectorAll('.dash-save-bar[data-global-save-bar]')]
+    .find((bar) => bar.isConnected && bar.getClientRects().length) || null;
+}
+
+function syncToastLift() {
+  const bar = visibleSaveBar();
+  if (bar !== observedSaveBar) {
+    saveResizeObserver?.disconnect();
+    observedSaveBar = bar;
+    if (bar && typeof ResizeObserver !== 'undefined') {
+      saveResizeObserver = new ResizeObserver(scheduleToastPlacement);
+      saveResizeObserver.observe(bar);
+    }
+  }
+
+  const height = bar ? Math.ceil(bar.getBoundingClientRect().height + 9) : 0;
+  document.documentElement.style.setProperty('--dashboard-toast-lift', `${height}px`);
 }
 
 function placeToastHost() {
   placementFrame = 0;
-  if (!toastHost) return;
-
-  const saveHost = activeSaveHost();
-  if (saveHost) {
-    if (toastHost.parentElement !== saveHost || saveHost.firstElementChild !== toastHost) {
-      saveHost.prepend(toastHost);
-    }
-    return;
-  }
-
-  if (toastHost.parentElement !== document.body) {
-    document.body.appendChild(toastHost);
-  }
+  if (!toastHost || !document.body) return;
+  if (toastHost.parentElement !== document.body) document.body.appendChild(toastHost);
+  syncToastLift();
 }
 
 function scheduleToastPlacement() {
@@ -43,41 +50,58 @@ function startPlacementObserver() {
   if (placementObserver || !document.body) return;
   placementObserver = new MutationObserver(scheduleToastPlacement);
   placementObserver.observe(document.body, { childList: true, subtree: true });
+  window.addEventListener('resize', scheduleToastPlacement, { passive: true });
+  window.visualViewport?.addEventListener('resize', scheduleToastPlacement, { passive: true });
 }
 
 function ensureToastHost() {
-  if (!toastHost) {
-    toastHost = document.querySelector('[data-toast-host]');
-  }
-
+  if (!toastHost) toastHost = document.querySelector('[data-toast-host]');
   if (!toastHost) {
     toastHost = document.createElement('div');
     toastHost.className = 'toast-host';
     toastHost.setAttribute('data-toast-host', '');
     toastHost.setAttribute('aria-live', 'polite');
     toastHost.setAttribute('aria-atomic', 'false');
-    document.body.appendChild(toastHost);
+  }
+  if (toastHost.parentElement !== document.body) document.body.appendChild(toastHost);
+  startPlacementObserver();
+  scheduleToastPlacement();
+  return toastHost;
+}
+
+function createToast(type, title, message) {
+  const toast = document.createElement('div');
+  toast.className = `status-toast status-toast-${type}`;
+  toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+
+  const indicator = document.createElement('div');
+  indicator.className = 'status-toast-indicator';
+  indicator.setAttribute('aria-hidden', 'true');
+
+  const copy = document.createElement('div');
+  const heading = document.createElement('strong');
+  heading.textContent = String(title || 'Status updated');
+  copy.appendChild(heading);
+  if (message) {
+    const detail = document.createElement('span');
+    detail.textContent = String(message);
+    copy.appendChild(detail);
   }
 
-  startPlacementObserver();
-  placeToastHost();
-  return toastHost;
+  const dismiss = document.createElement('button');
+  dismiss.type = 'button';
+  dismiss.setAttribute('aria-label', 'Dismiss notification');
+  dismiss.textContent = '×';
+
+  toast.append(indicator, copy, dismiss);
+  return { toast, dismiss };
 }
 
 export function showStatusToast(type = 'info', title = 'Status updated', message = '') {
   const host = ensureToastHost();
-  const toast = document.createElement('div');
-  toast.className = `status-toast status-toast-${type}`;
-  toast.innerHTML = `
-    <div class="status-toast-indicator" aria-hidden="true"></div>
-    <div>
-      <strong>${title}</strong>
-      ${message ? `<span>${message}</span>` : ''}
-    </div>
-    <button type="button" aria-label="Dismiss notification">×</button>
-  `;
-
+  const { toast, dismiss } = createToast(type, title, message);
   let closed = false;
+
   const close = () => {
     if (closed) return;
     closed = true;
@@ -88,16 +112,11 @@ export function showStatusToast(type = 'info', title = 'Status updated', message
     }, 180);
   };
 
-  toast.querySelector('button')?.addEventListener('click', close);
+  dismiss.addEventListener('click', close);
   host.appendChild(toast);
   scheduleToastPlacement();
-
-  requestAnimationFrame(() => {
-    toast.classList.add('is-visible');
-    toast.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-  });
-
-  setTimeout(close, 4200);
+  requestAnimationFrame(() => toast.classList.add('is-visible'));
+  setTimeout(close, 5000);
 }
 
 function removeHandledParams(params) {
@@ -108,7 +127,6 @@ function removeHandledParams(params) {
 
 export function initStatusToasts() {
   ensureToastHost();
-
   const params = new URLSearchParams(window.location.search);
   const auth = params.get('auth');
   const logout = params.get('logout');
