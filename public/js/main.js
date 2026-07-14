@@ -1,4 +1,5 @@
 import { initTheme } from './components/theme.js';
+import { initDarkThemeOnly } from './components/darkThemeOnly.js';
 import { initI18n } from './components/i18n.js';
 import { initCustomSelects } from './components/customSelect.js';
 import { mountNavbar } from './components/navbar.js';
@@ -42,6 +43,7 @@ async function bootPageModules() {
 
 async function boot() {
   initTheme();
+  initDarkThemeOnly();
   initI18n();
   initCustomSelects();
   mountNavbar();

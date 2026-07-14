@@ -1,37 +1,38 @@
 const PREFS_KEY = 'meowzDashboardPreferences';
-const THEME_KEY = 'meowzTheme';
-const VALID = new Set(['dark', 'light']);
+const LEGACY_THEME_KEY = 'meowzTheme';
+const DARK_THEME = 'dark';
+
+function clearStoredThemePreference() {
+  localStorage.removeItem(LEGACY_THEME_KEY);
+  try {
+    const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+    if (Object.prototype.hasOwnProperty.call(prefs, 'theme')) {
+      delete prefs.theme;
+      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    }
+  } catch {
+    // Invalid local preferences should not prevent the dark theme from loading.
+  }
+}
 
 export function getStoredTheme() {
-  try {
-    const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
-    if (VALID.has(prefs.theme)) return prefs.theme;
-  } catch {}
-  const legacy = localStorage.getItem(THEME_KEY);
-  return VALID.has(legacy) ? legacy : 'dark';
+  return DARK_THEME;
 }
 
-export function applyTheme(theme = getStoredTheme()) {
-  const normalized = VALID.has(theme) ? theme : 'dark';
-  document.documentElement.dataset.theme = normalized;
-  document.documentElement.style.colorScheme = normalized;
-  return normalized;
+export function applyTheme() {
+  document.documentElement.dataset.theme = DARK_THEME;
+  document.documentElement.style.colorScheme = DARK_THEME;
+  return DARK_THEME;
 }
 
-export function setStoredTheme(theme) {
-  const normalized = applyTheme(theme);
-  localStorage.setItem(THEME_KEY, normalized);
-  try {
-    const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
-    prefs.theme = normalized;
-    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-  } catch {
-    localStorage.setItem(PREFS_KEY, JSON.stringify({ theme: normalized }));
-  }
-  window.dispatchEvent(new CustomEvent('meowz:theme-change', { detail: { theme: normalized } }));
-  return normalized;
+export function setStoredTheme() {
+  clearStoredThemePreference();
+  const theme = applyTheme();
+  window.dispatchEvent(new CustomEvent('meowz:theme-change', { detail: { theme } }));
+  return theme;
 }
 
 export function initTheme() {
+  clearStoredThemePreference();
   applyTheme();
 }
