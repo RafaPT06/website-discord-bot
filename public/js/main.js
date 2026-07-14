@@ -2,6 +2,7 @@ import { initTheme } from './components/theme.js';
 import { initDarkThemeOnly } from './components/darkThemeOnly.js';
 import { initI18n } from './components/i18n.js';
 import { initCustomSelects } from './components/customSelect.js';
+import { initSiteUpdateMonitor } from './components/siteUpdate.js';
 import { mountNavbar } from './components/navbar.js';
 import { initAuth } from './auth.js';
 import { initNavigation } from './navigation.js';
@@ -52,6 +53,7 @@ async function boot() {
   initStatusToasts();
   await initAuth();
   await bootPageModules();
+  initSiteUpdateMonitor();
 }
 
 boot();

@@ -98,8 +98,11 @@ function createToast(type, title, message) {
 }
 
 export function showStatusToast(type = 'info', title = 'Status updated', message = '') {
+  const normalizedType = String(type || 'info');
+  const normalizedTitle = String(title || 'Status updated');
+  const normalizedMessage = String(message || '');
   const host = ensureToastHost();
-  const { toast, dismiss } = createToast(type, title, message);
+  const { toast, dismiss } = createToast(normalizedType, normalizedTitle, normalizedMessage);
   let closed = false;
 
   const close = () => {
@@ -114,6 +117,13 @@ export function showStatusToast(type = 'info', title = 'Status updated', message
 
   dismiss.addEventListener('click', close);
   host.appendChild(toast);
+  window.dispatchEvent(new CustomEvent('meowz:status-toast', {
+    detail: {
+      type: normalizedType,
+      title: normalizedTitle,
+      message: normalizedMessage,
+    },
+  }));
   scheduleToastPlacement();
   requestAnimationFrame(() => toast.classList.add('is-visible'));
   setTimeout(close, 5000);
