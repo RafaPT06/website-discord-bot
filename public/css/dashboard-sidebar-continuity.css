@@ -3,6 +3,10 @@
    dashboard shell height so the page background never appears underneath it. */
 
 @media (min-width: 981px) {
+  body.dashboard-app-body .dashboard-app[data-dashboard] {
+    min-height: 0 !important;
+  }
+
   body.dashboard-app-body .dash-shell {
     position: relative !important;
     isolation: isolate;
@@ -72,6 +76,11 @@
 
   body.dashboard-app-body .dash-main {
     background: transparent !important;
+  }
+
+  body.dashboard-app-body .dash-content {
+    padding-top: clamp(1.5rem, 2vw, 2rem) !important;
+    padding-bottom: clamp(2rem, 3.5vw, 3.25rem) !important;
   }
 
   body.dashboard-app-body .dashboard-app-root + .footer-card,
