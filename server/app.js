@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { version: packageVersion } = require('../package.json');
 const { router: publicApiRouter } = require('./routes/publicApi');
 const { router: ownerAdminRouter } = require('./routes/ownerAdmin');
 const { router: authRouter } = require('./routes/auth');
@@ -10,7 +11,7 @@ const SITE_VERSION = String(
   || process.env.RAILWAY_DEPLOYMENT_ID
   || process.env.SOURCE_VERSION
   || process.env.GIT_COMMIT
-  || `local-${Date.now()}`
+  || `package-${packageVersion}`
 ).trim();
 
 function createApp() {
