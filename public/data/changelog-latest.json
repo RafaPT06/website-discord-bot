@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-14",
+    "title": "Complete light mode, custom selects and reliable save feedback",
+    "items": [
+      "Corrected remaining light-mode text, badges, empty states, role rows, log examples, preview copy, server pills and mobile dashboard drawer contrast.",
+      "Added one reusable searchable Meowz dropdown for dashboard language, channel and role selectors while preserving the native form values and change events.",
+      "Moved status notifications into a permanent body-level viewport host so dashboard save-bar rerenders can no longer delete the confirmation message after saving."
+    ]
+  },
+  {
+    "date": "2026-07-14",
     "title": "Light mode contrast and dashboard control polish",
     "items": [
       "Expanded the Settings Owner/User selector into two equal-width choices and restored readable inactive labels in both themes.",

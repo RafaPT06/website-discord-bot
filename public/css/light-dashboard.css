@@ -101,3 +101,21 @@
 
 :root[data-theme="light"] body.dashboard-app-body .footer-card p { color: var(--muted) !important; }
 :root[data-theme="light"] body.dashboard-app-body .footer-card p:first-child { color: var(--text) !important; }
+
+/* Dynamic content that previously retained white text on white cards. */
+:root[data-theme="light"] body.dashboard-app-body .dash-empty {
+  border-color: rgba(15,23,42,.1) !important;
+  background: rgba(248,250,252,.82) !important;
+}
+:root[data-theme="light"] body.dashboard-app-body .dash-empty strong { color: #111827 !important; }
+:root[data-theme="light"] body.dashboard-app-body .dash-empty span { color: #5f6b80 !important; }
+:root[data-theme="light"] body.dashboard-app-body .dash-card-head > b:not(.status) { color: #526079 !important; }
+:root[data-theme="light"] body.dashboard-app-body .dash-switch > span > strong { color: #111827 !important; }
+:root[data-theme="light"] body.dashboard-app-body .dash-switch > span > small { color: #5f6b80 !important; }
+:root[data-theme="light"] body.dashboard-app-body .dash-role-table-head,
+:root[data-theme="light"] body.dashboard-app-body .dash-role-row,
+:root[data-theme="light"] body.dashboard-app-body .dash-log-status,
+:root[data-theme="light"] body.dashboard-app-body .dash-info-row {
+  border-color: rgba(15,23,42,.1) !important;
+  background: rgba(255,255,255,.76) !important;
+}
