@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-14",
+    "title": "Light mode contrast and dashboard control polish",
+    "items": [
+      "Expanded the Settings Owner/User selector into two equal-width choices and restored readable inactive labels in both themes.",
+      "Corrected light-mode contrast for the dashboard help card, future-setting descriptions, theme controls and documentation access badges.",
+      "Moved the open changelog month picker into document flow on desktop and restored readable dates and secondary text so the menu no longer covers update cards."
+    ]
+  },
+  {
+    "date": "2026-07-14",
     "title": "Website-wide visual audit and live language preferences",
     "items": [
       "Connected the language selector in Settings to live website and dashboard translations for English, Portuguese, Spanish, German and French, with the preference saved locally.",
@@ -68,7 +77,7 @@
     "items": [
       "Added a protected Owner View danger zone inside each server Overview page for removing Meowz from that server.",
       "Requires typing the exact server name before the destructive action is enabled and rechecks the configured bot owner on the backend.",
-      "Routes the request through the secured bot API so the bot leaves the selected server without exposing the Discord bot token to the browser."
+      "Routes the request through the secured bot API so the bot leaves the selected server without exposing private credentials to the browser."
     ]
   },
   {
