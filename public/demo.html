@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark" style="color-scheme: dark;">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,27 +11,13 @@
   <meta property="og:url" content="https://meowz.up.railway.app/" />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#8b5cf6" />
+  <meta name="color-scheme" content="dark" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" type="image/png" href="/favicon.png" />
-  <script>
-    (function () {
-      try {
-        var prefs = JSON.parse(localStorage.getItem('meowzDashboardPreferences') || '{}');
-        var theme = prefs.theme || localStorage.getItem('meowzTheme') || 'dark';
-        if (theme !== 'light' && theme !== 'dark') theme = 'dark';
-        document.documentElement.dataset.theme = theme;
-        document.documentElement.style.colorScheme = theme;
-      } catch (e) {
-        document.documentElement.dataset.theme = 'dark';
-      }
-    })();
-  </script>
   <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/css/live-preview-fixes.css" />
   <link rel="stylesheet" href="/css/dashboard-polish.css" />
   <link rel="stylesheet" href="/css/dashboard-floating-stack.css" />
-  <link rel="stylesheet" href="/css/light-public-base.css" />
-  <link rel="stylesheet" href="/css/light-dashboard.css" />
   <link rel="stylesheet" href="/css/modal-audit.css" />
   <link rel="stylesheet" href="/css/visual-followup.css" />
   <link rel="stylesheet" href="/css/site-final-audit.css" />
