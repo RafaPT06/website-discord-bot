@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-14",
+    "title": "Balanced dark-only Settings layout",
+    "items": [
+      "Expanded the Future settings card across the full Settings content width after the Light theme card was removed.",
+      "Reorganized Notifications, Privacy and Experiments into a responsive three-column desktop layout with clean tablet and mobile fallbacks.",
+      "Added stable dark-only layout hooks so language changes and dashboard rerenders keep the Settings grid aligned in both normal and demo mode."
+    ]
+  },
+  {
+    "date": "2026-07-14",
     "title": "Dark-only Meowz theme",
     "items": [
       "Removed the Light theme option from Settings so the website consistently follows the bot's dark purple visual identity.",
