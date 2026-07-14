@@ -1,0 +1,349 @@
+/* Screenshot-driven dashboard layout follow-up.
+   Loaded after the existing dashboard audit styles so these rules resolve the
+   structural causes without changing dashboard state, routes or API logic. */
+
+/* Use one consistent vector chevron for dashboard context cards and enhanced selects. */
+.dash-current-server em,
+.meowz-select-chevron {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex: 0 0 1.2rem;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='m5.5 7.5 4.5 4.5 4.5-4.5' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='m5.5 7.5 4.5 4.5 4.5-4.5' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.dash-current-server em { color: rgba(196, 181, 253, .82) !important; }
+.meowz-select-chevron { color: #c4b5fd !important; }
+.meowz-select.is-open .meowz-select-chevron { transform: rotate(180deg); }
+
+/* Current-server context card: keep the full useful name area and a real icon. */
+body.dashboard-app-body .dash-current-server {
+  width: 100%;
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: 2.875rem minmax(0, 1fr) 1.2rem;
+  align-items: center;
+  gap: .7rem;
+}
+
+body.dashboard-app-body .dash-current-server > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: .18rem;
+}
+
+body.dashboard-app-body .dash-current-server strong {
+  min-width: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal !important;
+  text-overflow: ellipsis;
+  line-height: 1.16;
+}
+
+body.dashboard-app-body .dash-current-server small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Welcome/Goodbye previews must participate in normal document flow. */
+body.dashboard-app-body .dash-welcome-preview-column {
+  position: static !important;
+  inset: auto !important;
+  min-width: 0;
+  display: grid !important;
+  align-content: start;
+  gap: clamp(1rem, 1.5vw, 1.35rem);
+}
+
+body.dashboard-app-body .dash-welcome-preview-column > * {
+  min-width: 0;
+  width: 100%;
+  margin: 0 !important;
+}
+
+body.dashboard-app-body .dash-welcome-preview-column .dash-preview,
+body.dashboard-app-body .dash-welcome-preview-column .dash-simulation-card {
+  position: relative !important;
+  inset: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  isolation: isolate;
+}
+
+body.dashboard-app-body .dash-preview .dash-discord-stack {
+  min-width: 0;
+  min-height: 0;
+  display: grid !important;
+  align-items: start;
+  gap: clamp(.9rem, 1.4vw, 1.2rem) !important;
+}
+
+body.dashboard-app-body .dash-preview .dash-discord-message {
+  min-width: 0;
+  width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) !important;
+  align-items: start;
+  gap: .7rem;
+  overflow: visible !important;
+}
+
+body.dashboard-app-body .dash-preview .dash-discord-message > div:last-child,
+body.dashboard-app-body .dash-preview .msg-head {
+  min-width: 0;
+}
+
+body.dashboard-app-body .dash-preview .dash-live-preview {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: clamp(8.5rem, 15vw, 12.5rem);
+  max-width: 100%;
+  max-height: none !important;
+  margin-top: .65rem;
+  overflow: hidden !important;
+  border-radius: clamp(.8rem, 1.4vw, 1.1rem);
+}
+
+body.dashboard-app-body .dash-preview .dash-live-preview:not(.is-loading):not(.is-error) {
+  min-height: 0 !important;
+}
+
+body.dashboard-app-body .dash-preview .dash-live-preview img {
+  position: static !important;
+  inset: auto !important;
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+body.dashboard-app-body .dash-preview > .preview-note,
+body.dashboard-app-body .dash-simulation-card > .preview-note {
+  position: static !important;
+  display: block !important;
+  height: auto !important;
+  margin-top: 1rem !important;
+  opacity: 1 !important;
+}
+
+body.dashboard-app-body .dash-simulation-card {
+  display: grid;
+  align-content: start;
+  gap: .75rem;
+}
+
+body.dashboard-app-body .dash-simulation-card > :is(span, h2, p, small),
+body.dashboard-app-body .dash-simulation-actions,
+body.dashboard-app-body .dash-simulation-result {
+  position: static !important;
+  inset: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+body.dashboard-app-body .dash-simulation-card h2,
+body.dashboard-app-body .dash-simulation-card p {
+  margin-block: 0 !important;
+}
+
+body.dashboard-app-body .dash-simulation-actions {
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: .7rem !important;
+  margin-top: .25rem;
+}
+
+body.dashboard-app-body .dash-simulation-actions > button {
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+/* Place the long Leveling preview beside the form, then use the full width for simulation. */
+@media (min-width: 1100px) {
+  body.dashboard-app-body [data-settings-form="leveling"] {
+    grid-template-columns: minmax(0, .96fr) minmax(26rem, 1.04fr) !important;
+    grid-auto-flow: row;
+    gap: clamp(1.1rem, 1.8vw, 1.6rem) !important;
+  }
+
+  body.dashboard-app-body [data-settings-form="leveling"] > .dash-form-card {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  body.dashboard-app-body [data-settings-form="leveling"] > .dash-section-stack {
+    display: contents !important;
+  }
+
+  body.dashboard-app-body [data-settings-form="leveling"] > .dash-section-stack > .dash-card:not(.dash-simulation-card) {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  body.dashboard-app-body [data-settings-form="leveling"] > .dash-section-stack > .dash-simulation-card {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    align-self: start;
+  }
+}
+
+/* Light-mode status and inactive switches must remain visible. */
+:root[data-theme="light"] body.dashboard-app-body .dash-card-head > .status.enabled,
+:root[data-theme="light"] body.dashboard-app-body .dash-card-head > b.status.enabled {
+  border-color: rgba(5, 150, 105, .24) !important;
+  background: rgba(16, 185, 129, .1) !important;
+  color: #047857 !important;
+}
+
+:root[data-theme="light"] body.dashboard-app-body .dash-card-head > .status:not(.enabled),
+:root[data-theme="light"] body.dashboard-app-body .dash-card-head > b.status:not(.enabled) {
+  border-color: rgba(225, 29, 72, .2) !important;
+  background: rgba(244, 63, 94, .08) !important;
+  color: #be123c !important;
+}
+
+:root[data-theme="light"] body.dashboard-app-body .dash-switch input:not(:checked) + i {
+  border: 1px solid rgba(71, 85, 105, .24) !important;
+  background: #cbd5e1 !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, .08) !important;
+}
+
+:root[data-theme="light"] body.dashboard-app-body .dash-switch input:not(:checked) + i::after {
+  background: #fff !important;
+  box-shadow: 0 .15rem .45rem rgba(15, 23, 42, .22) !important;
+}
+
+/* Explicit simulation and preview contrast, including dynamically inserted copy. */
+:root[data-theme="light"] body.dashboard-app-body .dash-simulation-card {
+  border-color: rgba(15, 23, 42, .11) !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(34, 211, 238, .08), transparent 38%),
+    rgba(255, 255, 255, .9) !important;
+}
+
+:root[data-theme="light"] body.dashboard-app-body .dash-simulation-card > span {
+  color: #0891b2 !important;
+}
+
+:root[data-theme="light"] body.dashboard-app-body .dash-simulation-card h2 {
+  color: #111827 !important;
+}
+
+:root[data-theme="light"] body.dashboard-app-body .dash-simulation-card :is(p, .preview-note) {
+  color: #5f6b80 !important;
+  text-shadow: none !important;
+}
+
+:root[data-theme="light"] body.dashboard-app-body .dash-preview :is(.preview-note, .dash-live-preview-state span),
+:root[data-theme="light"] body.dashboard-app-body .dash-discord-message p,
+:root[data-theme="light"] body.dashboard-app-body .dash-discord-message small {
+  color: #5f6b80 !important;
+  text-shadow: none !important;
+}
+
+/* Desktop shell and sidebar: remove the accidental grid gutter and keep help reachable. */
+@media (min-width: 981px) {
+  body.dashboard-app-body .dash-shell {
+    column-gap: 0 !important;
+    row-gap: 0 !important;
+  }
+
+  body.dashboard-app-body .dash-sidebar {
+    top: 0;
+    height: calc(100dvh - var(--dashboard-nav-height, 4.25rem)) !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - var(--dashboard-nav-height, 4.25rem)) !important;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  body.dashboard-app-body .dash-help-card {
+    flex: 0 0 auto;
+    margin-top: auto !important;
+  }
+
+  body.dashboard-app-body .dash-main {
+    min-width: 0;
+    padding: 0 !important;
+  }
+
+  body.dashboard-app-body .dash-content {
+    width: 100% !important;
+    max-width: 1500px !important;
+    box-sizing: border-box;
+    margin-inline: auto !important;
+    padding-inline: clamp(1rem, 2vw, 2rem) !important;
+  }
+}
+
+:root[data-theme="light"] body.dashboard-app-body .dash-side-nav small {
+  color: #64748b !important;
+  text-shadow: none !important;
+}
+
+:root[data-theme="dark"] body.dashboard-app-body .dash-side-nav small {
+  color: rgba(255, 255, 255, .68) !important;
+}
+
+/* Dark cards need enough opacity for secondary copy without losing the glass look. */
+:root[data-theme="dark"] body.dashboard-app-body :is(.dash-log-status, .dash-role-row, .dash-info-row) {
+  background: rgba(7, 10, 22, .58) !important;
+}
+
+:root[data-theme="dark"] body.dashboard-app-body :is(.dash-log-status span, .dash-role-row span) {
+  color: rgba(235, 240, 255, .78) !important;
+}
+
+@media (max-width: 1099px) {
+  body.dashboard-app-body [data-settings-form="leveling"] > .dash-section-stack {
+    display: grid !important;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 720px) {
+  body.dashboard-app-body .dash-preview .dash-discord-message {
+    grid-template-columns: 2.25rem minmax(0, 1fr) !important;
+    gap: .6rem;
+  }
+
+  body.dashboard-app-body .dash-preview .dash-live-preview {
+    margin-top: .55rem;
+    border-radius: .85rem;
+  }
+
+  body.dashboard-app-body .dash-simulation-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meowz-select-chevron { transition: none !important; }
+}
