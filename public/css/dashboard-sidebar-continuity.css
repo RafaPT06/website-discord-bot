@@ -2,6 +2,21 @@
    The navigation stays sticky, while its dark rail continues for the full
    dashboard shell height so the page background never appears underneath it. */
 
+/* Every server tab uses the same vertical layout rhythm. Keeping this on the
+   shared tab host means Overview, Welcome/Goodbye, Leveling, AI access, Logs
+   and Moderation all receive identical spacing on desktop and mobile. */
+body.dashboard-app-body .dash-tab-content {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  min-height: 32rem;
+}
+
+body.dashboard-app-body .dash-tab-content > * {
+  min-width: 0;
+  margin-block: 0;
+}
+
 @media (min-width: 981px) {
   body.dashboard-app-body .dashboard-app[data-dashboard] {
     min-height: 0 !important;
