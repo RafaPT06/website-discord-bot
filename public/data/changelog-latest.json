@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-14",
+    "title": "Continuous desktop dashboard sidebar",
+    "items": [
+      "Extended the dark sidebar rail through the full dashboard shell so the cyan page glow no longer appears underneath the navigation on short pages or near the footer.",
+      "Kept the navigation sticky while polishing its independent scrolling, bottom spacing and scrollbar so the help card remains reachable without looking clipped.",
+      "Applied the same desktop shell treatment to authenticated dashboard pages and read-only demo mode without changing mobile navigation."
+    ]
+  },
+  {
+    "date": "2026-07-14",
     "title": "Balanced dark-only Settings layout",
     "items": [
       "Expanded the Future settings card across the full Settings content width after the Light theme card was removed.",
