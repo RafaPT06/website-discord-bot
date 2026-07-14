@@ -1,0 +1,88 @@
+/* Desktop sidebar continuity and scroll polish.
+   The navigation stays sticky, while its dark rail continues for the full
+   dashboard shell height so the page background never appears underneath it. */
+
+@media (min-width: 981px) {
+  body.dashboard-app-body .dash-shell {
+    position: relative !important;
+    isolation: isolate;
+  }
+
+  body.dashboard-app-body .dash-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--dashboard-sidebar-width, 17.5rem);
+    border-right: 1px solid rgba(255, 255, 255, .075);
+    background:
+      radial-gradient(circle at 0 100%, rgba(34, 211, 238, .08), transparent 35%),
+      linear-gradient(180deg, rgba(6, 9, 19, .99), rgba(7, 10, 21, .985));
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .18);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body.dashboard-app-body .dash-shell > .dash-sidebar,
+  body.dashboard-app-body .dash-shell > .dash-main {
+    position: relative;
+    z-index: 1;
+  }
+
+  body.dashboard-app-body .dash-sidebar {
+    align-self: start !important;
+    top: 0 !important;
+    height: calc(100dvh - var(--dashboard-nav-height, 4.25rem)) !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - var(--dashboard-nav-height, 4.25rem)) !important;
+    padding-bottom: max(1.15rem, env(safe-area-inset-bottom)) !important;
+    border-right: 0 !important;
+    background: transparent !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scroll-padding-bottom: 1rem;
+    scrollbar-gutter: auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, .34) transparent;
+  }
+
+  body.dashboard-app-body .dash-sidebar::-webkit-scrollbar {
+    width: .34rem;
+  }
+
+  body.dashboard-app-body .dash-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  body.dashboard-app-body .dash-sidebar::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(139, 92, 246, .28);
+  }
+
+  body.dashboard-app-body .dash-sidebar:hover::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, .46);
+  }
+
+  body.dashboard-app-body .dash-help-card {
+    flex: 0 0 auto;
+    width: 100%;
+    margin-top: auto !important;
+    margin-bottom: .15rem !important;
+  }
+
+  body.dashboard-app-body .dash-main {
+    background: transparent !important;
+  }
+
+  body.dashboard-app-body .dashboard-app-root + .footer-card,
+  body.dashboard-app-body .footer-card {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.dashboard-app-body .dash-sidebar {
+    scroll-behavior: auto;
+  }
+}
