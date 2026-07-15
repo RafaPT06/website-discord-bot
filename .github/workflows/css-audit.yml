@@ -39,3 +39,12 @@ jobs:
 
       - name: Audit stylesheets and references
         run: npm run audit:css
+
+      - name: Upload CSS audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-audit-report
+          path: css-audit-report.json
+          if-no-files-found: error
+          retention-days: 14
