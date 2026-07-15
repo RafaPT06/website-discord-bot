@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Documentation — Meowz</title>
   <meta name="description" content="Browse slash command documentation for Meowz." />
-
   <meta property="og:title" content="Meowz | Discord Bot" />
   <meta property="og:description" content="A modern Discord bot with live stats, slash command docs, AI image editing, leveling and utilities." />
   <meta property="og:image" content="https://meowz.up.railway.app/preview.png" />
@@ -14,119 +13,31 @@
   <meta name="theme-color" content="#8b5cf6" />
   <meta name="color-scheme" content="dark" />
   <meta name="twitter:card" content="summary_large_image" />
-
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="stylesheet" href="/css/main.css" />
-  <link rel="stylesheet" href="/css/modal-audit.css" />
-  <link rel="stylesheet" href="/css/visual-followup.css" />
+  <link rel="stylesheet" href="/css/components/modal.css" />
+  <link rel="stylesheet" href="/css/responsive/shared.css" />
+  <link rel="stylesheet" href="/css/responsive/tablet.css" />
+  <link rel="stylesheet" href="/css/responsive/mobile.css" />
 </head>
 <body>
-  <div class="bg-glow bg-glow-one"></div>
-  <div class="bg-glow bg-glow-two"></div>
-
+  <div class="bg-glow bg-glow-one"></div><div class="bg-glow bg-glow-two"></div>
   <header class="nav" data-global-navbar>
-    <a class="brand" href="/" aria-label="Meowz home">
-      <span class="brand-icon" data-bot-avatar-small>M</span>
-      <span data-bot-name-short>Meowz</span>
-    </a>
-    <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <nav class="nav-links" data-nav-links aria-label="Main navigation">
-      <a href="/" data-nav-link data-route="/">Home</a>
-      <a href="/dashboard" data-nav-link data-route="/dashboard" data-auth-only hidden>Dashboard</a>
-      <a href="/docs" data-nav-link data-route="/docs">Documentation</a>
-      <a href="/changelog" data-nav-link data-route="/changelog">Changelog</a>
-      <a href="/dashboard/settings" data-nav-link data-route="/dashboard/settings">Settings</a>
-      <div class="auth-area auth-loading" data-auth-area>Checking login...</div>
-    </nav>
+    <a class="brand" href="/" aria-label="Meowz home"><span class="brand-icon" data-bot-avatar-small>M</span><span data-bot-name-short>Meowz</span></a>
+    <button class="mobile-menu-button" type="button" data-menu-toggle aria-label="Open navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+    <nav class="nav-links" data-nav-links aria-label="Main navigation"><a href="/" data-nav-link data-route="/">Home</a><a href="/dashboard" data-nav-link data-route="/dashboard" data-auth-only hidden>Dashboard</a><a href="/docs" data-nav-link data-route="/docs">Documentation</a><a href="/changelog" data-nav-link data-route="/changelog">Changelog</a><a href="/dashboard/settings" data-nav-link data-route="/dashboard/settings">Settings</a><div class="auth-area auth-loading" data-auth-area>Checking login...</div></nav>
   </header>
-
   <main id="top" class="page-main">
     <section class="section commands-section">
-      <div class="commands-header page-header page-header-split">
-        <div class="section-heading left page-heading">
-          <span>Documentation</span>
-          <h2>Slash command reference</h2>
-        </div>
-        <p class="muted">
-          Search commands, open details in a dedicated panel and browse without rendering the full list at once.
-        </p>
-      </div>
-
-      <div class="command-toolbar">
-        <label class="search-box" aria-label="Search commands">
-          <span>Search</span>
-          <input type="search" placeholder="Search commands..." data-command-search />
-        </label>
-        <div class="category-tabs" data-category-tabs>
-          <button class="active" type="button" data-category="all">All</button>
-        </div>
-      </div>
-
+      <div class="commands-header page-header page-header-split"><div class="section-heading left page-heading"><span>Documentation</span><h2>Slash command reference</h2></div><p class="muted">Search commands, open details in a dedicated panel and browse without rendering the full list at once.</p></div>
+      <div class="command-toolbar"><label class="search-box" aria-label="Search commands"><span>Search</span><input type="search" placeholder="Search commands..." data-command-search /></label><div class="category-tabs" data-category-tabs><button class="active" type="button" data-category="all">All</button></div></div>
       <div class="command-summary" data-command-summary>Loading slash commands...</div>
-
-      <div class="commands-doc-layout">
-        <div class="commands-table-panel">
-          <div class="commands-table-wrap">
-            <table class="commands-table">
-              <thead>
-                <tr>
-                  <th>Command</th>
-                  <th>Description</th>
-                  <th>Category</th>
-                  <th>Access</th>
-                </tr>
-              </thead>
-              <tbody data-commands-body>
-                <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line"></div></td></tr>
-                <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line short"></div></td></tr>
-                <tr class="skeleton-row"><td colspan="4"><div class="skeleton-line"></div></td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="pagination" data-command-pagination></div>
-        </div>
-
-        <aside class="command-detail-panel command-detail-empty" data-command-detail aria-live="polite">
-          <div class="command-detail-placeholder">
-            <span>Documentation</span>
-            <h3>Select a command</h3>
-            <p>Choose any command from the list to view usage, parameters, access and notes without moving the command table.</p>
-          </div>
-        </aside>
-      </div>
-
+      <div class="commands-doc-layout"><div class="commands-table-panel"><div class="commands-table-wrap"><table class="commands-table"><thead><tr><th>Command</th><th>Description</th><th>Category</th><th>Access</th></tr></thead><tbody data-commands-body><tr class="skeleton-row"><td colspan="4"><div class="skeleton-line"></div></td></tr><tr class="skeleton-row"><td colspan="4"><div class="skeleton-line short"></div></td></tr><tr class="skeleton-row"><td colspan="4"><div class="skeleton-line"></div></td></tr></tbody></table></div><div class="pagination" data-command-pagination></div></div><aside class="command-detail-panel command-detail-empty" data-command-detail aria-live="polite"><div class="command-detail-placeholder"><span>Documentation</span><h3>Select a command</h3><p>Choose any command from the list to view usage, parameters, access and notes without moving the command table.</p></div></aside></div>
       <div class="command-sheet-backdrop" data-command-sheet-backdrop hidden></div>
-
-      <div class="page-modal-backdrop" data-page-modal hidden aria-hidden="true">
-        <div class="page-modal" role="dialog" aria-modal="true" aria-labelledby="page-modal-title" tabindex="-1">
-          <div class="page-modal-top">
-            <div>
-              <h3 id="page-modal-title">Go to page</h3>
-              <p data-page-modal-range>Choose a page.</p>
-            </div>
-            <button class="page-modal-close" type="button" data-page-modal-close aria-label="Close page picker">×</button>
-          </div>
-
-          <input class="page-modal-input" type="number" min="1" inputmode="numeric" data-page-modal-input />
-          <div class="page-modal-grid" data-page-modal-grid></div>
-
-          <div class="page-modal-actions">
-            <button type="button" data-page-modal-cancel>Cancel</button>
-            <button class="primary" type="button" data-page-modal-go>Go</button>
-          </div>
-        </div>
-      </div>
+      <div class="page-modal-backdrop" data-page-modal hidden aria-hidden="true"><div class="page-modal" role="dialog" aria-modal="true" aria-labelledby="page-modal-title" tabindex="-1"><div class="page-modal-top"><div><h3 id="page-modal-title">Go to page</h3><p data-page-modal-range>Choose a page.</p></div><button class="page-modal-close" type="button" data-page-modal-close aria-label="Close page picker">×</button></div><input class="page-modal-input" type="number" min="1" inputmode="numeric" data-page-modal-input /><div class="page-modal-grid" data-page-modal-grid></div><div class="page-modal-actions"><button type="button" data-page-modal-cancel>Cancel</button><button class="primary" type="button" data-page-modal-go>Go</button></div></div></div>
     </section>
   </main>
-
-  <footer class="footer-card">
-    <p>© <span data-footer-year></span> <span data-footer-bot-name>Meowz</span>. All rights reserved.</p>
-    <p>Made by Rafa (@atuaprima_)</p>
-  </footer>
-
+  <footer class="footer-card"><p>© <span data-footer-year></span> <span data-footer-bot-name>Meowz</span>. All rights reserved.</p><p>Made by Rafa (@atuaprima_)</p></footer>
   <script type="module" src="/js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,8 @@
+/* Tablet-only overrides: 721px through 980px.
+   Keep component-specific tablet rules in their component file until they are
+   intentionally migrated and visually regression-tested. */
+@media (min-width: 721px) and (max-width: 980px) {
+  :root {
+    --meowz-responsive-tier: tablet;
+  }
+}
