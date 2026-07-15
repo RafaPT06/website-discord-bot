@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-15",
+    "title": "Leveling and moderation dashboard reliability",
+    "items": [
+      "Added canonical validated dashboard routes for Leveling settings, reward roles, Moderation settings and trusted users with clearer bot API diagnostics instead of silently treating failures as empty data.",
+      "Made reward-role additions and removals refresh in place without reloading the tab, losing unsaved Leveling changes or returning stale cached rewards.",
+      "Added a single-dispatch global save safeguard, preserved saved channel IDs during lookup failures and added a timed Moderation trusted-user fallback with an explicit retry action."
+    ]
+  },
+  {
+    "date": "2026-07-15",
     "title": "Corrected dashboard card heights",
     "items": [
       "Stopped Leveling, AI Image Access, Logs and Moderation form cards from stretching to the height of longer preview or access columns.",
