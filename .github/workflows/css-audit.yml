@@ -43,9 +43,13 @@ jobs:
         run: |
           node --check server/app.js
           node --check server/routes/dashboardReliability.js
+          node --check server/routes/dashboardRoles.js
           node --input-type=module --check < public/js/main.js
+          node --input-type=module --check < public/js/api.js
           node --input-type=module --check < public/js/components/dashboardReliability.js
           node --input-type=module --check < public/js/components/forms.js
+          node --input-type=module --check < public/js/components/levelingRoleManager.js
+          node --input-type=module --check < public/js/components/roleApi.js
 
       - name: Audit stylesheets and references
         run: npm run audit:css
