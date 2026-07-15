@@ -1,4 +1,4 @@
-/* Screenshot-driven visual follow-up for dashboard controls and light-mode contrast. */
+/* Screenshot-driven visual follow-up for active dark-theme controls. */
 
 /* Settings view controls should use the available card width instead of leaving dead space. */
 body.dashboard-app-body .dash-setting-block .dash-owner-toggle {
@@ -46,85 +46,6 @@ body.dashboard-app-body .dash-topbar {
   }
 }
 
-/* Light dashboard readability fixes. */
-:root[data-theme="light"] body.dashboard-app-body .dash-setting-block {
-  border-color: rgba(15, 23, 42, .11) !important;
-  background: rgba(248, 250, 252, .78) !important;
-}
-
-:root[data-theme="light"] body.dashboard-app-body :is(.dash-owner-toggle, .dash-segmented) button:not(.is-active) {
-  color: #475569 !important;
-  text-shadow: none !important;
-}
-
-:root[data-theme="light"] body.dashboard-app-body .dash-help-card {
-  border-color: rgba(124, 58, 237, .2) !important;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(34, 211, 238, .12), transparent 42%),
-    linear-gradient(145deg, rgba(245, 243, 255, .96), rgba(239, 246, 255, .94)) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9) !important;
-}
-
-:root[data-theme="light"] body.dashboard-app-body .dash-help-card strong {
-  color: #312e81 !important;
-}
-
-:root[data-theme="light"] body.dashboard-app-body .dash-help-card span {
-  color: #526079 !important;
-}
-
-:root[data-theme="light"] body.dashboard-app-body .dash-help-card a {
-  border-color: rgba(124, 58, 237, .18) !important;
-  background: linear-gradient(135deg, #8b5cf6, #38bdf8) !important;
-  color: #fff !important;
-  box-shadow: 0 .65rem 1.5rem rgba(124, 58, 237, .16) !important;
-}
-
-:root[data-theme="light"] body.dashboard-app-body .dash-settings-page .dash-card-head p,
-:root[data-theme="light"] body.dashboard-app-body .dash-settings-page .dash-feature-card span,
-:root[data-theme="light"] body.dashboard-app-body .dash-settings-page .dash-field-note {
-  color: #64748b !important;
-}
-
-:root[data-theme="light"] body.dashboard-app-body .dash-settings-page .dash-feature-card strong {
-  color: #0f172a !important;
-}
-
-:root[data-theme="light"] body.dashboard-app-body .dash-topbar {
-  border-color: rgba(15, 23, 42, .09) !important;
-  background: rgba(255, 255, 255, .76) !important;
-  box-shadow: none !important;
-}
-
-:root[data-theme="light"] body.dashboard-app-body :is(.dash-breadcrumb a, .dash-breadcrumb strong) {
-  color: #475569 !important;
-}
-
-/* Documentation chips must retain readable contrast in light mode. */
-:root[data-theme="light"] .command-chip {
-  border-color: rgba(15, 23, 42, .12) !important;
-  background: rgba(248, 250, 252, .95) !important;
-  color: #475569 !important;
-}
-
-:root[data-theme="light"] .visibility-badge.public {
-  border-color: rgba(5, 150, 105, .24) !important;
-  background: rgba(16, 185, 129, .1) !important;
-  color: #047857 !important;
-}
-
-:root[data-theme="light"] .visibility-badge.admin {
-  border-color: rgba(217, 119, 6, .28) !important;
-  background: rgba(245, 158, 11, .12) !important;
-  color: #92400e !important;
-}
-
-:root[data-theme="light"] .visibility-badge.owner {
-  border-color: rgba(225, 29, 72, .22) !important;
-  background: rgba(244, 63, 94, .1) !important;
-  color: #be123c !important;
-}
-
 /* Keep the custom changelog picker in document flow at every desktop width. */
 .changelog-toolbar:has(.changelog-custom-select.is-open) {
   align-items: flex-start;
@@ -140,32 +61,6 @@ body.dashboard-app-body .dash-topbar {
   overflow-x: hidden;
   overflow-y: auto;
   transform-origin: top center;
-}
-
-/* Changelog light-mode dates, secondary text and open picker options. */
-:root[data-theme="light"] :is(.changelog-date, .change-list li > span:last-child) {
-  color: #5b677d !important;
-}
-
-:root[data-theme="light"] .changelog-month-heading > b {
-  border-color: rgba(15, 23, 42, .11) !important;
-  background: rgba(255, 255, 255, .72) !important;
-  color: #526079 !important;
-}
-
-:root[data-theme="light"] .changelog-select-menu-head {
-  border-bottom-color: rgba(15, 23, 42, .08) !important;
-}
-
-:root[data-theme="light"] .changelog-select-menu-head small,
-:root[data-theme="light"] .changelog-select-option {
-  color: #526079 !important;
-}
-
-:root[data-theme="light"] .changelog-select-option:hover,
-:root[data-theme="light"] .changelog-select-option:focus-visible,
-:root[data-theme="light"] .changelog-select-option.is-selected {
-  color: #111827 !important;
 }
 
 @media (max-width: 720px) {

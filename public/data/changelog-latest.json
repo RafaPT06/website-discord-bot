@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-15",
+    "title": "Automated website-wide CSS validation",
+    "items": [
+      "Added a repository-wide CSS audit covering syntax balance, missing stylesheet references, merge markers, invalid comments, repeated selectors, responsive risks and cascade complexity.",
+      "Added a GitHub Actions check and downloadable JSON report for every CSS, HTML and frontend JavaScript change without introducing new runtime dependencies.",
+      "Confirmed there are no broken braces, unterminated comments, missing referenced stylesheets or unresolved merge markers, and removed obsolete Light-theme overrides from the active visual follow-up stylesheet."
+    ]
+  },
+  {
+    "date": "2026-07-15",
     "title": "Consistent dashboard section spacing",
     "items": [
       "Added a shared 20px grid gap between every top-level section inside server dashboard tabs.",

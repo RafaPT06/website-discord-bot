@@ -1,0 +1,50 @@
+name: CSS Audit
+
+on:
+  pull_request:
+    paths:
+      - 'public/**/*.css'
+      - 'public/**/*.html'
+      - 'public/**/*.js'
+      - 'scripts/css-audit.js'
+      - 'package.json'
+      - '.github/workflows/css-audit.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'public/**/*.css'
+      - 'public/**/*.html'
+      - 'public/**/*.js'
+      - 'scripts/css-audit.js'
+      - 'package.json'
+      - '.github/workflows/css-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  css-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Audit stylesheets and references
+        run: npm run audit:css
+
+      - name: Upload CSS audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-audit-report
+          path: css-audit-report.json
+          if-no-files-found: error
+          retention-days: 14

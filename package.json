@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "monitor": "node scripts/monitor.js"
+    "monitor": "node scripts/monitor.js",
+    "audit:css": "node scripts/css-audit.js"
   },
   "dependencies": {
     "@playwright/test": "^1.61.1",
