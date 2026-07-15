@@ -1,4 +1,4 @@
-name: CSS Audit
+name: Website Audit
 
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
       - 'public/**/*.css'
       - 'public/**/*.html'
       - 'public/**/*.js'
+      - 'server/**/*.js'
       - 'scripts/css-audit.js'
       - 'package.json'
       - '.github/workflows/css-audit.yml'
@@ -16,6 +17,7 @@ on:
       - 'public/**/*.css'
       - 'public/**/*.html'
       - 'public/**/*.js'
+      - 'server/**/*.js'
       - 'scripts/css-audit.js'
       - 'package.json'
       - '.github/workflows/css-audit.yml'
@@ -25,7 +27,7 @@ permissions:
   contents: read
 
 jobs:
-  css-audit:
+  website-audit:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -36,6 +38,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+
+      - name: Check dashboard and server JavaScript
+        run: |
+          node --check server/app.js
+          node --check server/routes/dashboardReliability.js
+          node --input-type=module --check < public/js/main.js
+          node --input-type=module --check < public/js/components/dashboardReliability.js
+          node --input-type=module --check < public/js/components/forms.js
 
       - name: Audit stylesheets and references
         run: npm run audit:css
