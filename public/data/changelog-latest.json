@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-15",
+    "title": "Organized CSS architecture",
+    "items": [
+      "Moved reusable controls, dashboard styles, page styles and responsive styles into clearly named CSS subfolders while keeping main.css as the shared root stylesheet.",
+      "Added dedicated desktop, tablet and mobile responsive entry files plus a CSS architecture guide with rules for future styling changes.",
+      "Updated Home, Documentation, Changelog, Dashboard and Demo stylesheet paths without changing selectors, authenticated routes, demo mode or existing responsive behavior."
+    ]
+  },
+  {
+    "date": "2026-07-15",
     "title": "Automated website-wide CSS validation",
     "items": [
       "Added a repository-wide CSS audit covering syntax balance, missing stylesheet references, merge markers, invalid comments, repeated selectors, responsive risks and cascade complexity.",
