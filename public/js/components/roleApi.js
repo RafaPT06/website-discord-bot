@@ -1,3 +1,4 @@
+import { invalidateGuildRoles } from '../api.js';
 import { isDemoRoute } from '../demoData.js';
 
 export async function createGuildRole(guildId, name) {
@@ -16,6 +17,7 @@ export async function createGuildRole(guildId, name) {
     const data = await response.json().catch(() => null);
     if (!response.ok) throw new Error(data?.error || `Role creation failed with ${response.status}.`);
     if (!data?.role?.id) throw new Error('Discord created the role but did not return a usable role ID.');
+    invalidateGuildRoles(guildId);
     return data;
   } catch (err) {
     if (err?.name === 'AbortError') throw new Error('Role creation timed out. Try again in a few seconds.');
