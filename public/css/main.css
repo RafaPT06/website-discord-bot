@@ -3939,7 +3939,7 @@ body.menu-open { overflow: hidden !important; }
 
   .dash-designer,
   .dash-grid.two {
-    gap: 18px !important;
+    gap: 1.35rem !important;
   }
 
   .dash-card {
@@ -4429,7 +4429,7 @@ body.menu-open { overflow: hidden !important; }
 .dash-grid.two { gap: 20px; }
 .dash-grid.two + .dash-card,
 .dash-card + .dash-card,
-.dash-card + .dash-grid { margin-top: 20px; }
+.dash-card + .dash-grid { margin-top: 0px; }
 @media (max-width: 980px) {
   .dash-sidebar { display: none !important; }
   .dash-main { min-width: 0; }
@@ -8410,7 +8410,7 @@ body.dashboard-app-body [data-server-detail-content] {
 .dash-section-stack {
   min-width: 0;
   display: grid;
-  gap: clamp(1rem, 2vw, 1.35rem);
+  gap: clamp(1.35rem, 2vw, 1.35rem);
   align-content: start;
 }
 .dash-sticky-column {

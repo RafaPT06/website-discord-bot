@@ -1,6 +1,5 @@
 /* Owner-only destructive server controls. */
 .dash-owner-danger-zone {
-  margin-top: clamp(1rem, 2vw, 1.4rem) !important;
   border-color: rgba(251, 113, 133, .34) !important;
   background:
     radial-gradient(circle at 100% 0%, rgba(251, 113, 133, .13), transparent 34%),

@@ -63,7 +63,7 @@ body.dashboard-app-body .dash-welcome-preview-column {
   min-width: 0;
   display: grid !important;
   align-content: start;
-  gap: clamp(1rem, 1.5vw, 1.35rem);
+  gap: clamp(1.35rem, 1.5vw, 1.35rem);
 }
 
 body.dashboard-app-body .dash-welcome-preview-column > * {
@@ -324,7 +324,7 @@ body.dashboard-app-body .dash-simulation-actions > button {
 @media (max-width: 1099px) {
   body.dashboard-app-body [data-settings-form="leveling"] > .dash-section-stack {
     display: grid !important;
-    gap: 1rem;
+    gap: 1.35rem;
   }
 }
 
