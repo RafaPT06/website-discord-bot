@@ -1,0 +1,14 @@
+body.dashboard-app-body [data-level-rewards] {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+body.dashboard-app-body [data-level-rewards] > .dash-role-table-head { order: 1; }
+body.dashboard-app-body [data-level-rewards] > .dash-reward-editor { order: 2; }
+body.dashboard-app-body [data-level-rewards] > .dash-role-create-panel { order: 3; }
+body.dashboard-app-body [data-level-rewards] > .dash-level-reward-list { order: 4; }
+body.dashboard-app-body [data-level-rewards] > .dash-level-reward-toggle { order: 5; }
+body.dashboard-app-body [data-level-rewards] > .dash-empty,
+body.dashboard-app-body [data-level-rewards] > .dash-error,
+body.dashboard-app-body [data-level-rewards] > [data-level-resource-state] { order: 6; }
