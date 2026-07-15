@@ -39,9 +39,11 @@ async function bootPageModules() {
     jobs.push(Promise.all([
       import('./dashboard.js'),
       import('./components/dashboardReliability.js'),
-    ]).then(([dashboard, reliability]) => {
+      import('./components/levelingRoleManager.js'),
+    ]).then(([dashboard, reliability, levelingRoles]) => {
       dashboard.initDashboard();
       reliability.initDashboardReliability();
+      levelingRoles.initLevelingRoleManager();
     }));
   }
 
