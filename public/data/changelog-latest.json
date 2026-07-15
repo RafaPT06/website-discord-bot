@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-15",
+    "title": "Unified dashboard card grid",
+    "items": [
+      "Standardized every server dashboard tab on one twelve-column parent grid with a shared 20px card gutter.",
+      "Normalized Overview, Welcome/Goodbye, Leveling, AI Image Access, Logs and Moderation card containers so nested cards no longer use competing gaps or margins.",
+      "Kept desktop two-column layouts aligned while using one-column tablet and mobile fallbacks, including the read-only demo dashboard."
+    ]
+  },
+  {
+    "date": "2026-07-15",
     "title": "Organized CSS architecture",
     "items": [
       "Moved reusable controls, dashboard styles, page styles and responsive styles into clearly named CSS subfolders while keeping main.css as the shared root stylesheet.",
