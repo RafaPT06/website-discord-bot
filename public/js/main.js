@@ -36,7 +36,13 @@ async function bootPageModules() {
   }
 
   if (document.querySelector('[data-dashboard]') || document.querySelector('[data-dashboard-guest]')) {
-    jobs.push(import('./dashboard.js').then(({ initDashboard }) => initDashboard()));
+    jobs.push(Promise.all([
+      import('./dashboard.js'),
+      import('./components/dashboardReliability.js'),
+    ]).then(([dashboard, reliability]) => {
+      dashboard.initDashboard();
+      reliability.initDashboardReliability();
+    }));
   }
 
   await Promise.allSettled(jobs);
