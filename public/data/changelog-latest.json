@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-15",
+    "title": "Compact Leveling role manager",
+    "items": [
+      "Added secure Discord role creation directly inside the Leveling reward editor, with duplicate-role reuse, permission checks and automatic selection of the created role.",
+      "Collapsed long reward-role lists to four rows by default, added a configured-count badge and kept the expanded list inside a bounded scroll area instead of stretching the entire page.",
+      "Rebalanced the reward level and role selector layout so the searchable role menu has enough width on desktop while stacking cleanly on tablet and mobile."
+    ]
+  },
+  {
+    "date": "2026-07-15",
     "title": "Leveling and moderation dashboard reliability",
     "items": [
       "Added canonical validated dashboard routes for Leveling settings, reward roles, Moderation settings and trusted users with clearer bot API diagnostics instead of silently treating failures as empty data.",
