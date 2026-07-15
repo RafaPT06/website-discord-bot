@@ -3,6 +3,7 @@ const path = require('path');
 const { version: packageVersion } = require('../package.json');
 const { router: publicApiRouter } = require('./routes/publicApi');
 const { router: dashboardReliabilityRouter } = require('./routes/dashboardReliability');
+const { router: dashboardRolesRouter } = require('./routes/dashboardRoles');
 const { router: ownerAdminRouter } = require('./routes/ownerAdmin');
 const { router: authRouter } = require('./routes/auth');
 const { notFoundHandler } = require('./middleware/notFound');
@@ -51,6 +52,7 @@ function createApp() {
 
   app.use('/api', ownerAdminRouter);
   app.use('/api', dashboardReliabilityRouter);
+  app.use('/api', dashboardRolesRouter);
   app.use('/api', publicApiRouter);
   app.use('/auth', authRouter);
 
