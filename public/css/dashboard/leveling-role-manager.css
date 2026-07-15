@@ -1,0 +1,168 @@
+/* Leveling reward role manager.
+   Loaded after the shared dashboard grid so this file owns only the role editor,
+   role creation panel and compact reward list. */
+
+body.dashboard-app-body [data-settings-form="leveling"] .dash-reward-editor {
+  display: grid !important;
+  grid-template-columns: minmax(7.5rem, .42fr) minmax(15rem, 1fr) !important;
+  align-items: end !important;
+  gap: .75rem !important;
+  margin-top: .75rem;
+}
+
+body.dashboard-app-body [data-settings-form="leveling"] .dash-reward-editor > .dash-field {
+  min-width: 0;
+  margin: 0 !important;
+}
+
+body.dashboard-app-body [data-settings-form="leveling"] .dash-reward-editor > .dash-save-btn {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0 !important;
+}
+
+body.dashboard-app-body [data-settings-form="leveling"] .dash-reward-editor .meowz-select {
+  min-width: 0;
+  z-index: 40;
+}
+
+body.dashboard-app-body [data-settings-form="leveling"] .dash-reward-editor .meowz-select.is-open {
+  z-index: 3400;
+}
+
+body.dashboard-app-body [data-settings-form="leveling"] .dash-reward-editor .meowz-select-menu {
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+}
+
+body.dashboard-app-body .dash-role-create-panel {
+  margin-top: .85rem;
+  padding: .9rem;
+  display: grid;
+  gap: .75rem;
+  border: 1px solid rgba(34, 211, 238, .14);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(34, 211, 238, .08), transparent 42%),
+    rgba(7, 10, 22, .48);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .045);
+}
+
+body.dashboard-app-body .dash-role-create-copy {
+  display: grid;
+  gap: .22rem;
+}
+
+body.dashboard-app-body .dash-role-create-copy strong {
+  color: var(--text);
+  font-size: .92rem;
+  font-weight: 900;
+}
+
+body.dashboard-app-body .dash-role-create-copy span,
+body.dashboard-app-body .dash-role-create-panel > small {
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+body.dashboard-app-body .dash-role-create-controls {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: .7rem;
+}
+
+body.dashboard-app-body .dash-role-create-controls .dash-field {
+  min-width: 0;
+  margin: 0 !important;
+}
+
+body.dashboard-app-body .dash-role-create-controls [data-create-guild-role] {
+  min-width: 8.5rem;
+  min-height: 3rem;
+  white-space: nowrap;
+}
+
+body.dashboard-app-body [data-level-rewards] > .dash-role-table-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+
+body.dashboard-app-body .dash-level-reward-count {
+  flex: 0 0 auto;
+  padding: .32rem .58rem;
+  border: 1px solid rgba(34, 211, 238, .16);
+  border-radius: 999px;
+  background: rgba(34, 211, 238, .07);
+  color: #a5f3fc;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+
+body.dashboard-app-body .dash-level-reward-list {
+  min-width: 0;
+  display: grid;
+  gap: .55rem;
+  margin-top: .6rem;
+}
+
+body.dashboard-app-body .dash-level-reward-list.is-expanded {
+  max-height: min(19rem, 44dvh);
+  padding-right: .25rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+body.dashboard-app-body .dash-level-reward-list > .dash-role-row {
+  width: 100%;
+  margin: 0 !important;
+}
+
+body.dashboard-app-body .dash-level-reward-list > .dash-role-row[hidden] {
+  display: none !important;
+}
+
+body.dashboard-app-body .dash-level-reward-toggle {
+  width: 100%;
+  min-height: 2.6rem;
+  margin-top: .65rem !important;
+}
+
+@media (max-width: 1180px) {
+  body.dashboard-app-body [data-settings-form="leveling"] .dash-reward-editor {
+    grid-template-columns: minmax(7rem, .4fr) minmax(13rem, 1fr) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  body.dashboard-app-body [data-settings-form="leveling"] .dash-reward-editor,
+  body.dashboard-app-body .dash-role-create-controls {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body.dashboard-app-body [data-settings-form="leveling"] .dash-reward-editor > .dash-save-btn {
+    grid-column: auto;
+  }
+
+  body.dashboard-app-body .dash-role-create-controls [data-create-guild-role] {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  body.dashboard-app-body .dash-role-create-panel {
+    padding: .75rem;
+    border-radius: .9rem;
+  }
+
+  body.dashboard-app-body .dash-level-reward-list.is-expanded {
+    max-height: min(17rem, 42dvh);
+  }
+}
