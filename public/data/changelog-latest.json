@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-15",
+    "title": "Corrected dashboard card heights",
+    "items": [
+      "Stopped Leveling, AI Image Access, Logs and Moderation form cards from stretching to the height of longer preview or access columns.",
+      "Restored the intended Leveling desktop grid so reward roles and the simulation card occupy their own rows with the shared 20px gutter.",
+      "Matched the Settings Language card height to the View mode card on desktop and tablet while preserving natural mobile card heights."
+    ]
+  },
+  {
+    "date": "2026-07-15",
     "title": "Unified dashboard card grid",
     "items": [
       "Standardized every server dashboard tab on one twelve-column parent grid with a shared 20px card gutter.",

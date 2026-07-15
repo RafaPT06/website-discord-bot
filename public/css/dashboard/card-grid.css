@@ -27,6 +27,7 @@ body.dashboard-app-body .dash-tab-content > * {
   margin-block: 0 !important;
 }
 
+/* Keep one shared gutter without forcing unrelated columns to equal heights. */
 body.dashboard-app-body .dash-tab-content :is(
   .dash-grid,
   .dash-designer,
@@ -38,7 +39,7 @@ body.dashboard-app-body .dash-tab-content :is(
 ) {
   min-width: 0;
   align-content: start;
-  align-items: stretch;
+  align-items: start;
   gap: var(--dash-card-grid-gap) !important;
   row-gap: var(--dash-card-grid-gap) !important;
   column-gap: var(--dash-card-grid-gap) !important;
@@ -51,13 +52,29 @@ body.dashboard-app-body .dash-tab-content :is(section, form, div, aside):has(> .
   column-gap: var(--dash-card-grid-gap) !important;
 }
 
+/* Cards in asymmetric form/preview columns should size from their own content. */
 body.dashboard-app-body .dash-tab-content .dash-card {
   min-width: 0;
   width: 100%;
+  height: auto;
   margin: 0 !important;
-  align-self: stretch;
+  align-self: start;
 }
 
+body.dashboard-app-body .dash-tab-content :is(
+  .dash-designer,
+  .dash-welcome-layout
+) > .dash-card,
+body.dashboard-app-body .dash-tab-content :is(
+  .dash-welcome-settings-stack,
+  .dash-welcome-preview-column,
+  .dash-section-stack
+) > .dash-card {
+  height: auto !important;
+  align-self: start !important;
+}
+
+/* Standard overview rows are intentionally equal-height. */
 body.dashboard-app-body .dash-tab-content .dash-grid.two {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -66,24 +83,52 @@ body.dashboard-app-body .dash-tab-content .dash-grid.two {
 
 body.dashboard-app-body .dash-tab-content .dash-grid.two > .dash-card {
   height: 100%;
+  align-self: stretch;
 }
 
 body.dashboard-app-body .dash-tab-content [data-settings-form="welcome"] {
   display: grid !important;
+  align-items: start !important;
 }
 
 body.dashboard-app-body .dash-tab-content .dash-welcome-settings-stack,
-body.dashboard-app-body .dash-tab-content .dash-welcome-preview-column,
-body.dashboard-app-body .dash-tab-content .dash-section-stack {
+body.dashboard-app-body .dash-tab-content .dash-welcome-preview-column {
   display: grid !important;
   grid-auto-rows: max-content;
+  align-items: start !important;
 }
 
+/* The Leveling desktop layout relies on display: contents so the reward card
+   and simulation card can occupy separate parent-grid rows. Do not wrap them
+   back into one stretched nested column. */
 @media (min-width: 1100px) {
   body.dashboard-app-body .dash-tab-content [data-settings-form="leveling"] {
+    align-items: start !important;
     gap: var(--dash-card-grid-gap) !important;
     row-gap: var(--dash-card-grid-gap) !important;
     column-gap: var(--dash-card-grid-gap) !important;
+  }
+
+  body.dashboard-app-body .dash-tab-content [data-settings-form="leveling"] > .dash-form-card {
+    height: auto !important;
+    align-self: start !important;
+  }
+
+  body.dashboard-app-body .dash-tab-content [data-settings-form="leveling"] > .dash-section-stack {
+    display: contents !important;
+  }
+
+  body.dashboard-app-body .dash-tab-content [data-settings-form="leveling"] > .dash-section-stack > .dash-card {
+    height: auto !important;
+    align-self: start !important;
+  }
+}
+
+@media (max-width: 1099px) {
+  body.dashboard-app-body .dash-tab-content .dash-section-stack {
+    display: grid !important;
+    grid-auto-rows: max-content;
+    align-items: start !important;
   }
 }
 
@@ -95,5 +140,9 @@ body.dashboard-app-body .dash-tab-content .dash-section-stack {
 
   body.dashboard-app-body .dash-tab-content > * {
     grid-column: 1;
+  }
+
+  body.dashboard-app-body .dash-tab-content .dash-grid.two > .dash-card {
+    height: auto;
   }
 }

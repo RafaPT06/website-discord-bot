@@ -26,6 +26,19 @@ body.dashboard-app-body .dash-settings-future-card .dash-feature-card {
   height: 100%;
 }
 
+/* View mode and Language share one desktop/tablet grid row. Stretch only
+   those form cards so both surfaces finish on the same baseline. */
+@media (min-width: 721px) {
+  body.dashboard-app-body .dash-settings-page.dash-settings-dark-only {
+    align-items: stretch;
+  }
+
+  body.dashboard-app-body .dash-settings-page.dash-settings-dark-only > .dash-form-card {
+    height: 100%;
+    align-self: stretch;
+  }
+}
+
 @media (min-width: 1100px) {
   body.dashboard-app-body .dash-settings-page.dash-settings-dark-only {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -56,5 +69,9 @@ body.dashboard-app-body .dash-settings-future-card .dash-feature-card {
   body.dashboard-app-body .dash-settings-page.dash-settings-dark-only,
   body.dashboard-app-body .dash-settings-future-card .dash-feature-grid.compact {
     grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body.dashboard-app-body .dash-settings-page.dash-settings-dark-only > .dash-form-card {
+    height: auto;
   }
 }
