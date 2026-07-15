@@ -67,7 +67,6 @@ export function getDashboardServer(guildId) {
   return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}`, { cacheKey: `dashboard-server:${guildId}`, cacheMs: 10000, timeoutMs: 9000 });
 }
 
-
 export function searchGuildUsers(guildId, query, limit = 8) {
   const q = String(query || '').trim();
   if (isDemoRoute()) {
@@ -106,7 +105,6 @@ export async function removeImageAccessUser(guildId, userId) {
   return data;
 }
 
-
 export function getModerationAccess(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ...DEMO_MODERATION_ACCESS });
   return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/moderation-access`, {
@@ -144,6 +142,11 @@ function clearServerCaches(guildId, section) {
   memoryCache.delete(`dashboard-server:${guildId}`);
   memoryCache.delete(`server-settings:${guildId}:${section}`);
   memoryCache.delete(`level-rewards:${guildId}`);
+  memoryCache.delete(`roles:${guildId}`);
+}
+
+export function invalidateGuildRoles(guildId) {
+  memoryCache.delete(`dashboard-server:${guildId}`);
   memoryCache.delete(`roles:${guildId}`);
 }
 
@@ -197,7 +200,6 @@ export async function deleteLevelReward(guildId, level) {
   clearServerCaches(guildId, 'leveling');
   return data;
 }
-
 
 export async function simulateDashboardEvent(guildId, event, payload = {}) {
   if (isDemoRoute()) throw new Error('Demo mode is read-only. Real Discord events are disabled.');
