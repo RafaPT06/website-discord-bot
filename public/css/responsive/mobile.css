@@ -1,0 +1,8 @@
+/* Phone-only overrides: up to 720px.
+   Keep component-specific phone rules in their component file until they are
+   intentionally migrated and visually regression-tested. */
+@media (max-width: 720px) {
+  :root {
+    --meowz-responsive-tier: mobile;
+  }
+}
