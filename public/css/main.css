@@ -3549,7 +3549,7 @@ body.dashboard-app-body {
 .dash-side-nav a:hover { color: #fff; background: rgba(255,255,255,.045); }
 .dash-side-nav a.is-active { color: #c4b5fd; background: linear-gradient(135deg, rgba(124,58,237,.38), rgba(124,58,237,.14)); }
 .dash-side-nav a.is-active span { opacity: 1; box-shadow: 0 0 18px #a78bfa; }
-.dash-help-card { margin-top: auto; padding: 16px; display: grid; gap: 8px; border-radius: 16px; border: 1px solid rgba(139,92,246,.22); background: linear-gradient(135deg, rgba(124,58,237,.18), rgba(255,255,255,.035)); }
+.dash-help-card { display:none !important; margin-top: auto; padding: 16px; display: grid; gap: 8px; border-radius: 16px; border: 1px solid rgba(139,92,246,.22); background: linear-gradient(135deg, rgba(124,58,237,.18), rgba(255,255,255,.035)); }
 .dash-help-card strong { color: #fff; }
 .dash-help-card span { color: rgba(255,255,255,.62); line-height: 1.5; }
 .dash-help-card a { display: grid; place-items: center; min-height: 38px; border-radius: 12px; color: #fff; text-decoration: none; background: rgba(139,92,246,.35); font-weight: 850; }
