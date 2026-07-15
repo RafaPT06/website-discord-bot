@@ -4,6 +4,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const CSS_DIR = path.join(PUBLIC_DIR, 'css');
+const REPORT_PATH = path.join(ROOT, 'css-audit-report.json');
 const DARK_ONLY = true;
 
 const hardErrors = [];
@@ -207,7 +208,8 @@ function auditReferences(cssFiles) {
     if (!fs.existsSync(diskPath)) {
       hardErrors.push(`${uses[0].file}:${uses[0].line} references missing stylesheet ${href}.`);
     }
-    if (uses.length > 1 && uses.some((item, index) => uses.findIndex((other) => other.file === item.file) !== index)) {
+    const files = uses.map((item) => item.file);
+    if (new Set(files).size !== files.length) {
       warnings.push(`${href} is referenced more than once from the same source file.`);
     }
   }
@@ -227,6 +229,15 @@ function printSection(title, items, stream = console.log) {
     return;
   }
   for (const item of items) stream(`  - ${item}`);
+}
+
+function writeReport() {
+  fs.writeFileSync(REPORT_PATH, `${JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    stats,
+    hardErrors,
+    warnings,
+  }, null, 2)}\n`);
 }
 
 function run() {
@@ -250,6 +261,7 @@ function run() {
   }
 
   auditReferences(cssFiles);
+  writeReport();
 
   console.log('Meowz CSS audit');
   console.log('================');
@@ -264,9 +276,7 @@ function run() {
   printSection('Hard errors', hardErrors, console.error);
   printSection('Warnings', warnings);
 
-  if (hardErrors.length) {
-    process.exitCode = 1;
-  }
+  if (hardErrors.length) process.exitCode = 1;
 }
 
 run();
