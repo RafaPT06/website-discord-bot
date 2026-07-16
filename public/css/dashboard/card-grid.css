@@ -1,3 +1,6 @@
+@import url("./leveling-role-manager.css");
+@import url("./leveling-role-order.css");
+
 /* Unified dashboard card rhythm.
    This layer owns spacing between top-level dashboard cards. Internal field,
    list and control spacing remains component-specific. */
