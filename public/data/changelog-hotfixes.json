@@ -1,11 +1,20 @@
 [
   {
     "date": "2026-07-17",
+    "title": "Meowz-only reward roles and stable custom selects",
+    "items": [
+      "Filtered the Leveling reward-role picker to roles created through the Meowz dashboard instead of showing every editable role in the Discord server.",
+      "Added persistent bot-side role tracking with an audit-log backfill for recent dashboard-created roles, while keeping unrelated server roles outside the Leveling manager.",
+      "Changed the shared custom select so opening a searchable dropdown never automatically focuses its search field, and mobile keyboard height changes no longer close an open menu."
+    ]
+  },
+  {
+    "date": "2026-07-17",
     "title": "Polished Leveling role and reward management",
     "items": [
-      "Stopped the mobile reward-role picker from automatically opening the keyboard and closing its dropdown; touch devices now open directly into a stable scrollable role list.",
       "Replaced the browser confirmation alert for removing reward mappings with a centered Meowz-styled confirmation dialog that explains exactly what will and will not be deleted.",
-      "Added safe Discord role deletion from the Leveling panel with exact-name confirmation, linked reward cleanup, compact reward rows and clearer create, select and delete controls."
+      "Added safe Discord role deletion from the Leveling panel with exact-name confirmation and linked reward cleanup.",
+      "Added compact reward rows and clearer create, select, save and delete controls across desktop, tablet and mobile."
     ]
   },
   {
