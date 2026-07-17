@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-17",
+    "title": "Hosted Discord animated background",
+    "items": [
+      "Added a public, cache-friendly animated WebP endpoint for the custom Discord background.",
+      "Optimized the source animation into a lightweight looping asset so Discord themes can load it without local file access.",
+      "Added cross-origin image headers and server-side WebP validation while leaving dashboard, demo and authenticated routes unchanged."
+    ]
+  },
+  {
     "date": "2026-07-15",
     "title": "Compact Leveling role manager",
     "items": [
