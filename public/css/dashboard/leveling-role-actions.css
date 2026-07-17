@@ -1,0 +1,228 @@
+/* Polished Leveling reward and Discord role actions. */
+body.dashboard-app-body .dash-role-delete-panel {
+  margin-top: .8rem;
+  padding-top: .8rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .75rem;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+}
+
+body.dashboard-app-body .dash-role-delete-panel > div {
+  min-width: 0;
+  display: grid;
+  gap: .18rem;
+}
+
+body.dashboard-app-body .dash-role-delete-panel small {
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+body.dashboard-app-body .dash-role-delete-panel strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: .86rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.dashboard-app-body .dash-role-delete-btn,
+body.dashboard-app-body .dash-reward-remove-btn {
+  min-height: 2.35rem;
+  padding: .62rem .8rem;
+  border: 1px solid rgba(251, 113, 133, .28);
+  border-radius: .75rem;
+  background: rgba(225, 29, 72, .1);
+  color: #fda4af;
+  font: inherit;
+  font-size: .76rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease, transform .16s ease, opacity .16s ease;
+}
+
+body.dashboard-app-body .dash-role-delete-btn:hover:not(:disabled),
+body.dashboard-app-body .dash-reward-remove-btn:hover:not(:disabled),
+body.dashboard-app-body .dash-role-delete-btn:focus-visible:not(:disabled),
+body.dashboard-app-body .dash-reward-remove-btn:focus-visible:not(:disabled) {
+  border-color: rgba(251, 113, 133, .5);
+  background: rgba(225, 29, 72, .18);
+  transform: translateY(-1px);
+}
+
+body.dashboard-app-body .dash-role-delete-btn:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+}
+
+body.dashboard-app-body .dash-level-reward-list > .dash-role-row {
+  min-height: 3.2rem;
+  padding: .65rem .75rem;
+  display: grid;
+  grid-template-columns: minmax(5.5rem, .7fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .7rem;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: .85rem;
+  background: rgba(6, 9, 21, .48);
+}
+
+body.dashboard-app-body .dash-level-reward-list > .dash-role-row > span {
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 800;
+}
+
+body.dashboard-app-body .dash-level-reward-list > .dash-role-row > strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: .84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.dashboard-app-body .meowz-select[data-mobile-scroll-only] .meowz-select-search {
+  display: none !important;
+}
+
+body.dashboard-app-body .dash-role-scroll-hint {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: .66rem;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.dash-confirm-dialog {
+  width: min(calc(100vw - 1.25rem), 33rem);
+  max-width: none;
+  max-height: calc(100dvh - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.dash-confirm-dialog::backdrop {
+  background: rgba(2, 4, 12, .76);
+  -webkit-backdrop-filter: blur(.65rem) saturate(1.1);
+  backdrop-filter: blur(.65rem) saturate(1.1);
+}
+
+.dash-confirm-surface {
+  padding: clamp(1rem, 3.5vw, 1.35rem);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  border: 1px solid rgba(251, 113, 133, .32);
+  border-radius: 1.35rem;
+  background:
+    radial-gradient(circle at 95% 0%, rgba(251, 113, 133, .15), transparent 34%),
+    radial-gradient(circle at 0% 100%, rgba(34, 211, 238, .08), transparent 36%),
+    linear-gradient(155deg, rgba(15, 16, 34, .99), rgba(19, 10, 26, .99));
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, .62), inset 0 1px 0 rgba(255, 255, 255, .07);
+}
+
+.dash-confirm-icon {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(251, 113, 133, .42);
+  border-radius: 1rem;
+  background: rgba(251, 113, 133, .13);
+  color: #fda4af;
+  font-size: 1.25rem;
+  font-weight: 1000;
+}
+
+.dash-confirm-copy {
+  min-width: 0;
+}
+
+.dash-confirm-copy > span {
+  color: #fb7185;
+  font-size: .7rem;
+  font-weight: 950;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.dash-confirm-copy h2 {
+  margin: .35rem 0 .5rem;
+  font-size: clamp(1.3rem, 5vw, 1.75rem);
+  letter-spacing: -.035em;
+}
+
+.dash-confirm-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.dash-confirm-impact {
+  margin-top: .8rem;
+  padding: .7rem .8rem;
+  border: 1px solid rgba(251, 113, 133, .18);
+  border-radius: .8rem;
+  background: rgba(251, 113, 133, .07);
+  color: rgba(255, 255, 255, .74);
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.dash-confirm-surface > .dash-field,
+.dash-confirm-actions {
+  grid-column: 1 / -1;
+}
+
+.dash-confirm-surface > .dash-field {
+  margin: 0 !important;
+}
+
+.dash-confirm-actions {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: .7rem;
+}
+
+.dash-confirm-actions > button {
+  width: 100%;
+  min-width: 0 !important;
+}
+
+body:has(.dash-confirm-dialog[open]) {
+  overflow: hidden;
+}
+
+@media (max-width: 620px) {
+  body.dashboard-app-body .dash-role-delete-panel,
+  body.dashboard-app-body .dash-level-reward-list > .dash-role-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  body.dashboard-app-body .dash-level-reward-list > .dash-role-row > strong {
+    grid-column: 1 / 2;
+    grid-row: 2;
+  }
+
+  body.dashboard-app-body .dash-level-reward-list > .dash-role-row > button {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+
+  .dash-confirm-dialog {
+    width: min(calc(100vw - .8rem), 33rem);
+  }
+}
+
+@media (max-width: 390px) {
+  .dash-confirm-actions {
+    grid-template-columns: 1fr;
+  }
+}
