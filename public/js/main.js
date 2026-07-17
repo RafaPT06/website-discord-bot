@@ -40,17 +40,15 @@ async function bootPageModules() {
       import('./dashboard.js'),
       import('./components/dashboardReliability.js'),
       import('./components/levelingRoleManager.js'),
-      import('./components/levelingMobileDropdown.js'),
       import('./components/dashboardDialogMarkup.js'),
       import('./components/dashboardDialog.js'),
       import('./components/levelingRoleActions.js'),
-    ]).then(([dashboard, reliability, levelingRoles, mobileDropdown, dialogMarkup, dialog, roleActions]) => {
+    ]).then(([dashboard, reliability, levelingRoles, dialogMarkup, dialog, roleActions]) => {
       dashboard.initDashboard();
       reliability.initDashboardReliability();
       levelingRoles.initLevelingRoleManager();
       dialogMarkup.initDashboardDialogMarkup();
       dialog.initDashboardDialog();
-      mobileDropdown.initLevelingMobileDropdown();
       roleActions.initLevelingRoleActions();
     }));
   }
