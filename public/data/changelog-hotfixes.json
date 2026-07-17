@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-17",
+    "title": "Polished Leveling role and reward management",
+    "items": [
+      "Stopped the mobile reward-role picker from automatically opening the keyboard and closing its dropdown; touch devices now open directly into a stable scrollable role list.",
+      "Replaced the browser confirmation alert for removing reward mappings with a centered Meowz-styled confirmation dialog that explains exactly what will and will not be deleted.",
+      "Added safe Discord role deletion from the Leveling panel with exact-name confirmation, linked reward cleanup, compact reward rows and clearer create, select and delete controls."
+    ]
+  },
+  {
+    "date": "2026-07-17",
     "title": "Reliable bot-side role creation",
     "items": [
       "Completed the bot API support used by the Leveling dashboard to create editable Discord reward roles.",
