@@ -69,9 +69,9 @@ export function initDashboardDialog() {
       await action();
       close();
     } catch (error) {
+      console.error('Dashboard action failed:', error);
       submit.disabled = false;
       submit.textContent = original;
-      throw error;
     }
   });
   element.querySelector('[data-action-confirm-input]')?.addEventListener('input', (event) => {
