@@ -1,5 +1,5 @@
 const express = require('express');
-const backgroundData = require('../assets/discordBackgroundData');
+const backgroundHex = require('../assets/discordBackgroundHex');
 
 const router = express.Router();
 let cachedImage;
@@ -7,7 +7,7 @@ let cachedImage;
 function getImage() {
   if (cachedImage) return cachedImage;
 
-  const image = Buffer.from(backgroundData, 'base64');
+  const image = Buffer.from(backgroundHex, 'hex');
   const valid = image.length > 12
     && image.subarray(0, 4).toString('ascii') === 'RIFF'
     && image.subarray(8, 12).toString('ascii') === 'WEBP';
