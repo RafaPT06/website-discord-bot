@@ -49,6 +49,10 @@ jobs:
           node --input-type=module --check < public/js/components/dashboardReliability.js
           node --input-type=module --check < public/js/components/forms.js
           node --input-type=module --check < public/js/components/levelingRoleManager.js
+          node --input-type=module --check < public/js/components/levelingMobileDropdown.js
+          node --input-type=module --check < public/js/components/dashboardDialogMarkup.js
+          node --input-type=module --check < public/js/components/dashboardDialog.js
+          node --input-type=module --check < public/js/components/levelingRoleActions.js
           node --input-type=module --check < public/js/components/roleApi.js
 
       - name: Audit stylesheets and references
