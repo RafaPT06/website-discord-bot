@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2026-07-17",
+    "title": "Reliable bot-side role creation",
+    "items": [
+      "Completed the bot API support used by the Leveling dashboard to create editable Discord reward roles.",
+      "Removed the website-side direct Discord fallback so role creation stays behind the authenticated Meowz bot API connection.",
+      "Added a clear deployment-version error when the website is connected to an outdated bot service."
+    ]
+  }
+]
