@@ -6,6 +6,7 @@ const { router: dashboardReliabilityRouter } = require('./routes/dashboardReliab
 const { router: dashboardRolesRouter } = require('./routes/dashboardRoles');
 const { router: ownerAdminRouter } = require('./routes/ownerAdmin');
 const { router: authRouter } = require('./routes/auth');
+const { router: discordBackgroundRouter } = require('./routes/discordBackground');
 const { notFoundHandler } = require('./middleware/notFound');
 
 const SITE_VERSION = String(
@@ -48,6 +49,7 @@ function createApp() {
   app.get('/commands', (req, res) => res.redirect('/docs'));
   app.get('/changelog', (req, res) => res.sendFile(path.join(publicPath, 'changelog.html')));
 
+  app.use(discordBackgroundRouter);
   app.use(express.static(publicPath));
 
   app.use('/api', ownerAdminRouter);
