@@ -46,10 +46,10 @@ jobs:
           node --check server/routes/dashboardRoles.js
           node --input-type=module --check < public/js/main.js
           node --input-type=module --check < public/js/api.js
+          node --input-type=module --check < public/js/components/customSelect.js
           node --input-type=module --check < public/js/components/dashboardReliability.js
           node --input-type=module --check < public/js/components/forms.js
           node --input-type=module --check < public/js/components/levelingRoleManager.js
-          node --input-type=module --check < public/js/components/levelingMobileDropdown.js
           node --input-type=module --check < public/js/components/dashboardDialogMarkup.js
           node --input-type=module --check < public/js/components/dashboardDialog.js
           node --input-type=module --check < public/js/components/levelingRoleActions.js
