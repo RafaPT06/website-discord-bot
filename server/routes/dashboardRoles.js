@@ -130,69 +130,6 @@ function normalizeRoleName(value) {
   return name;
 }
 
-function normalizeDiscordRole(role = {}) {
-  return {
-    id: String(role.id || ''),
-    name: String(role.name || 'New role'),
-    color: role.color || role.hexColor || null,
-    position: Number.isFinite(Number(role.position)) ? Number(role.position) : 0,
-    managed: Boolean(role.managed),
-    editable: role.editable !== false,
-  };
-}
-
-function getDiscordBotToken() {
-  return process.env.DISCORD_BOT_TOKEN || process.env.BOT_TOKEN || process.env.DISCORD_TOKEN || '';
-}
-
-async function createRoleDirectly(guildId, name, createdBy) {
-  const token = getDiscordBotToken();
-  if (!token) {
-    const error = new Error('The bot API does not support role creation yet and no Discord bot token is configured on the website service.');
-    error.statusCode = 503;
-    throw error;
-  }
-
-  const headers = { authorization: `Bot ${token}`, 'content-type': 'application/json' };
-  const existingRoles = await fetchJsonWithTimeout(`${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/roles`, { headers });
-  const duplicate = (Array.isArray(existingRoles) ? existingRoles : [])
-    .find((role) => !role.managed && String(role.name || '').toLowerCase() === name.toLowerCase());
-
-  if (duplicate) {
-    return {
-      ok: true,
-      created: false,
-      existing: true,
-      fallback: true,
-      role: normalizeDiscordRole(duplicate),
-      message: 'An existing role with this name was selected.',
-      updatedAt: new Date().toISOString(),
-    };
-  }
-
-  const reason = createdBy
-    ? `Created from the Meowz dashboard by Discord user ${createdBy}`
-    : 'Created from the Meowz dashboard for a level reward';
-  const role = await fetchJsonWithTimeout(`${DISCORD_API}/guilds/${encodeURIComponent(guildId)}/roles`, {
-    method: 'POST',
-    headers: {
-      ...headers,
-      'x-audit-log-reason': encodeURIComponent(reason.slice(0, 512)),
-    },
-    body: JSON.stringify({ name }),
-  });
-
-  return {
-    ok: true,
-    created: true,
-    existing: false,
-    fallback: true,
-    role: normalizeDiscordRole(role),
-    message: `Created @${role.name}.`,
-    updatedAt: new Date().toISOString(),
-  };
-}
-
 async function createDashboardRole(guildId, name, createdBy) {
   try {
     return await requestBotApi(`/api/guilds/${encodeURIComponent(guildId)}/roles`, {
@@ -202,8 +139,12 @@ async function createDashboardRole(guildId, name, createdBy) {
     });
   } catch (err) {
     const status = Number(err.statusCode || 0);
-    if (![404, 405, 501, 502, 503, 504].includes(status)) throw err;
-    return createRoleDirectly(guildId, name, createdBy);
+    if ([404, 405, 501].includes(status)) {
+      const deploymentError = new Error('The deployed Meowz bot service is outdated and does not support role creation yet. Redeploy the bot service from the latest main branch, then try again.');
+      deploymentError.statusCode = 503;
+      throw deploymentError;
+    }
+    throw err;
   }
 }
 
