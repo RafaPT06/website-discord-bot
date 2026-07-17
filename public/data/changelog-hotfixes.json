@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-17",
+    "title": "Cleaner desktop server dashboard chrome",
+    "items": [
+      "Removed the duplicated desktop breadcrumb, View Bot action and horizontal server tab bar because the global navbar and sidebar already provide that navigation context.",
+      "Simplified the sidebar server switcher to the server identity only and removed the redundant Server Settings subtitle.",
+      "Moved the access badge beside the server name, kept the member count as the only supporting chip and removed the unnecessary Bot Installed badge while preserving mobile and tablet tabs."
+    ]
+  },
+  {
+    "date": "2026-07-17",
     "title": "Polished Leveling role and reward management",
     "items": [
       "Stopped the mobile reward-role picker from automatically opening the keyboard and closing its dropdown; touch devices now open directly into a stable scrollable role list.",
