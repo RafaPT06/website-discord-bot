@@ -123,11 +123,21 @@ function normalizeRoleName(value) {
     throw error;
   }
   if (name.toLowerCase() === '@everyone') {
-    const error = new Error('The @everyone role cannot be created or replaced.');
+    const error = new Error('The @everyone role cannot be created, replaced or deleted.');
     error.statusCode = 400;
     throw error;
   }
   return name;
+}
+
+function normalizeRoleId(value) {
+  const roleId = String(value || '').trim();
+  if (!/^\d{15,25}$/.test(roleId)) {
+    const error = new Error('Invalid Discord role ID.');
+    error.statusCode = 400;
+    throw error;
+  }
+  return roleId;
 }
 
 async function createDashboardRole(guildId, name, createdBy) {
@@ -148,6 +158,24 @@ async function createDashboardRole(guildId, name, createdBy) {
   }
 }
 
+async function deleteDashboardRole(guildId, roleId, expectedName, deletedBy) {
+  try {
+    return await requestBotApi(`/api/guilds/${encodeURIComponent(guildId)}/roles/${encodeURIComponent(roleId)}`, {
+      method: 'DELETE',
+      timeoutMs: 9000,
+      body: JSON.stringify({ expectedName, deletedBy }),
+    });
+  } catch (err) {
+    const status = Number(err.statusCode || 0);
+    if ([404, 405, 501].includes(status)) {
+      const deploymentError = new Error('The deployed Meowz bot service is outdated and does not support role deletion yet. Redeploy the bot service from the latest main branch, then try again.');
+      deploymentError.statusCode = 503;
+      throw deploymentError;
+    }
+    throw err;
+  }
+}
+
 router.post('/dashboard/servers/:guildId/roles', requireAuth, requireDashboardServerAccess, async (req, res) => {
   try {
     const name = normalizeRoleName(req.body?.name);
@@ -157,6 +185,21 @@ router.post('/dashboard/servers/:guildId/roles', requireAuth, requireDashboardSe
     return res.status(err.statusCode || 502).json({
       ok: false,
       error: err.message || 'Could not create the Discord role.',
+      diagnostics: getBotApiDiagnostics(),
+    });
+  }
+});
+
+router.delete('/dashboard/servers/:guildId/roles/:roleId', requireAuth, requireDashboardServerAccess, async (req, res) => {
+  try {
+    const roleId = normalizeRoleId(req.params.roleId);
+    const expectedName = normalizeRoleName(req.body?.expectedName);
+    const data = await deleteDashboardRole(req.guildId, roleId, expectedName, req.sessionData?.user?.id || null);
+    return res.json(data);
+  } catch (err) {
+    return res.status(err.statusCode || 502).json({
+      ok: false,
+      error: err.message || 'Could not delete the Discord role.',
       diagnostics: getBotApiDiagnostics(),
     });
   }
