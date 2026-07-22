@@ -140,6 +140,22 @@ function normalizeRoleId(value) {
   return roleId;
 }
 
+async function listDashboardRoles(guildId) {
+  try {
+    return await requestBotApi(`/api/guilds/${encodeURIComponent(guildId)}/dashboard-roles`, {
+      timeoutMs: 7500,
+    });
+  } catch (err) {
+    const status = Number(err.statusCode || 0);
+    if ([404, 405, 501].includes(status)) {
+      const deploymentError = new Error('The deployed Meowz bot service is outdated and cannot filter dashboard-created roles yet. Redeploy the bot service from the latest main branch, then try again.');
+      deploymentError.statusCode = 503;
+      throw deploymentError;
+    }
+    throw err;
+  }
+}
+
 async function createDashboardRole(guildId, name, createdBy) {
   try {
     return await requestBotApi(`/api/guilds/${encodeURIComponent(guildId)}/roles`, {
@@ -175,6 +191,28 @@ async function deleteDashboardRole(guildId, roleId, expectedName, deletedBy) {
     throw err;
   }
 }
+
+router.get('/dashboard/servers/:guildId/roles', requireAuth, requireDashboardServerAccess, async (req, res) => {
+  try {
+    const data = await listDashboardRoles(req.guildId);
+    const roles = (Array.isArray(data?.roles) ? data.roles : [])
+      .filter((role) => role?.createdByMeowz === true && role?.editable !== false);
+    return res.json({
+      ...data,
+      ok: true,
+      roles,
+      total: roles.length,
+      filtered: 'meowz-created',
+    });
+  } catch (err) {
+    return res.status(err.statusCode || 502).json({
+      ok: false,
+      roles: [],
+      error: err.message || 'Could not load Meowz-created roles.',
+      diagnostics: getBotApiDiagnostics(),
+    });
+  }
+});
 
 router.post('/dashboard/servers/:guildId/roles', requireAuth, requireDashboardServerAccess, async (req, res) => {
   try {

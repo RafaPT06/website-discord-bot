@@ -3,6 +3,11 @@ import { escapeHtml } from '../utils.js';
 const SELECTOR = 'select:not([multiple]):not([data-meowz-select-ignore]):not([data-changelog-month-select])';
 let sequence = 0;
 let observer;
+let lastViewportWidth = Math.round(window.visualViewport?.width || window.innerWidth || 0);
+
+function usesCoarsePointer() {
+  return Boolean(navigator.maxTouchPoints > 0 || window.matchMedia?.('(pointer: coarse)').matches);
+}
 
 function getOptions(select) {
   return [...select.options].map((option, index) => ({
@@ -29,7 +34,7 @@ function renderOptions(select, root) {
   const searchable = options.length > 8;
   menu.innerHTML = `
     <div class="meowz-select-menu-head"><strong>Choose an option</strong><small>${options.length} option${options.length === 1 ? '' : 's'}</small></div>
-    ${searchable ? '<label class="meowz-select-search"><span class="sr-only">Search options</span><input type="search" autocomplete="off" placeholder="Search…" data-meowz-select-search /></label>' : ''}
+    ${searchable ? '<label class="meowz-select-search"><span class="sr-only">Search options</span><input type="search" autocomplete="off" enterkeyhint="search" placeholder="Search…" data-meowz-select-search /></label>' : ''}
     <div class="meowz-select-options">
       ${options.map((option) => `
         <button type="button" class="meowz-select-option${option.selected ? ' is-selected' : ''}" role="option" aria-selected="${option.selected ? 'true' : 'false'}" data-meowz-select-option data-value="${escapeHtml(option.value)}" ${option.disabled ? 'disabled' : ''} tabindex="-1">
@@ -92,8 +97,9 @@ function open(root, focus = false) {
     search.value = '';
     filter(root, '');
   }
+  const shouldFocusSearch = Boolean(search && focus && !usesCoarsePointer());
   requestAnimationFrame(() => {
-    if (search && focus) search.focus({ preventScroll: true });
+    if (shouldFocusSearch) search.focus({ preventScroll: true });
     else if (focus) {
       const options = visibleOptions(root);
       const selected = options.find((option) => option.classList.contains('is-selected')) || options[0];
@@ -169,7 +175,7 @@ function bindEvents() {
       event.preventDefault();
       const root = trigger.closest('[data-meowz-select]');
       if (root.classList.contains('is-open')) close(root);
-      else open(root, Boolean(root.querySelector('[data-meowz-select-search]')));
+      else open(root, false);
       return;
     }
     const option = event.target.closest?.('[data-meowz-select-option]');
@@ -220,7 +226,13 @@ function bindEvents() {
   document.addEventListener('reset', (event) => {
     requestAnimationFrame(() => event.target.querySelectorAll?.('select[data-meowz-select-ready="true"]').forEach(sync));
   });
-  window.addEventListener('resize', () => closeAll(), { passive: true });
+
+  window.addEventListener('resize', () => {
+    const width = Math.round(window.visualViewport?.width || window.innerWidth || 0);
+    const widthChanged = Math.abs(width - lastViewportWidth) > 2;
+    lastViewportWidth = width;
+    if (widthChanged) closeAll();
+  }, { passive: true });
 }
 
 export function initCustomSelects() {
