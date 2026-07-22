@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-22",
+    "title": "Reliable local environment loading",
+    "items": [
+      "Loaded local .env configuration before any website server module reads environment variables, while preserving variables supplied by Railway or the launching shell.",
+      "Documented the complete required and optional website environment contract with safe placeholders for OAuth, the bot API, dashboard fallbacks, deployment metadata and monitoring.",
+      "Expanded the local-development guide with setup, port and monitor instructions without changing production hosting behavior or exposing credentials."
+    ]
+  },
+  {
     "date": "2026-07-15",
     "title": "Compact Leveling role manager",
     "items": [
