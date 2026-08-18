@@ -4,6 +4,7 @@ const { readSession } = require('../authSession');
 
 const router = express.Router();
 const privateAssetsPath = path.join(__dirname, '..', 'assets', 'private-tools');
+const MAX_IMAGE_DATA_URL_LENGTH = 9_500_000;
 
 function getOwnerId() {
   return process.env.OWNER_ID || process.env.BOT_OWNER_ID || process.env.DASHBOARD_OWNER_ID || '861228909851705366';
@@ -11,13 +12,15 @@ function getOwnerId() {
 
 function requireOwner(req, res, next) {
   const session = readSession(req);
+  const wantsHtml = req.method === 'GET' && req.path.startsWith('/tools/');
+
   if (!session?.user) {
-    if (req.accepts('html')) return res.redirect('/auth/discord');
+    if (wantsHtml) return res.redirect('/auth/discord');
     return res.status(401).json({ ok: false, error: 'Login required.' });
   }
 
   if (String(session.user.id) !== String(getOwnerId())) {
-    if (req.accepts('html')) return res.status(403).send('Private tool.');
+    if (wantsHtml) return res.status(403).send('Private tool.');
     return res.status(403).json({ ok: false, error: 'Private tool.' });
   }
 
@@ -26,7 +29,9 @@ function requireOwner(req, res, next) {
 }
 
 function isSupportedImageDataUrl(value) {
-  return /^data:image\/(?:png|jpe?g|webp);base64,[A-Za-z0-9+/=\s]+$/i.test(String(value || ''));
+  const text = String(value || '');
+  return text.length <= MAX_IMAGE_DATA_URL_LENGTH
+    && /^data:image\/(?:png|jpe?g|webp);base64,[A-Za-z0-9+/=\s]+$/i.test(text);
 }
 
 function extractResponseText(payload) {
@@ -40,12 +45,17 @@ function extractResponseText(payload) {
 }
 
 function sanitizePuzzle(value) {
-  const rows = Math.max(1, Math.min(80, Number(value?.rows) || 0));
-  const cols = Math.max(1, Math.min(80, Number(value?.cols) || 0));
-  if (!rows || !cols) throw new Error('OpenAI did not return a valid puzzle size.');
+  const rawRows = Number(value?.rows);
+  const rawCols = Number(value?.cols);
+  if (!Number.isInteger(rawRows) || !Number.isInteger(rawCols)) {
+    throw new Error('OpenAI did not return a valid puzzle size.');
+  }
 
+  const rows = Math.max(1, Math.min(80, rawRows));
+  const cols = Math.max(1, Math.min(80, rawCols));
   const seen = new Set();
   const cells = [];
+
   for (const raw of Array.isArray(value?.cells) ? value.cells : []) {
     const row = Number(raw?.row);
     const col = Number(raw?.col);
@@ -56,6 +66,8 @@ function sanitizePuzzle(value) {
     const visibleLetter = String(raw?.visibleLetter || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 1);
     cells.push({ row, col, visibleLetter });
   }
+
+  cells.sort((a, b) => (a.row - b.row) || (a.col - b.col));
 
   const words = (Array.isArray(value?.words) ? value.words : [])
     .map((word) => String(word || '').trim().toUpperCase())
@@ -82,7 +94,7 @@ router.get('/tools/puzzle', requireOwner, (req, res) => {
 router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) => {
   const imageDataUrl = String(req.body?.imageDataUrl || '');
   if (!isSupportedImageDataUrl(imageDataUrl)) {
-    return res.status(400).json({ ok: false, error: 'Upload a PNG, JPG or WebP screenshot.' });
+    return res.status(400).json({ ok: false, error: 'Upload a PNG, JPG or WebP screenshot under the supported size limit.' });
   }
 
   const apiKey = String(process.env.OPENAI_API_KEY || '').trim();
@@ -97,8 +109,8 @@ router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) =
     required: ['title', 'rows', 'cols', 'cells', 'words'],
     properties: {
       title: { type: 'string' },
-      rows: { type: 'integer', minimum: 1, maximum: 80 },
-      cols: { type: 'integer', minimum: 1, maximum: 80 },
+      rows: { type: 'integer' },
+      cols: { type: 'integer' },
       cells: {
         type: 'array',
         items: {
@@ -106,8 +118,8 @@ router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) =
           additionalProperties: false,
           required: ['row', 'col', 'visibleLetter'],
           properties: {
-            row: { type: 'integer', minimum: 1, maximum: 80 },
-            col: { type: 'integer', minimum: 1, maximum: 80 },
+            row: { type: 'integer' },
+            col: { type: 'integer' },
             visibleLetter: { type: 'string' },
           },
         },
@@ -123,7 +135,8 @@ router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) =
     'For cells, list every actual writable square exactly once using 1-based row and column coordinates.',
     'visibleLetter must contain a single letter only when that letter is visibly printed inside that square in the screenshot; otherwise use an empty string.',
     'Transcribe every available word from the printed word bank exactly as shown, including spaces or hyphens when visible.',
-    'Ignore page numbers, headings that are not the puzzle title, shadows, faint show-through from the other side of the paper, and decorative marks.',
+    'Ignore page numbers, word-length headings, shadows, faint show-through from the other side of the paper, and decorative marks.',
+    'Use the actual puzzle title for title when it is clearly visible; otherwise use Imported puzzle.',
     'The output schema intentionally has no answer-placement field. Do not encode or reveal a solution anywhere.',
   ].join(' ');
 
