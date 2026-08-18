@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-18",
+    "title": "Owner puzzle library",
+    "items": [
+      "Added a Puzzles tab to the dashboard navigation while Owner view is active and verified, linking directly to the private screenshot puzzle tool.",
+      "Added an automatic saved-puzzle library that keeps separate copies of imported puzzle structures and letter progress instead of letting a new import replace the previous puzzle.",
+      "Added quick reopen and delete controls for saved puzzles while keeping screenshot images out of the saved library."
+    ]
+  },
+  {
+    "date": "2026-08-18",
     "title": "Private AI screenshot puzzle importer",
     "items": [
       "Added an owner-only puzzle tool that turns a screenshot into a playable grid by sending the resized image to the OpenAI Responses API and transcribing only visible cells, printed letters and the available word bank.",

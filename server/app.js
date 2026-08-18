@@ -8,6 +8,7 @@ const { router: ownerAdminRouter } = require('./routes/ownerAdmin');
 const { router: authRouter } = require('./routes/auth');
 const { router: discordBackgroundRouter } = require('./routes/discordBackground');
 const { router: puzzleToolsRouter } = require('./routes/puzzleTools');
+const { router: ownerPuzzleLibraryRouter } = require('./routes/ownerPuzzleLibrary');
 const { notFoundHandler } = require('./middleware/notFound');
 
 const SITE_VERSION = String(
@@ -24,6 +25,7 @@ function createApp() {
 
   app.disable('x-powered-by');
   app.use('/api/private-tools', express.json({ limit: '10mb' }));
+  app.use(ownerPuzzleLibraryRouter);
   app.use(puzzleToolsRouter);
   app.use(express.json());
 
