@@ -1,375 +1,182 @@
 <!doctype html>
-<html lang="en" data-theme="dark" style="color-scheme: dark;">
+<html lang="en" data-theme="dark" style="color-scheme:dark">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Puzzle Importer — Meowz</title>
-  <meta name="theme-color" content="#8b5cf6" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <link rel="stylesheet" href="/css/main.css" />
-  <style>
-    :root{--tool-card:rgba(20,20,34,.78);--tool-border:rgba(255,255,255,.10);--tool-muted:#aeb1c7;--tool-cell:clamp(28px,7.2vw,42px)}
-    *{box-sizing:border-box}
-    body{min-height:100vh;margin:0;background:#0b0b14;color:#f7f7fb;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .tool-shell{width:min(1100px,calc(100% - 24px));margin:0 auto;padding:28px 0 56px}
-    .tool-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
-    .tool-brand{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none;font-weight:800}
-    .tool-brand-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#8b5cf6,#22d3ee);color:white}
-    .tool-kicker{margin:0 0 6px;color:#9fa3bd;font-size:.82rem;text-transform:uppercase;letter-spacing:.13em;font-weight:800}
-    h1{margin:0;font-size:clamp(1.7rem,5vw,2.7rem);line-height:1.05}
-    .tool-copy{margin:10px 0 0;color:var(--tool-muted);max-width:720px;line-height:1.55}
-    .card{margin-top:20px;border:1px solid var(--tool-border);background:var(--tool-card);backdrop-filter:blur(16px);border-radius:22px;padding:clamp(16px,4vw,24px);box-shadow:0 20px 70px rgba(0,0,0,.25)}
-    .upload-box{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
-    .upload-label{display:block;border:1px dashed rgba(255,255,255,.22);border-radius:18px;padding:18px;cursor:pointer;background:rgba(255,255,255,.025)}
-    .upload-label strong{display:block;margin-bottom:4px}.upload-label span{color:var(--tool-muted);font-size:.92rem}
-    .upload-label input{display:none}
-    button{font:inherit}
-    .btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer;color:white;background:linear-gradient(135deg,#7c3aed,#0891b2);min-height:44px}
-    .btn:disabled{cursor:not-allowed;opacity:.42;filter:saturate(.5)}
-    .btn-secondary{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
-    .preview{display:none;margin-top:16px;grid-template-columns:110px minmax(0,1fr);gap:14px;align-items:center}
-    .preview.visible{display:grid}.preview img{width:110px;height:110px;object-fit:cover;border-radius:16px;border:1px solid var(--tool-border)}
-    .status{margin-top:14px;min-height:22px;color:var(--tool-muted);font-size:.92rem}.status.error{color:#fca5a5}.status.ok{color:#86efac}
-    .puzzle-card[hidden]{display:none}
-    .puzzle-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-    .puzzle-head h2{margin:0}.puzzle-meta{color:var(--tool-muted);font-size:.9rem;margin-top:5px}
-    .board-scroll{overflow:auto;margin-top:18px;padding:4px 2px 10px;overscroll-behavior:contain}
-    .board{display:grid;gap:2px;width:max-content;min-width:max-content;margin:0 auto}
-    .square{width:var(--tool-cell);height:var(--tool-cell);border:2px solid rgba(255,255,255,.74);background:#11111c;color:white;text-align:center;text-transform:uppercase;font-weight:900;font-size:clamp(1rem,4.5vw,1.25rem);padding:0;border-radius:4px;outline:none}
-    .square:focus{border-color:#67e8f9;box-shadow:0 0 0 3px rgba(34,211,238,.18)}
-    .square.fixed{background:rgba(139,92,246,.20);border-color:#a78bfa;color:#ddd6fe}
-    .bank{margin-top:22px}.bank h3{margin:0 0 12px}.bank-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
-    .bank-group{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
-    .bank-group strong{display:block;color:#c4b5fd;margin-bottom:7px;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em}
-    .word{display:block;padding:3px 0;color:#f3f4f6;overflow-wrap:anywhere}
-    .progress-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;flex-wrap:wrap}
-    .progress-text{color:var(--tool-muted);font-size:.92rem}
-    .result{margin-top:14px;padding:13px 15px;border-radius:14px;font-weight:800;display:none}.result.show{display:block}.result.good{background:rgba(34,197,94,.12);border:1px solid rgba(74,222,128,.28);color:#86efac}.result.bad{background:rgba(239,68,68,.10);border:1px solid rgba(248,113,113,.26);color:#fca5a5}
-    .privacy-note{margin-top:12px;color:#8d91aa;font-size:.82rem;line-height:1.45}
-    @media(max-width:620px){.upload-box{grid-template-columns:1fr}.upload-box .btn{width:100%}.tool-shell{padding-top:18px}.preview{grid-template-columns:82px minmax(0,1fr)}.preview img{width:82px;height:82px}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Puzzle Importer — Meowz</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+:root{--card:rgba(20,20,34,.78);--border:rgba(255,255,255,.10);--muted:#aeb1c7;--cell:clamp(28px,7.2vw,42px)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#0b0b14;color:#f7f7fb;font-family:Inter,system-ui,sans-serif}
+.shell{width:min(1100px,calc(100% - 24px));margin:auto;padding:24px 0 54px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{color:inherit;text-decoration:none;font-weight:900}
+.card{margin-top:20px;border:1px solid var(--border);background:var(--card);border-radius:22px;padding:clamp(16px,4vw,24px)}.muted,.status,.meta,.note{color:var(--muted)}
+.upload{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.picker{border:1px dashed rgba(255,255,255,.22);border-radius:18px;padding:18px;cursor:pointer}.picker input{display:none}
+.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(135deg,#7c3aed,#0891b2)}.btn.secondary{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}.btn:disabled{opacity:.42;cursor:not-allowed}
+.preview{display:none;grid-template-columns:90px 1fr;gap:12px;align-items:center;margin-top:14px}.preview.show{display:grid}.preview img{width:90px;height:90px;object-fit:cover;border-radius:14px;border:1px solid var(--border)}
+.board-scroll{overflow:auto;margin-top:18px}.board{display:grid;gap:2px;width:max-content;margin:auto}.square{width:var(--cell);height:var(--cell);border:2px solid rgba(255,255,255,.75);background:#11111c;color:white;text-align:center;text-transform:uppercase;font-weight:900;font-size:1.05rem;border-radius:4px;outline:none}.square.fixed{background:rgba(139,92,246,.20);border-color:#a78bfa}.square:focus{border-color:#67e8f9}
+.head,.progress{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.bank{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-top:14px}.group{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}.group strong{display:block;color:#c4b5fd;margin-bottom:6px}.word{display:block;padding:2px 0}.result{display:none;margin-top:12px;padding:12px;border-radius:12px;font-weight:800}.result.show{display:block}.result.good{color:#86efac;background:rgba(34,197,94,.12)}.result.bad{color:#fca5a5;background:rgba(239,68,68,.10)}
+@media(max-width:620px){.upload{grid-template-columns:1fr}.upload .btn{width:100%}}
+</style>
 </head>
 <body>
-  <main class="tool-shell">
-    <div class="tool-top">
-      <a class="tool-brand" href="/dashboard"><span class="tool-brand-icon">M</span><span>Meowz</span></a>
-      <a class="btn btn-secondary" href="/dashboard" style="text-decoration:none">Back</a>
-    </div>
+<main class="shell">
+<div class="top"><a class="brand" href="/dashboard">Meowz</a><a class="btn secondary" href="/dashboard" style="text-decoration:none">Back</a></div>
+<p class="muted">PRIVATE TOOL</p><h1>Screenshot → playable puzzle</h1>
+<p class="muted">Upload the puzzle page. Meowz now creates a high-contrast structural copy to suppress faint reverse-side squares before OpenAI builds the grid.</p>
 
-    <p class="tool-kicker">Private tool</p>
-    <h1>Screenshot → playable puzzle</h1>
-    <p class="tool-copy">Upload a photo or screenshot that contains the fill-in grid and its available word list. OpenAI reads only the visible structure and word bank, then Meowz builds the puzzle without solving it for you.</p>
+<section class="card">
+<div class="upload">
+<label class="picker"><strong>Choose puzzle screenshot</strong><div class="muted">PNG, JPG or WebP</div><input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp"></label>
+<button class="btn" id="importButton" disabled>Build puzzle</button>
+</div>
+<div class="preview" id="previewBox"><img id="previewImage" alt="Selected screenshot"><div><strong id="fileName"></strong><div class="note">Original image is kept for text and visible letters; a cleaned copy is used for grid detection.</div></div></div>
+<div class="status" id="status"></div>
+</section>
 
-    <section class="card">
-      <div class="upload-box">
-        <label class="upload-label">
-          <strong>Choose a puzzle screenshot</strong>
-          <span>PNG, JPG or WebP. Clear, straight-on photos work best.</span>
-          <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" />
-        </label>
-        <button class="btn" id="importButton" type="button" disabled>Build puzzle</button>
-      </div>
-      <div class="preview" id="previewBox">
-        <img id="previewImage" alt="Selected puzzle screenshot" />
-        <div><strong id="fileName">Selected image</strong><div class="privacy-note">The image is resized in your browser, sent to the Meowz server, then passed to the OpenAI Responses API with storage disabled.</div></div>
-      </div>
-      <div class="status" id="importStatus" aria-live="polite"></div>
-    </section>
+<section class="card" id="puzzleCard" hidden>
+<div class="head"><div><div class="muted">IMPORTED PUZZLE</div><h2 id="title">Puzzle</h2><div class="meta" id="meta"></div></div><button class="btn secondary" id="resetButton">Reset letters</button></div>
+<div class="board-scroll"><div class="board" id="board"></div></div>
+<div class="progress"><div class="meta" id="progressText"></div><button class="btn" id="checkButton" disabled>Check finished puzzle</button></div>
+<div class="result" id="result"></div>
+<h3>Available words</h3><div class="bank" id="wordBank"></div>
+<p class="note">The final check stays locked until every writable square is filled and never reveals which entry is wrong.</p>
+</section>
+</main>
 
-    <section class="card puzzle-card" id="puzzleCard" hidden>
-      <div class="puzzle-head">
-        <div><p class="tool-kicker">Imported puzzle</p><h2 id="puzzleTitle">Puzzle</h2><div class="puzzle-meta" id="puzzleMeta"></div></div>
-        <button class="btn btn-secondary" id="resetButton" type="button">Reset letters</button>
-      </div>
-      <div class="board-scroll"><div class="board" id="board" aria-label="Puzzle grid"></div></div>
-      <div class="progress-row">
-        <div class="progress-text" id="progressText">0 / 0 squares filled</div>
-        <button class="btn" id="checkButton" type="button" disabled>Check finished puzzle</button>
-      </div>
-      <div class="result" id="result" aria-live="polite"></div>
-      <div class="bank"><h3>Available words</h3><div class="bank-groups" id="wordBank"></div></div>
-      <div class="privacy-note">No per-word correctness is shown while you solve. The final check stays locked until every writable square has a letter.</div>
-    </section>
-  </main>
+<script>
+const input=document.getElementById('imageInput');
+const importButton=document.getElementById('importButton');
+const statusBox=document.getElementById('status');
+const previewBox=document.getElementById('previewBox');
+const previewImage=document.getElementById('previewImage');
+const fileName=document.getElementById('fileName');
+const puzzleCard=document.getElementById('puzzleCard');
+const titleBox=document.getElementById('title');
+const metaBox=document.getElementById('meta');
+const board=document.getElementById('board');
+const wordBank=document.getElementById('wordBank');
+const progressText=document.getElementById('progressText');
+const checkButton=document.getElementById('checkButton');
+const resetButton=document.getElementById('resetButton');
+const resultBox=document.getElementById('result');
+const STORAGE_KEY='meowz-private-puzzle-v2';
+let originalDataUrl='',structureDataUrl='',puzzle=null,values={};
 
-  <script>
-    const input = document.getElementById('imageInput');
-    const importButton = document.getElementById('importButton');
-    const importStatus = document.getElementById('importStatus');
-    const previewBox = document.getElementById('previewBox');
-    const previewImage = document.getElementById('previewImage');
-    const fileName = document.getElementById('fileName');
-    const puzzleCard = document.getElementById('puzzleCard');
-    const puzzleTitle = document.getElementById('puzzleTitle');
-    const puzzleMeta = document.getElementById('puzzleMeta');
-    const board = document.getElementById('board');
-    const wordBank = document.getElementById('wordBank');
-    const progressText = document.getElementById('progressText');
-    const checkButton = document.getElementById('checkButton');
-    const resetButton = document.getElementById('resetButton');
-    const resultBox = document.getElementById('result');
-    const STORAGE_KEY = 'meowz-private-puzzle-v2';
+function normalizeWord(v){return String(v||'').toUpperCase().replace(/[^A-Z]/g,'')}
+function cellKey(r,c){return `${r}:${c}`}
+function setStatus(t,kind=''){statusBox.textContent=t;statusBox.style.color=kind==='error'?'#fca5a5':kind==='ok'?'#86efac':''}
 
-    let selectedDataUrl = '';
-    let puzzle = null;
-    let values = {};
+async function loadImage(file){
+  const source=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||''));r.onerror=reject;r.readAsDataURL(file)});
+  return await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=source});
+}
 
-    function normalizeWord(value) {
-      return String(value || '').toUpperCase().replace(/[^A-Z]/g, '');
-    }
+function makeCanvas(img,maxSide=2200){
+  const scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+  canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+  return canvas;
+}
 
-    function cellKey(row, col) {
-      return `${row}:${col}`;
-    }
+function createOriginal(img){
+  const canvas=makeCanvas(img),ctx=canvas.getContext('2d',{alpha:false});
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  return canvas.toDataURL('image/jpeg',.92);
+}
 
-    function setStatus(text, type = '') {
-      importStatus.textContent = text;
-      importStatus.className = `status ${type}`.trim();
-    }
+function createStructureCopy(img){
+  const canvas=makeCanvas(img),ctx=canvas.getContext('2d',{alpha:false});
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  const image=ctx.getImageData(0,0,canvas.width,canvas.height),d=image.data;
+  for(let i=0;i<d.length;i+=4){
+    const y=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];
+    let out;
+    if(y<=145) out=0;
+    else if(y>=205) out=255;
+    else out=Math.round((y-145)/60*255);
+    out=out<150?Math.max(0,out-45):Math.min(255,out+35);
+    d[i]=d[i+1]=d[i+2]=out;d[i+3]=255;
+  }
+  ctx.putImageData(image,0,0);
+  return canvas.toDataURL('image/jpeg',.95);
+}
 
-    async function resizeImage(file) {
-      const source = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ''));
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      const img = await new Promise((resolve, reject) => {
-        const el = new Image();
-        el.onload = () => resolve(el);
-        el.onerror = reject;
-        el.src = source;
-      });
-      const maxSide = 2200;
-      const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
-      canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-      const ctx = canvas.getContext('2d', { alpha: false });
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL('image/jpeg', 0.9);
-    }
+input.addEventListener('change',async()=>{
+  const file=input.files?.[0];originalDataUrl='';structureDataUrl='';importButton.disabled=true;
+  if(!file)return;
+  try{
+    setStatus('Preparing original and high-contrast grid images…');
+    const img=await loadImage(file);
+    originalDataUrl=createOriginal(img);
+    structureDataUrl=createStructureCopy(img);
+    previewImage.src=originalDataUrl;fileName.textContent=file.name;previewBox.classList.add('show');
+    importButton.disabled=false;setStatus('Ready to build.');
+  }catch{setStatus('Could not prepare that image.','error')}
+});
 
-    input.addEventListener('change', async () => {
-      const file = input.files?.[0];
-      selectedDataUrl = '';
-      importButton.disabled = true;
-      if (!file) return;
-      try {
-        setStatus('Preparing image…');
-        selectedDataUrl = await resizeImage(file);
-        previewImage.src = selectedDataUrl;
-        fileName.textContent = file.name;
-        previewBox.classList.add('visible');
-        importButton.disabled = false;
-        setStatus('Ready to build.');
-      } catch {
-        setStatus('Could not read that image.', 'error');
-      }
-    });
+importButton.addEventListener('click',async()=>{
+  if(!originalDataUrl||!structureDataUrl)return;
+  importButton.disabled=true;setStatus('OpenAI is reading the cleaned grid and original word list…');
+  try{
+    const response=await fetch('/api/private-tools/puzzle/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({originalImageDataUrl:originalDataUrl,structureImageDataUrl:structureDataUrl})});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data?.ok)throw new Error(data?.error||'Could not build puzzle.');
+    puzzle=data.puzzle;values={};for(const cell of puzzle.cells)if(cell.visibleLetter)values[cellKey(cell.row,cell.col)]=cell.visibleLetter;
+    saveState();renderPuzzle();setStatus('Puzzle built from the cleaned grid.','ok');
+  }catch(err){setStatus(err.message||'Could not build puzzle.','error')}
+  finally{importButton.disabled=!originalDataUrl}
+});
 
-    importButton.addEventListener('click', async () => {
-      if (!selectedDataUrl) return;
-      importButton.disabled = true;
-      setStatus('OpenAI is reading the grid and word list…');
-      try {
-        const response = await fetch('/api/private-tools/puzzle/import', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageDataUrl: selectedDataUrl }),
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok || !data?.ok) throw new Error(data?.error || 'Could not build the puzzle.');
-        puzzle = data.puzzle;
-        values = {};
-        for (const cell of puzzle.cells) {
-          if (cell.visibleLetter) values[cellKey(cell.row, cell.col)] = cell.visibleLetter;
-        }
-        saveState();
-        renderPuzzle();
-        setStatus(`Puzzle built with ${data.model}.`, 'ok');
-      } catch (err) {
-        setStatus(err.message || 'Could not build the puzzle.', 'error');
-      } finally {
-        importButton.disabled = !selectedDataUrl;
-      }
-    });
+function renderPuzzle(){
+  if(!puzzle)return;puzzleCard.hidden=false;titleBox.textContent=puzzle.title||'Imported puzzle';
+  metaBox.textContent=`${puzzle.rows} × ${puzzle.cols} layout · ${puzzle.cells.length} writable squares · ${puzzle.words.length} words`;
+  board.innerHTML='';board.style.gridTemplateColumns=`repeat(${puzzle.cols},var(--cell))`;board.style.gridTemplateRows=`repeat(${puzzle.rows},var(--cell))`;
+  const cellMap=new Map(puzzle.cells.map(c=>[cellKey(c.row,c.col),c]));
+  for(const cell of puzzle.cells){
+    const key=cellKey(cell.row,cell.col),field=document.createElement('input');
+    field.className=`square${cell.visibleLetter?' fixed':''}`;field.maxLength=1;field.autocomplete='off';field.autocapitalize='characters';field.spellcheck=false;
+    field.value=values[key]||cell.visibleLetter||'';field.dataset.key=key;field.dataset.row=cell.row;field.dataset.col=cell.col;field.style.gridRow=cell.row;field.style.gridColumn=cell.col;field.readOnly=Boolean(cell.visibleLetter);
+    field.addEventListener('input',()=>{field.value=field.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,1);values[key]=field.value;hideResult();saveState();updateProgress();if(field.value)moveFrom(field,0,1,cellMap)});
+    field.addEventListener('keydown',e=>{const dirs={ArrowRight:[0,1],ArrowLeft:[0,-1],ArrowDown:[1,0],ArrowUp:[-1,0]};if(dirs[e.key]){e.preventDefault();moveFrom(field,...dirs[e.key],cellMap)}else if(e.key==='Backspace'&&!field.value)moveFrom(field,0,-1,cellMap)});
+    board.appendChild(field);
+  }
+  renderWordBank();updateProgress();puzzleCard.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
-    function renderPuzzle() {
-      if (!puzzle) return;
-      puzzleCard.hidden = false;
-      puzzleTitle.textContent = puzzle.title || 'Imported puzzle';
-      puzzleMeta.textContent = `${puzzle.rows} × ${puzzle.cols} layout · ${puzzle.cells.length} writable squares · ${puzzle.words.length} words`;
-      board.innerHTML = '';
-      board.style.gridTemplateColumns = `repeat(${puzzle.cols}, var(--tool-cell))`;
-      board.style.gridTemplateRows = `repeat(${puzzle.rows}, var(--tool-cell))`;
+function moveFrom(field,dr,dc,cellMap){
+  let r=Number(field.dataset.row)+dr,c=Number(field.dataset.col)+dc;
+  while(r>=1&&c>=1&&r<=puzzle.rows&&c<=puzzle.cols){
+    const key=cellKey(r,c);if(cellMap.has(key)){const next=board.querySelector(`[data-key="${key}"]`);if(next&&!next.readOnly)next.focus();return}r+=dr;c+=dc;
+  }
+}
 
-      const cellMap = new Map(puzzle.cells.map((cell) => [cellKey(cell.row, cell.col), cell]));
-      for (const cell of puzzle.cells) {
-        const key = cellKey(cell.row, cell.col);
-        const field = document.createElement('input');
-        field.className = `square${cell.visibleLetter ? ' fixed' : ''}`;
-        field.maxLength = 1;
-        field.inputMode = 'text';
-        field.autocomplete = 'off';
-        field.autocapitalize = 'characters';
-        field.spellcheck = false;
-        field.value = values[key] || cell.visibleLetter || '';
-        field.dataset.key = key;
-        field.dataset.row = String(cell.row);
-        field.dataset.col = String(cell.col);
-        field.style.gridRow = String(cell.row);
-        field.style.gridColumn = String(cell.col);
-        field.readOnly = Boolean(cell.visibleLetter);
-        field.setAttribute('aria-label', `Row ${cell.row}, column ${cell.col}`);
-        field.addEventListener('input', () => {
-          field.value = field.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 1);
-          values[key] = field.value;
-          hideResult();
-          saveState();
-          updateProgress();
-          if (field.value) moveFrom(field, 0, 1, cellMap);
-        });
-        field.addEventListener('keydown', (event) => {
-          const dirs = { ArrowRight:[0,1], ArrowLeft:[0,-1], ArrowDown:[1,0], ArrowUp:[-1,0] };
-          if (dirs[event.key]) {
-            event.preventDefault();
-            moveFrom(field, dirs[event.key][0], dirs[event.key][1], cellMap);
-          } else if (event.key === 'Backspace' && !field.value) {
-            moveFrom(field, 0, -1, cellMap);
-          }
-        });
-        board.appendChild(field);
-      }
-      renderWordBank();
-      updateProgress();
-      puzzleCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+function renderWordBank(){
+  wordBank.innerHTML='';const grouped=new Map();
+  for(const word of puzzle.words){const len=normalizeWord(word).length;if(!grouped.has(len))grouped.set(len,[]);grouped.get(len).push(word)}
+  [...grouped.entries()].sort((a,b)=>a[0]-b[0]).forEach(([len,words])=>{const g=document.createElement('div');g.className='group';const h=document.createElement('strong');h.textContent=`${len} letters`;g.appendChild(h);for(const w of words){const s=document.createElement('span');s.className='word';s.textContent=w;g.appendChild(s)}wordBank.appendChild(g)});
+}
 
-    function moveFrom(field, dr, dc, cellMap) {
-      let row = Number(field.dataset.row) + dr;
-      let col = Number(field.dataset.col) + dc;
-      while (row >= 1 && col >= 1 && row <= puzzle.rows && col <= puzzle.cols) {
-        const key = cellKey(row, col);
-        if (cellMap.has(key)) {
-          const next = board.querySelector(`[data-key="${key}"]`);
-          if (next && !next.readOnly) next.focus();
-          return;
-        }
-        row += dr;
-        col += dc;
-      }
-    }
-
-    function renderWordBank() {
-      wordBank.innerHTML = '';
-      const grouped = new Map();
-      for (const word of puzzle.words) {
-        const length = normalizeWord(word).length;
-        if (!grouped.has(length)) grouped.set(length, []);
-        grouped.get(length).push(word);
-      }
-      [...grouped.entries()].sort((a,b) => a[0]-b[0]).forEach(([length, words]) => {
-        const group = document.createElement('div');
-        group.className = 'bank-group';
-        const heading = document.createElement('strong');
-        heading.textContent = `${length} letter${length === 1 ? '' : 's'}`;
-        group.appendChild(heading);
-        words.forEach((word) => {
-          const item = document.createElement('span');
-          item.className = 'word';
-          item.textContent = word;
-          group.appendChild(item);
-        });
-        wordBank.appendChild(group);
-      });
-    }
-
-    function updateProgress() {
-      if (!puzzle) return;
-      let filled = 0;
-      for (const cell of puzzle.cells) {
-        if (normalizeWord(values[cellKey(cell.row, cell.col)] || cell.visibleLetter)) filled += 1;
-      }
-      const total = puzzle.cells.length;
-      progressText.textContent = `${filled} / ${total} squares filled`;
-      checkButton.disabled = filled !== total;
-    }
-
-    function collectRuns() {
-      const active = new Set(puzzle.cells.map((cell) => cellKey(cell.row, cell.col)));
-      const runs = [];
-      const valueAt = (r,c) => normalizeWord(values[cellKey(r,c)] || '');
-      for (const cell of puzzle.cells) {
-        const { row, col } = cell;
-        if (!active.has(cellKey(row, col - 1)) && active.has(cellKey(row, col + 1))) {
-          let text = '';
-          for (let c = col; active.has(cellKey(row, c)); c += 1) text += valueAt(row, c);
-          if (text.length > 1) runs.push(text);
-        }
-        if (!active.has(cellKey(row - 1, col)) && active.has(cellKey(row + 1, col))) {
-          let text = '';
-          for (let r = row; active.has(cellKey(r, col)); r += 1) text += valueAt(r, col);
-          if (text.length > 1) runs.push(text);
-        }
-      }
-      return runs;
-    }
-
-    function multiset(values) {
-      const map = new Map();
-      values.forEach((value) => map.set(value, (map.get(value) || 0) + 1));
-      return map;
-    }
-
-    function equalMultiset(a, b) {
-      if (a.size !== b.size) return false;
-      for (const [key, count] of a) if (b.get(key) !== count) return false;
-      return true;
-    }
-
-    checkButton.addEventListener('click', () => {
-      if (checkButton.disabled || !puzzle) return;
-      const runs = collectRuns();
-      const answers = puzzle.words.map(normalizeWord).filter(Boolean);
-      const correct = runs.length === answers.length && equalMultiset(multiset(runs), multiset(answers));
-      resultBox.className = `result show ${correct ? 'good' : 'bad'}`;
-      resultBox.textContent = correct ? 'Everything matches — puzzle complete 🎉' : 'Not quite. At least one entry is wrong, but Meowz will not reveal which one.';
-    });
-
-    resetButton.addEventListener('click', () => {
-      if (!puzzle || !confirm('Clear every letter you entered and keep only the letters printed in the original puzzle?')) return;
-      values = {};
-      for (const cell of puzzle.cells) if (cell.visibleLetter) values[cellKey(cell.row, cell.col)] = cell.visibleLetter;
-      saveState();
-      renderPuzzle();
-      hideResult();
-    });
-
-    function hideResult() {
-      resultBox.className = 'result';
-      resultBox.textContent = '';
-    }
-
-    function saveState() {
-      if (!puzzle) return;
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ puzzle, values })); } catch {}
-    }
-
-    function restoreState() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-        if (!saved?.puzzle?.cells || !saved?.puzzle?.words) return;
-        puzzle = saved.puzzle;
-        values = saved.values || {};
-        renderPuzzle();
-        setStatus('Restored your last imported puzzle.');
-      } catch {}
-    }
-
-    restoreState();
-  </script>
+function updateProgress(){
+  let filled=0;for(const cell of puzzle.cells)if(normalizeWord(values[cellKey(cell.row,cell.col)]||cell.visibleLetter))filled++;
+  progressText.textContent=`${filled} / ${puzzle.cells.length} squares filled`;checkButton.disabled=filled!==puzzle.cells.length;
+}
+function collectRuns(){
+  const active=new Set(puzzle.cells.map(c=>cellKey(c.row,c.col))),runs=[],at=(r,c)=>normalizeWord(values[cellKey(r,c)]||'');
+  for(const {row,col} of puzzle.cells){
+    if(!active.has(cellKey(row,col-1))&&active.has(cellKey(row,col+1))){let t='';for(let c=col;active.has(cellKey(row,c));c++)t+=at(row,c);if(t.length>1)runs.push(t)}
+    if(!active.has(cellKey(row-1,col))&&active.has(cellKey(row+1,col))){let t='';for(let r=row;active.has(cellKey(r,col));r++)t+=at(r,col);if(t.length>1)runs.push(t)}
+  }return runs;
+}
+function multiset(arr){const m=new Map();for(const v of arr)m.set(v,(m.get(v)||0)+1);return m}
+function equalMultiset(a,b){if(a.size!==b.size)return false;for(const [k,n] of a)if(b.get(k)!==n)return false;return true}
+checkButton.addEventListener('click',()=>{if(checkButton.disabled||!puzzle)return;const runs=collectRuns(),answers=puzzle.words.map(normalizeWord).filter(Boolean),ok=runs.length===answers.length&&equalMultiset(multiset(runs),multiset(answers));resultBox.className=`result show ${ok?'good':'bad'}`;resultBox.textContent=ok?'Everything matches — puzzle complete 🎉':'Not quite. At least one entry is wrong, but Meowz will not reveal which one.'});
+resetButton.addEventListener('click',()=>{if(!puzzle||!confirm('Clear every letter you entered?'))return;values={};for(const cell of puzzle.cells)if(cell.visibleLetter)values[cellKey(cell.row,cell.col)]=cell.visibleLetter;saveState();renderPuzzle();hideResult()});
+function hideResult(){resultBox.className='result';resultBox.textContent=''}
+function saveState(){if(!puzzle)return;try{localStorage.setItem(STORAGE_KEY,JSON.stringify({puzzle,values}))}catch{}}
+function restoreState(){try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!s?.puzzle?.cells||!s?.puzzle?.words)return;puzzle=s.puzzle;values=s.values||{};renderPuzzle();setStatus('Restored your last puzzle.')}catch{}}
+restoreState();
+</script>
 </body>
 </html>
