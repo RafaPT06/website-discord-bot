@@ -10,9 +10,9 @@
 :root{--card:rgba(20,20,34,.78);--border:rgba(255,255,255,.10);--muted:#aeb1c7;--cell:clamp(28px,7.2vw,42px)}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#0b0b14;color:#f7f7fb;font-family:Inter,system-ui,sans-serif}
 .shell{width:min(1100px,calc(100% - 24px));margin:auto;padding:24px 0 54px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{color:inherit;text-decoration:none;font-weight:900}
-.card{margin-top:20px;border:1px solid var(--border);background:var(--card);border-radius:22px;padding:clamp(16px,4vw,24px)}.muted,.status,.meta,.note{color:var(--muted)}
+.card{margin-top:20px;border:1px solid var(--border);background:var(--card);border-radius:22px;padding:clamp(16px,4vw,24px)}.muted,.status,.meta,.note,.tool-copy,.privacy-note{color:var(--muted)}.tool-kicker{margin:0 0 6px;color:#9fa3bd;font-size:.82rem;text-transform:uppercase;letter-spacing:.13em;font-weight:800}.tool-copy{line-height:1.5}
 .upload{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.picker{border:1px dashed rgba(255,255,255,.22);border-radius:18px;padding:18px;cursor:pointer}.picker input{display:none}
-.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(135deg,#7c3aed,#0891b2)}.btn.secondary{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}.btn:disabled{opacity:.42;cursor:not-allowed}
+.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(135deg,#7c3aed,#0891b2)}.btn.secondary,.btn-secondary{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}.btn:disabled{opacity:.42;cursor:not-allowed}
 .preview{display:none;grid-template-columns:90px 1fr;gap:12px;align-items:center;margin-top:14px}.preview.show{display:grid}.preview img{width:90px;height:90px;object-fit:cover;border-radius:14px;border:1px solid var(--border)}
 .board-scroll{overflow:auto;margin-top:18px}.board{display:grid;gap:2px;width:max-content;margin:auto}.square{width:var(--cell);height:var(--cell);border:2px solid rgba(255,255,255,.75);background:#11111c;color:white;text-align:center;text-transform:uppercase;font-weight:900;font-size:1.05rem;border-radius:4px;outline:none}.square.fixed{background:rgba(139,92,246,.20);border-color:#a78bfa}.square:focus{border-color:#67e8f9}
 .head,.progress{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.bank{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-top:14px}.group{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}.group strong{display:block;color:#c4b5fd;margin-bottom:6px}.word{display:block;padding:2px 0}.result{display:none;margin-top:12px;padding:12px;border-radius:12px;font-weight:800}.result.show{display:block}.result.good{color:#86efac;background:rgba(34,197,94,.12)}.result.bad{color:#fca5a5;background:rgba(239,68,68,.10)}
@@ -22,25 +22,25 @@
 <body>
 <main class="shell">
 <div class="top"><a class="brand" href="/dashboard">Meowz</a><a class="btn secondary" href="/dashboard" style="text-decoration:none">Back</a></div>
-<p class="muted">PRIVATE TOOL</p><h1>Screenshot → playable puzzle</h1>
-<p class="muted">Upload the puzzle page. Meowz now creates a high-contrast structural copy to suppress faint reverse-side squares before OpenAI builds the grid.</p>
+<p class="tool-kicker">Private tool</p><h1>Screenshot → playable puzzle</h1>
+<p class="tool-copy">Upload the puzzle page. Meowz creates a high-contrast structural copy to suppress faint reverse-side squares before OpenAI builds the grid.</p>
 
 <section class="card">
 <div class="upload">
 <label class="picker"><strong>Choose puzzle screenshot</strong><div class="muted">PNG, JPG or WebP</div><input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp"></label>
 <button class="btn" id="importButton" disabled>Build puzzle</button>
 </div>
-<div class="preview" id="previewBox"><img id="previewImage" alt="Selected screenshot"><div><strong id="fileName"></strong><div class="note">Original image is kept for text and visible letters; a cleaned copy is used for grid detection.</div></div></div>
+<div class="preview" id="previewBox"><img id="previewImage" alt="Selected screenshot"><div><strong id="fileName"></strong><div class="privacy-note">Original image is kept for text and visible letters; a cleaned copy is used for grid detection.</div></div></div>
 <div class="status" id="status"></div>
 </section>
 
 <section class="card" id="puzzleCard" hidden>
-<div class="head"><div><div class="muted">IMPORTED PUZZLE</div><h2 id="title">Puzzle</h2><div class="meta" id="meta"></div></div><button class="btn secondary" id="resetButton">Reset letters</button></div>
+<div class="head"><div><p class="tool-kicker">Imported puzzle</p><h2 id="title">Puzzle</h2><div class="meta" id="meta"></div></div><button class="btn btn-secondary" id="resetButton">Reset letters</button></div>
 <div class="board-scroll"><div class="board" id="board"></div></div>
 <div class="progress"><div class="meta" id="progressText"></div><button class="btn" id="checkButton" disabled>Check finished puzzle</button></div>
 <div class="result" id="result"></div>
 <h3>Available words</h3><div class="bank" id="wordBank"></div>
-<p class="note">The final check stays locked until every writable square is filled and never reveals which entry is wrong.</p>
+<p class="privacy-note">The final check stays locked until every writable square is filled and never reveals which entry is wrong.</p>
 </section>
 </main>
 
@@ -178,5 +178,6 @@ function saveState(){if(!puzzle)return;try{localStorage.setItem(STORAGE_KEY,JSON
 function restoreState(){try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!s?.puzzle?.cells||!s?.puzzle?.words)return;puzzle=s.puzzle;values=s.values||{};renderPuzzle();setStatus('Restored your last puzzle.')}catch{}}
 restoreState();
 </script>
+<script src="/js/puzzle-library.js"></script>
 </body>
 </html>
