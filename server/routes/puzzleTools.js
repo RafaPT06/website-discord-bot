@@ -92,9 +92,14 @@ router.get('/tools/puzzle', requireOwner, (req, res) => {
 });
 
 router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) => {
-  const imageDataUrl = String(req.body?.imageDataUrl || '');
-  if (!isSupportedImageDataUrl(imageDataUrl)) {
+  const originalImageDataUrl = String(req.body?.originalImageDataUrl || req.body?.imageDataUrl || '');
+  const structureImageDataUrl = String(req.body?.structureImageDataUrl || '');
+
+  if (!isSupportedImageDataUrl(originalImageDataUrl)) {
     return res.status(400).json({ ok: false, error: 'Upload a PNG, JPG or WebP screenshot under the supported size limit.' });
+  }
+  if (!isSupportedImageDataUrl(structureImageDataUrl)) {
+    return res.status(400).json({ ok: false, error: 'Could not prepare the high-contrast grid image. Try uploading the screenshot again.' });
   }
 
   const apiKey = String(process.env.OPENAI_API_KEY || '').trim();
@@ -129,21 +134,20 @@ router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) =
   };
 
   const instruction = [
-    'Read this fill-in word puzzle photo and transcribe its STRUCTURE ONLY.',
-    'Do not solve the puzzle, infer placements, or provide hidden answers.',
-    'IMPORTANT: this is photographed from a printed book page, so ink from the reverse side often shows through as pale ghost squares, pale mirrored text, or partial shapes. Those are NOT part of the active puzzle.',
-    'Identify the active/front-side puzzle by ink strength and consistency: genuine grid boxes have clearly darker, sharper borders with consistent stroke weight. Reverse-side bleed-through is lighter, lower-contrast, often incomplete, offset, mirrored, or visibly underneath the front-side content.',
-    'When uncertain whether a square is real or bleed-through, EXCLUDE it. Prefer missing one doubtful ghost square over adding a faint square that is not part of the front-side grid.',
-    'Only include boxes whose borders visually match the dark primary grid. Ignore any pale box pattern visible behind or between those dark boxes.',
-    'Use the dark printed word bank and dark title as additional evidence for which side of the page is the active side; ignore pale reversed or translucent words from the back of the sheet.',
-    'Return the smallest rectangular row/column grid that contains every genuine front-side writable square.',
-    'For cells, list every genuine front-side writable square exactly once using 1-based row and column coordinates.',
-    'visibleLetter must contain a single letter only when that letter is clearly printed inside a genuine front-side square; otherwise use an empty string.',
-    'Transcribe every available word from the dark printed word bank exactly as shown, including spaces or hyphens when visible.',
-    'Ignore page numbers, word-length headings, shadows, paper texture, faint show-through from the other side of the paper, and decorative marks.',
-    'Before returning, visually re-check every reported cell and remove any cell that is noticeably lighter or less sharply outlined than the main grid boxes.',
-    'Use the actual puzzle title for title when it is clearly visible; otherwise use Imported puzzle.',
-    'The output schema intentionally has no answer-placement field. Do not encode or reveal a solution anywhere.',
+    'You are given TWO images of the SAME fill-in word puzzle page.',
+    'IMAGE 1 is the original photo. Use IMAGE 1 only for the puzzle title, the printed word bank, and letters that are visibly prefilled inside genuine grid squares.',
+    'IMAGE 2 is a deliberately high-contrast structural copy of the same photo. Use IMAGE 2 as the PRIMARY source for deciding which grid squares actually exist.',
+    'Do not solve the puzzle, infer word placements, or provide hidden answers.',
+    'Printed book pages may show pale reverse-side bleed-through. The structural image is designed to suppress that bleed-through.',
+    'Only report writable cells supported by the dark, coherent primary grid in IMAGE 2. Ignore isolated pale/gray/partial box remnants, mirrored shapes, text, shadows, and paper texture.',
+    'When IMAGE 1 appears to contain a faint box but IMAGE 2 does not clearly preserve it as part of the dark grid, EXCLUDE that box.',
+    'When uncertain whether a square is genuine, EXCLUDE it rather than guessing.',
+    'Return the smallest rectangular row/column layout containing all genuine writable squares, with 1-based coordinates.',
+    'visibleLetter must be a single A-Z letter only when that letter is clearly printed in the corresponding genuine square in IMAGE 1; otherwise use an empty string.',
+    'Transcribe the dark printed available-word list from IMAGE 1 exactly as shown, preserving visible spaces or hyphens.',
+    'Ignore page numbers and word-length headings. Use the actual puzzle title if clearly visible; otherwise use Imported puzzle.',
+    'Before returning, re-check that every reported cell is visibly supported by IMAGE 2 and remove doubtful cells.',
+    'The schema contains no solution field. Do not encode a solution anywhere.',
   ].join(' ');
 
   try {
@@ -160,7 +164,10 @@ router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) =
           role: 'user',
           content: [
             { type: 'input_text', text: instruction },
-            { type: 'input_image', image_url: imageDataUrl, detail: 'high' },
+            { type: 'input_text', text: 'IMAGE 1 — original photo for title, word bank, and visible prefilled letters:' },
+            { type: 'input_image', image_url: originalImageDataUrl, detail: 'high' },
+            { type: 'input_text', text: 'IMAGE 2 — high-contrast structural copy for deciding which grid squares exist:' },
+            { type: 'input_image', image_url: structureImageDataUrl, detail: 'high' },
           ],
         }],
         text: {
@@ -191,7 +198,7 @@ router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) =
     }
 
     const puzzle = sanitizePuzzle(parsed);
-    return res.json({ ok: true, puzzle, model });
+    return res.json({ ok: true, puzzle, model, preprocessing: 'dual-image-contrast-v1' });
   } catch (err) {
     return res.status(502).json({ ok: false, error: err.message || 'Could not import the puzzle.' });
   }
