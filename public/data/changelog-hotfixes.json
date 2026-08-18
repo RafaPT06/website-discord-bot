@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-08-18",
+    "title": "Private Food Mixer tool",
+    "items": [
+      "Added an owner-only Private Tools route with a mobile-friendly Food Mixer II puzzle recreated from the photographed worksheet grid.",
+      "Added tap-to-type letter boxes, Across/Down navigation, saved local progress, a reset control and a tappable word bank for crossing off used words.",
+      "Kept the puzzle HTML outside the public static directory and protected the route with the existing signed Discord session plus Meowz owner check."
+    ]
+  },
+  {
     "date": "2026-07-17",
     "title": "Cleaner desktop server dashboard chrome",
     "items": [
