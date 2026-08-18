@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-08-18",
+    "title": "Private AI screenshot puzzle importer",
+    "items": [
+      "Added an owner-only puzzle tool that turns a screenshot into a playable grid by sending the resized image to the OpenAI Responses API and transcribing only visible cells, printed letters and the available word bank.",
+      "Kept OpenAI credentials on the server, disabled response storage for puzzle imports and kept the generated puzzle page outside the public static directory.",
+      "Added local progress saving plus a final correctness check that remains locked until every square is filled and only reports whether the complete puzzle is correct, never which word is wrong."
+    ]
+  },
+  {
     "date": "2026-07-17",
     "title": "Cleaner desktop server dashboard chrome",
     "items": [
@@ -17,7 +26,6 @@
       "Changed the shared custom select so opening a searchable dropdown never automatically focuses its search field, and mobile keyboard height changes no longer close an open menu."
     ]
   },
-      
   {
     "date": "2026-07-17",
     "title": "Polished Leveling role and reward management",
