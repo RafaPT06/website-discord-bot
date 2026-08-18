@@ -7,6 +7,7 @@ const { router: dashboardRolesRouter } = require('./routes/dashboardRoles');
 const { router: ownerAdminRouter } = require('./routes/ownerAdmin');
 const { router: authRouter } = require('./routes/auth');
 const { router: discordBackgroundRouter } = require('./routes/discordBackground');
+const { router: puzzleToolsRouter } = require('./routes/puzzleTools');
 const { notFoundHandler } = require('./middleware/notFound');
 
 const SITE_VERSION = String(
@@ -22,6 +23,8 @@ function createApp() {
   const publicPath = path.join(__dirname, '..', 'public');
 
   app.disable('x-powered-by');
+  app.use('/api/private-tools', express.json({ limit: '10mb' }));
+  app.use(puzzleToolsRouter);
   app.use(express.json());
 
   app.get('/api/site-version', (req, res) => {
