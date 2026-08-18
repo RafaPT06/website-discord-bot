@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-18",
+    "title": "Dual-image puzzle grid filtering",
+    "items": [
+      "Added browser-side high-contrast preprocessing that suppresses pale reverse-side page bleed-through before grid detection.",
+      "Changed puzzle imports to send both the original page and a cleaned structural copy to OpenAI, using the original for the title, word bank and printed letters while using the cleaned copy as the primary source for genuine grid squares.",
+      "Preserved the owner puzzle library, local progress saving and final no-hints correctness check while making doubtful faded squares default to exclusion."
+    ]
+  },
+  {
+    "date": "2026-08-18",
     "title": "Owner puzzle library",
     "items": [
       "Added a Puzzles tab to the dashboard navigation while Owner view is active and verified, linking directly to the private screenshot puzzle tool.",
