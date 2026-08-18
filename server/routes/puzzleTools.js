@@ -129,13 +129,19 @@ router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) =
   };
 
   const instruction = [
-    'Read this fill-in word puzzle screenshot and transcribe its STRUCTURE ONLY.',
+    'Read this fill-in word puzzle photo and transcribe its STRUCTURE ONLY.',
     'Do not solve the puzzle, infer placements, or provide hidden answers.',
-    'Return the smallest rectangular row/column grid that contains every visible letter square.',
-    'For cells, list every actual writable square exactly once using 1-based row and column coordinates.',
-    'visibleLetter must contain a single letter only when that letter is visibly printed inside that square in the screenshot; otherwise use an empty string.',
-    'Transcribe every available word from the printed word bank exactly as shown, including spaces or hyphens when visible.',
-    'Ignore page numbers, word-length headings, shadows, faint show-through from the other side of the paper, and decorative marks.',
+    'IMPORTANT: this is photographed from a printed book page, so ink from the reverse side often shows through as pale ghost squares, pale mirrored text, or partial shapes. Those are NOT part of the active puzzle.',
+    'Identify the active/front-side puzzle by ink strength and consistency: genuine grid boxes have clearly darker, sharper borders with consistent stroke weight. Reverse-side bleed-through is lighter, lower-contrast, often incomplete, offset, mirrored, or visibly underneath the front-side content.',
+    'When uncertain whether a square is real or bleed-through, EXCLUDE it. Prefer missing one doubtful ghost square over adding a faint square that is not part of the front-side grid.',
+    'Only include boxes whose borders visually match the dark primary grid. Ignore any pale box pattern visible behind or between those dark boxes.',
+    'Use the dark printed word bank and dark title as additional evidence for which side of the page is the active side; ignore pale reversed or translucent words from the back of the sheet.',
+    'Return the smallest rectangular row/column grid that contains every genuine front-side writable square.',
+    'For cells, list every genuine front-side writable square exactly once using 1-based row and column coordinates.',
+    'visibleLetter must contain a single letter only when that letter is clearly printed inside a genuine front-side square; otherwise use an empty string.',
+    'Transcribe every available word from the dark printed word bank exactly as shown, including spaces or hyphens when visible.',
+    'Ignore page numbers, word-length headings, shadows, paper texture, faint show-through from the other side of the paper, and decorative marks.',
+    'Before returning, visually re-check every reported cell and remove any cell that is noticeably lighter or less sharply outlined than the main grid boxes.',
     'Use the actual puzzle title for title when it is clearly visible; otherwise use Imported puzzle.',
     'The output schema intentionally has no answer-placement field. Do not encode or reveal a solution anywhere.',
   ].join(' ');
