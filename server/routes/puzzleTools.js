@@ -13,17 +13,14 @@ function getOwnerId() {
 function requireOwner(req, res, next) {
   const session = readSession(req);
   const wantsHtml = req.method === 'GET' && req.path.startsWith('/tools/');
-
   if (!session?.user) {
     if (wantsHtml) return res.redirect('/auth/discord');
     return res.status(401).json({ ok: false, error: 'Login required.' });
   }
-
   if (String(session.user.id) !== String(getOwnerId())) {
     if (wantsHtml) return res.status(403).send('Private tool.');
     return res.status(403).json({ ok: false, error: 'Private tool.' });
   }
-
   req.sessionData = session;
   return next();
 }
@@ -44,18 +41,14 @@ function extractResponseText(payload) {
   return '';
 }
 
-function sanitizePuzzle(value) {
-  const rawRows = Number(value?.rows);
-  const rawCols = Number(value?.cols);
-  if (!Number.isInteger(rawRows) || !Number.isInteger(rawCols)) {
-    throw new Error('OpenAI did not return a valid puzzle size.');
+function sanitizeDetectedGrid(value) {
+  const rows = Number(value?.rows);
+  const cols = Number(value?.cols);
+  if (!Number.isInteger(rows) || !Number.isInteger(cols) || rows < 1 || cols < 1 || rows > 80 || cols > 80) {
+    throw new Error('The browser did not return a valid detected grid.');
   }
-
-  const rows = Math.max(1, Math.min(80, rawRows));
-  const cols = Math.max(1, Math.min(80, rawCols));
   const seen = new Set();
   const cells = [];
-
   for (const raw of Array.isArray(value?.cells) ? value.cells : []) {
     const row = Number(raw?.row);
     const col = Number(raw?.col);
@@ -63,25 +56,41 @@ function sanitizePuzzle(value) {
     const key = `${row}:${col}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    const visibleLetter = String(raw?.visibleLetter || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 1);
-    cells.push({ row, col, visibleLetter });
+    cells.push({ row, col });
   }
-
   cells.sort((a, b) => (a.row - b.row) || (a.col - b.col));
+  if (cells.length < 4 || cells.length > 600) throw new Error('The browser could not detect a usable set of dark grid boxes.');
+  return { rows, cols, cells };
+}
 
+function gridAscii(grid) {
+  const active = new Set(grid.cells.map((cell) => `${cell.row}:${cell.col}`));
+  return Array.from({ length: grid.rows }, (_, r) =>
+    Array.from({ length: grid.cols }, (_, c) => active.has(`${r + 1}:${c + 1}`) ? '#' : '.').join('')
+  ).join('\n');
+}
+
+function sanitizeMetadata(value, grid) {
+  const active = new Set(grid.cells.map((cell) => `${cell.row}:${cell.col}`));
+  const letterMap = new Map();
+  for (const raw of Array.isArray(value?.visibleLetters) ? value.visibleLetters : []) {
+    const row = Number(raw?.row);
+    const col = Number(raw?.col);
+    const key = `${row}:${col}`;
+    if (!active.has(key)) continue;
+    const letter = String(raw?.letter || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 1);
+    if (letter) letterMap.set(key, letter);
+  }
   const words = (Array.isArray(value?.words) ? value.words : [])
     .map((word) => String(word || '').trim().toUpperCase())
     .filter(Boolean)
     .slice(0, 250);
-
-  if (cells.length < 2) throw new Error('OpenAI could not detect enough grid cells.');
-  if (!words.length) throw new Error('OpenAI could not detect the available word list.');
-
+  if (!words.length) throw new Error('OpenAI could not read the available word list.');
   return {
     title: String(value?.title || 'Imported puzzle').trim().slice(0, 120) || 'Imported puzzle',
-    rows,
-    cols,
-    cells,
+    rows: grid.rows,
+    cols: grid.cols,
+    cells: grid.cells.map((cell) => ({ ...cell, visibleLetter: letterMap.get(`${cell.row}:${cell.col}`) || '' })),
     words,
   };
 }
@@ -92,71 +101,63 @@ router.get('/tools/puzzle', requireOwner, (req, res) => {
 });
 
 router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) => {
-  const originalImageDataUrl = String(req.body?.originalImageDataUrl || req.body?.imageDataUrl || '');
-  const structureImageDataUrl = String(req.body?.structureImageDataUrl || '');
-
-  if (!isSupportedImageDataUrl(originalImageDataUrl)) {
-    return res.status(400).json({ ok: false, error: 'Upload a PNG, JPG or WebP screenshot under the supported size limit.' });
+  const originalImageDataUrl = String(req.body?.originalImageDataUrl || '');
+  const overlayImageDataUrl = String(req.body?.overlayImageDataUrl || '');
+  if (!isSupportedImageDataUrl(originalImageDataUrl) || !isSupportedImageDataUrl(overlayImageDataUrl)) {
+    return res.status(400).json({ ok: false, error: 'Upload a supported puzzle screenshot under the size limit.' });
   }
-  if (!isSupportedImageDataUrl(structureImageDataUrl)) {
-    return res.status(400).json({ ok: false, error: 'Could not prepare the high-contrast grid image. Try uploading the screenshot again.' });
+
+  let detectedGrid;
+  try {
+    detectedGrid = sanitizeDetectedGrid(req.body?.detectedGrid);
+  } catch (err) {
+    return res.status(400).json({ ok: false, error: err.message });
   }
 
   const apiKey = String(process.env.OPENAI_API_KEY || '').trim();
-  if (!apiKey) {
-    return res.status(503).json({ ok: false, error: 'OPENAI_API_KEY is not configured on the website service.' });
-  }
-
+  if (!apiKey) return res.status(503).json({ ok: false, error: 'OPENAI_API_KEY is not configured on the website service.' });
   const model = String(process.env.OPENAI_PUZZLE_MODEL || 'gpt-5.6').trim();
+
   const schema = {
     type: 'object',
     additionalProperties: false,
-    required: ['title', 'rows', 'cols', 'cells', 'words'],
+    required: ['title', 'words', 'visibleLetters'],
     properties: {
       title: { type: 'string' },
-      rows: { type: 'integer' },
-      cols: { type: 'integer' },
-      cells: {
+      words: { type: 'array', items: { type: 'string' } },
+      visibleLetters: {
         type: 'array',
         items: {
           type: 'object',
           additionalProperties: false,
-          required: ['row', 'col', 'visibleLetter'],
+          required: ['row', 'col', 'letter'],
           properties: {
             row: { type: 'integer' },
             col: { type: 'integer' },
-            visibleLetter: { type: 'string' },
+            letter: { type: 'string' },
           },
         },
       },
-      words: { type: 'array', items: { type: 'string' } },
     },
   };
 
+  const map = gridAscii(detectedGrid);
   const instruction = [
-    'You are given TWO images of the SAME fill-in word puzzle page.',
-    'IMAGE 1 is the original photo. Use IMAGE 1 only for the puzzle title, the printed word bank, and letters that are visibly prefilled inside genuine grid squares.',
-    'IMAGE 2 is a deliberately high-contrast structural copy of the same photo. Use IMAGE 2 as the PRIMARY source for deciding which grid squares actually exist.',
-    'Do not solve the puzzle, infer word placements, or provide hidden answers.',
-    'Printed book pages may show pale reverse-side bleed-through. The structural image is designed to suppress that bleed-through.',
-    'Only report writable cells supported by the dark, coherent primary grid in IMAGE 2. Ignore isolated pale/gray/partial box remnants, mirrored shapes, text, shadows, and paper texture.',
-    'When IMAGE 1 appears to contain a faint box but IMAGE 2 does not clearly preserve it as part of the dark grid, EXCLUDE that box.',
-    'When uncertain whether a square is genuine, EXCLUDE it rather than guessing.',
-    'Return the smallest rectangular row/column layout containing all genuine writable squares, with 1-based coordinates.',
-    'visibleLetter must be a single A-Z letter only when that letter is clearly printed in the corresponding genuine square in IMAGE 1; otherwise use an empty string.',
-    'Transcribe the dark printed available-word list from IMAGE 1 exactly as shown, preserving visible spaces or hyphens.',
-    'Ignore page numbers and word-length headings. Use the actual puzzle title if clearly visible; otherwise use Imported puzzle.',
-    'Before returning, re-check that every reported cell is visibly supported by IMAGE 2 and remove doubtful cells.',
-    'The schema contains no solution field. Do not encode a solution anywhere.',
-  ].join(' ');
+    'This is a fill-in word puzzle. The browser has already detected the physical dark grid boxes algorithmically.',
+    'You MUST NOT add, remove, move, infer, or reconstruct any grid squares. Grid geometry is authoritative and is not your task.',
+    `The detected grid has ${detectedGrid.rows} rows and ${detectedGrid.cols} columns. In the map below, # is a real writable square and . is empty space:`,
+    map,
+    'The first image is the original page and should be used to read the puzzle title and the dark printed word bank.',
+    'The second image is the same page with the algorithmically detected boxes outlined in red. Use it only to locate letters that are visibly prefilled inside those detected boxes.',
+    'Return every dark printed available word exactly as shown, preserving spaces and hyphens. Ignore word-length headings, page numbers, faint reverse-side text and bleed-through.',
+    'For visibleLetters, return only letters that are clearly printed in detected # squares. Use the 1-based row and column coordinates from the supplied grid map. Do not guess letters.',
+    'Do not solve the puzzle and do not return answer placements.',
+  ].join('\n');
 
   try {
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
         store: false,
@@ -164,41 +165,22 @@ router.post('/api/private-tools/puzzle/import', requireOwner, async (req, res) =
           role: 'user',
           content: [
             { type: 'input_text', text: instruction },
-            { type: 'input_text', text: 'IMAGE 1 — original photo for title, word bank, and visible prefilled letters:' },
             { type: 'input_image', image_url: originalImageDataUrl, detail: 'high' },
-            { type: 'input_text', text: 'IMAGE 2 — high-contrast structural copy for deciding which grid squares exist:' },
-            { type: 'input_image', image_url: structureImageDataUrl, detail: 'high' },
+            { type: 'input_image', image_url: overlayImageDataUrl, detail: 'high' },
           ],
         }],
-        text: {
-          format: {
-            type: 'json_schema',
-            name: 'puzzle_structure',
-            strict: true,
-            schema,
-          },
-        },
+        text: { format: { type: 'json_schema', name: 'puzzle_metadata', strict: true, schema } },
       }),
     });
-
     const payload = await response.json().catch(() => null);
-    if (!response.ok) {
-      const message = payload?.error?.message || `OpenAI request failed (${response.status}).`;
-      return res.status(502).json({ ok: false, error: message });
-    }
-
+    if (!response.ok) return res.status(502).json({ ok: false, error: payload?.error?.message || `OpenAI request failed (${response.status}).` });
     const outputText = extractResponseText(payload);
-    if (!outputText) return res.status(502).json({ ok: false, error: 'OpenAI returned no puzzle structure.' });
-
+    if (!outputText) return res.status(502).json({ ok: false, error: 'OpenAI returned no puzzle metadata.' });
     let parsed;
-    try {
-      parsed = JSON.parse(outputText);
-    } catch {
-      return res.status(502).json({ ok: false, error: 'OpenAI returned an unreadable puzzle structure.' });
-    }
-
-    const puzzle = sanitizePuzzle(parsed);
-    return res.json({ ok: true, puzzle, model, preprocessing: 'dual-image-contrast-v1' });
+    try { parsed = JSON.parse(outputText); }
+    catch { return res.status(502).json({ ok: false, error: 'OpenAI returned unreadable puzzle metadata.' }); }
+    const puzzle = sanitizeMetadata(parsed, detectedGrid);
+    return res.json({ ok: true, puzzle, model, detector: 'browser-rectangles-v1' });
   } catch (err) {
     return res.status(502).json({ ok: false, error: err.message || 'Could not import the puzzle.' });
   }

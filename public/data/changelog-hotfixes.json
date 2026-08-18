@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-08-18",
+    "title": "Algorithmic puzzle grid detection and editing",
+    "items": [
+      "Changed puzzle imports so dark square borders are detected locally in the browser before OpenAI is called, preventing the model from inventing faint reverse-side bleed-through squares.",
+      "Limited OpenAI to reading the title, word bank and visibly prefilled letters against the fixed detected geometry, with an annotated overlay for coordinate mapping.",
+      "Added an owner grid editor that lets detected squares be added or removed manually without revealing answers, while preserving saved puzzle progress and the final no-hints correctness check."
+    ]
+  },
+  {
+    "date": "2026-08-18",
     "title": "Dual-image puzzle grid filtering",
     "items": [
       "Added browser-side high-contrast preprocessing that suppresses pale reverse-side page bleed-through before grid detection.",
