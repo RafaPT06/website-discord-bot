@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-10-04",
+    "title": "Account Manager Discord reporting",
+    "items": [
+      "Added Account Manager status, index and help reports through the website backend.",
+      "Added managed-account validation, mention suppression and request rate limiting.",
+      "Added automatic Roblox whisper fallback when external reporting is unavailable."
+    ]
+  },
+  {
     "date": "2026-08-18",
     "title": "Algorithmic puzzle grid detection and editing",
     "items": [
