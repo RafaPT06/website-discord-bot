@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-10-10",
+    "title": "Complete Account Manager Discord help",
+    "items": [
+      "Changed Account Manager help reporting to render the live command registry supplied by the Roblox client instead of an outdated hardcoded command list.",
+      "Added command aliases and descriptions across paginated Discord embeds so the complete command set fits within Discord limits.",
+      "Raised the Account Manager report body limit for the full registry while preserving managed-account validation, mention suppression and rate limiting."
+    ]
+  },
+  {
     "date": "2026-10-04",
     "title": "Account Manager Discord reporting",
     "items": [
