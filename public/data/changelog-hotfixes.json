@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-15",
+    "title": "Persistent Starboard dashboard tab",
+    "items": [
+      "Added a Starboard tab to server dashboard navigation with enable, channel, reaction emoji and threshold controls.",
+      "Added a live Meowz-style Starboard preview, responsive two-column desktop layout and single-column tablet/mobile flow.",
+      "Kept Starboard drafts across tab switches, connected them to the shared Save Changes/Discard controls and added a read-only demo preview with fake data."
+    ]
+  },
+  {
+    "date": "2026-10-15",
     "title": "Starboard dashboard foundation",
     "items": [
       "Added authenticated website routes for loading and saving Starboard settings from the Meowz bot API.",
