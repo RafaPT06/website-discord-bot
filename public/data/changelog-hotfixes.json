@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-15",
+    "title": "Dashboard request storm and 429 hotfix",
+    "items": [
+      "Stopped Starboard and Backups from firing duplicate in-flight dashboard GET requests while their MutationObservers react to loading-state DOM changes.",
+      "Added a short same-origin request dedupe/cache layer for server snapshots plus Starboard and Backups settings so repeated renders reuse one response instead of hammering the website API.",
+      "Added a 30-second per-user server-access cache on the Starboard and Backups proxy routes to avoid repeatedly calling Discord's guild permission endpoint and triggering HTTP 429 responses."
+    ]
+  },
+  {
+    "date": "2026-10-15",
     "title": "Database backup dashboard",
     "items": [
       "Added a Backups server dashboard tab with scheduled backup enablement, real Discord channel selection, last-run status and next-run timing.",
