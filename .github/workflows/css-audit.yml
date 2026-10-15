@@ -44,6 +44,7 @@ jobs:
           node --check server/app.js
           node --check server/routes/dashboardReliability.js
           node --check server/routes/dashboardRoles.js
+          node --check server/routes/dashboardStarboard.js
           node --input-type=module --check < public/js/main.js
           node --input-type=module --check < public/js/api.js
           node --input-type=module --check < public/js/components/customSelect.js
