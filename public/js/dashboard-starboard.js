@@ -2,6 +2,8 @@ const STARBOARD_SECTION = 'starboard';
 const draftByGuild = new Map();
 const loadedByGuild = new Map();
 let renderToken = 0;
+let renderInFlight = false;
+let autoRetryBlocked = false;
 
 function isDemo() {
   return window.location.pathname.startsWith('/demo');
@@ -122,6 +124,11 @@ function ensureNavigation() {
   });
 
   document.querySelectorAll('.dash-side-nav').forEach((nav) => {
+    const title = nav.querySelector('small')?.textContent?.trim();
+    if (title !== 'Dashboard') {
+      nav.querySelectorAll('[data-starboard-tab]').forEach((link) => link.remove());
+      return;
+    }
     if (nav.querySelector('[data-starboard-tab]')) return;
     const link = document.createElement('a');
     link.href = href;
@@ -297,11 +304,12 @@ function renderInlineError(message) {
 }
 
 async function renderStarboard() {
-  if (!isStarboardHash()) return;
+  if (!isStarboardHash() || renderInFlight) return;
   const guildId = guildIdFromPath();
   const host = document.querySelector('[data-server-tab-content]');
   if (!guildId || !host) return;
   const token = ++renderToken;
+  renderInFlight = true;
 
   ensureNavigation();
   document.querySelectorAll('.dash-tabs a, .dash-side-nav a, [data-starboard-tab]').forEach((link) => {
@@ -319,20 +327,25 @@ async function renderStarboard() {
     const state = ensureDraft(guildId, data.settings);
     host.innerHTML = pageMarkup(guildId, data, state);
     document.title = 'Starboard — Meowz';
+    autoRetryBlocked = false;
     bindPage(guildId, data);
     syncSaveBar(guildId);
   } catch (error) {
     if (token !== renderToken) return;
+    autoRetryBlocked = true;
     host.innerHTML = `<article class="dash-card"><span>Starboard</span><h2>Could not load Starboard</h2><p>${esc(error.message || 'Try again later.')}</p><button type="button" class="dash-save-btn" data-starboard-retry>Try Again</button></article>`;
+  } finally {
+    renderInFlight = false;
   }
 }
 
-function scheduleRender() {
+function scheduleRender(event) {
   ensureNavigation();
+  if (event?.type === 'hashchange' || event?.type === 'popstate') autoRetryBlocked = false;
   if (isStarboardHash()) {
     const host = document.querySelector('[data-server-tab-content]');
     const alreadyRendered = host?.dataset.activeSection === STARBOARD_SECTION && host.querySelector('[data-starboard-page]');
-    if (host && !alreadyRendered) setTimeout(renderStarboard, 0);
+    if (host && !alreadyRendered && !renderInFlight && !autoRetryBlocked) setTimeout(renderStarboard, 0);
   }
   const guildId = guildIdFromPath();
   if (guildId) setTimeout(() => syncSaveBar(guildId), 0);
@@ -344,6 +357,7 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
     event.stopImmediatePropagation();
     if (!isStarboardHash()) history.pushState(null, '', '#starboard');
+    autoRetryBlocked = false;
     await renderStarboard();
     return;
   }
@@ -351,7 +365,8 @@ document.addEventListener('click', async (event) => {
   if (event.target.closest('[data-starboard-retry]')) {
     const guildId = guildIdFromPath();
     if (guildId) loadedByGuild.delete(guildId);
-    renderStarboard();
+    autoRetryBlocked = false;
+    await renderStarboard();
     return;
   }
 
@@ -378,6 +393,6 @@ document.addEventListener('click', async (event) => {
 window.addEventListener('hashchange', scheduleRender);
 window.addEventListener('popstate', scheduleRender);
 
-const observer = new MutationObserver(scheduleRender);
+const observer = new MutationObserver(() => scheduleRender());
 observer.observe(document.documentElement, { childList: true, subtree: true });
 scheduleRender();
