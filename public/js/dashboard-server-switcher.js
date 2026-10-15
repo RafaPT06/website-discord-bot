@@ -2,7 +2,9 @@ import { getDashboardGuilds } from './api.js';
 
 const SNAPSHOT_KEY = 'meowzDashboardServerSnapshots';
 const VIEW_MODE_KEY = 'meowzDashboardViewMode';
+const FRESH_LIST_MS = 10000;
 let request = null;
+let lastFreshLoadAt = 0;
 let enhanceQueued = false;
 let activeMenu = null;
 
@@ -55,15 +57,19 @@ function cacheServers(servers) {
 
 async function loadServers() {
   const cached = readCachedServers();
-  if (cached.length) return cached;
+  if (cached.length && lastFreshLoadAt && Date.now() - lastFreshLoadAt < FRESH_LIST_MS) return cached;
   if (request) return request;
 
   const mode = localStorage.getItem(VIEW_MODE_KEY) === 'owner' ? 'owner' : 'user';
   request = getDashboardGuilds(mode)
     .then((data) => {
       const servers = Array.isArray(data?.installed) ? data.installed : [];
-      cacheServers(servers);
-      return servers;
+      if (servers.length) {
+        cacheServers(servers);
+        lastFreshLoadAt = Date.now();
+        return servers;
+      }
+      return cached;
     })
     .finally(() => {
       request = null;
@@ -152,6 +158,16 @@ async function openMenu(trigger) {
     activeMenu = { menu: next, trigger };
   } catch (error) {
     if (!activeMenu || activeMenu.menu !== menu) return;
+    const cached = readCachedServers();
+    if (cached.length) {
+      const replacement = document.createElement('div');
+      replacement.innerHTML = menuMarkup(cached, guildId);
+      const next = replacement.firstElementChild;
+      host.replaceChild(next, menu);
+      next.hidden = false;
+      activeMenu = { menu: next, trigger };
+      return;
+    }
     menu.innerHTML = `<div class="dash-switcher-head"><div><small>Meowz</small><strong>Switch server</strong></div><button type="button" data-server-switcher-close aria-label="Close server switcher">×</button></div><div class="dash-switcher-empty"><strong>Could not load servers</strong><span>${esc(error.message || 'Try again from the dashboard.')}</span></div><a class="dash-switcher-all" href="${esc(dashboardBase())}">View all servers <span>→</span></a>`;
     delete menu.dataset.loading;
   }
