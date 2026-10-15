@@ -49,6 +49,7 @@ jobs:
           node --input-type=module --check < public/js/main.js
           node --input-type=module --check < public/js/api.js
           node --input-type=module --check < public/js/dashboard-request-dedupe.js
+          node --input-type=module --check < public/js/dashboard-server-switcher.js
           node --input-type=module --check < public/js/dashboard-starboard.js
           node --input-type=module --check < public/js/dashboard-backups.js
           node --input-type=module --check < public/js/components/customSelect.js
