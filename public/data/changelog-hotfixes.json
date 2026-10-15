@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-10-15",
+    "title": "Starboard dashboard foundation",
+    "items": [
+      "Added authenticated website routes for loading and saving Starboard settings from the Meowz bot API.",
+      "Added server-side validation for Starboard channel, reaction threshold and emoji settings while preserving Manage Server and owner access checks.",
+      "Prepared the Starboard feature for the persistent server dashboard without exposing BOT_API_TOKEN to the browser."
+    ]
+  },
+  {
     "date": "2026-10-10",
     "title": "Complete Account Manager Discord help",
     "items": [
