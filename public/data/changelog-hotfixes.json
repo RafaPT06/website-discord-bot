@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-15",
+    "title": "Server switcher refresh fix",
+    "items": [
+      "Changed the in-dashboard server switcher to use cached server snapshots only for the instant first paint, then refresh the installed server list from the dashboard API instead of treating any partial cache as complete.",
+      "Kept the refreshed server list cached for quick repeat opens while preserving the existing dashboard guild request cache and in-flight deduplication.",
+      "Kept the cached list visible if a refresh fails so switching servers still degrades gracefully instead of replacing a usable menu with an error."
+    ]
+  },
+  {
+    "date": "2026-10-15",
     "title": "Dashboard server switcher",
     "items": [
       "Made the Meowz brand and current-server card open a compact server switcher from inside a server dashboard instead of forcing a trip back through the dashboard home first.",
