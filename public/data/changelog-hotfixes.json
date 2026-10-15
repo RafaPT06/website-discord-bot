@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-15",
+    "title": "Dashboard server switcher",
+    "items": [
+      "Made the Meowz brand and current-server card open a compact server switcher from inside a server dashboard instead of forcing a trip back through the dashboard home first.",
+      "Reused cached dashboard server snapshots before requesting fresh guild data, so opening the switcher does not add unnecessary server reloads.",
+      "Added responsive desktop and mobile switcher layouts, current-server highlighting, View all servers access, Escape/outside-click closing and an unsaved-changes warning before changing servers."
+    ]
+  },
+  {
+    "date": "2026-10-15",
     "title": "Dashboard request storm, duplicate navigation and 429 hotfix",
     "items": [
       "Stopped Starboard and Backups from appending themselves to Resources and Account; feature links now stay inside the Dashboard navigation group on desktop and mobile.",
