@@ -6,6 +6,8 @@ const router = express.Router();
 const DISCORD_API = 'https://discord.com/api/v10';
 const MANAGE_GUILD = 0x20n;
 const ADMINISTRATOR = 0x8n;
+const ACCESS_CACHE_MS = 30_000;
+const guildAccessCache = new Map();
 
 function getOwnerId() {
   return String(process.env.OWNER_ID || process.env.BOT_OWNER_ID || process.env.DASHBOARD_OWNER_ID || '').trim();
@@ -32,6 +34,10 @@ function requireAuth(req, res, next) {
   return next();
 }
 
+function accessCacheKey(session, guildId) {
+  return `${String(session?.user?.id || 'unknown')}:${guildId}`;
+}
+
 async function requireServerAccess(req, res, next) {
   const guildId = String(req.params.guildId || '').trim();
   if (!/^\d{15,25}$/.test(guildId)) {
@@ -45,6 +51,13 @@ async function requireServerAccess(req, res, next) {
 
   if (!req.sessionData?.accessToken) {
     return res.status(401).json({ ok: false, error: 'Discord session is missing guild access. Log out and log in again.' });
+  }
+
+  const cacheKey = accessCacheKey(req.sessionData, guildId);
+  const cached = guildAccessCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < ACCESS_CACHE_MS) {
+    req.guildId = guildId;
+    return next();
   }
 
   try {
@@ -61,6 +74,7 @@ async function requireServerAccess(req, res, next) {
       return res.status(403).json({ ok: false, error: 'Manage Server permission is required.' });
     }
 
+    guildAccessCache.set(cacheKey, { at: Date.now() });
     req.guildId = guildId;
     return next();
   } catch (err) {
