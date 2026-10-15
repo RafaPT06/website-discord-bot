@@ -2,6 +2,8 @@ const BACKUPS_SECTION = 'backups';
 const loadedByGuild = new Map();
 const draftByGuild = new Map();
 let renderToken = 0;
+let renderInFlight = false;
+let autoRetryBlocked = false;
 
 function isDemo() {
   return window.location.pathname.startsWith('/demo');
@@ -144,6 +146,11 @@ function ensureNavigation() {
   });
 
   document.querySelectorAll('.dash-side-nav').forEach((nav) => {
+    const title = nav.querySelector('small')?.textContent?.trim();
+    if (title !== 'Dashboard') {
+      nav.querySelectorAll('[data-backups-tab]').forEach((link) => link.remove());
+      return;
+    }
     if (nav.querySelector('[data-backups-tab]')) return;
     const link = document.createElement('a');
     link.href = href;
@@ -402,11 +409,12 @@ async function runBackup(guildId, button) {
 }
 
 async function renderBackups() {
-  if (!isBackupsHash()) return;
+  if (!isBackupsHash() || renderInFlight) return;
   const guildId = guildIdFromPath();
   const host = document.querySelector('[data-server-tab-content]');
   if (!guildId || !host) return;
   const token = ++renderToken;
+  renderInFlight = true;
 
   ensureNavigation();
   document.querySelectorAll('.dash-tabs a, .dash-side-nav a, [data-starboard-tab], [data-backups-tab]').forEach((link) => {
@@ -424,20 +432,25 @@ async function renderBackups() {
     const state = ensureDraft(guildId, data.settings);
     host.innerHTML = pageMarkup(guildId, data, state);
     document.title = 'Backups — Meowz';
+    autoRetryBlocked = false;
     bindPage(guildId, data);
     syncSaveBar(guildId);
   } catch (err) {
     if (token !== renderToken) return;
+    autoRetryBlocked = true;
     host.innerHTML = `<article class="dash-card"><span>Backups</span><h2>Could not load backups</h2><p>${esc(err.message || 'Try again later.')}</p><button type="button" class="dash-save-btn" data-backups-retry>Try Again</button></article>`;
+  } finally {
+    renderInFlight = false;
   }
 }
 
-function scheduleRender() {
+function scheduleRender(event) {
   ensureNavigation();
+  if (event?.type === 'hashchange' || event?.type === 'popstate') autoRetryBlocked = false;
   if (isBackupsHash()) {
     const host = document.querySelector('[data-server-tab-content]');
     const rendered = host?.dataset.activeSection === BACKUPS_SECTION && host.querySelector('[data-backups-page]');
-    if (host && !rendered) setTimeout(renderBackups, 0);
+    if (host && !rendered && !renderInFlight && !autoRetryBlocked) setTimeout(renderBackups, 0);
   }
   const guildId = guildIdFromPath();
   if (guildId) setTimeout(() => syncSaveBar(guildId), 0);
@@ -449,6 +462,7 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
     event.stopImmediatePropagation();
     if (!isBackupsHash()) history.pushState(null, '', '#backups');
+    autoRetryBlocked = false;
     await renderBackups();
     return;
   }
@@ -456,6 +470,7 @@ document.addEventListener('click', async (event) => {
   if (event.target.closest('[data-backups-retry]')) {
     const guildId = guildIdFromPath();
     if (guildId) loadedByGuild.delete(guildId);
+    autoRetryBlocked = false;
     await renderBackups();
     return;
   }
