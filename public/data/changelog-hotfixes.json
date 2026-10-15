@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-15",
+    "title": "Database backup dashboard",
+    "items": [
+      "Added a Backups server dashboard tab with scheduled backup enablement, real Discord channel selection, last-run status and next-run timing.",
+      "Added a manual Run Backup Now action that can save pending backup settings first, sends the JSON database export through the bot, and resets the weekly schedule from that successful run.",
+      "Added cached tab data, shared unsaved-changes integration, read-only demo data, responsive mobile/tablet styling and authenticated website-to-bot API routes."
+    ]
+  },
+  {
+    "date": "2026-10-15",
     "title": "Persistent Starboard dashboard tab",
     "items": [
       "Added a Starboard tab to server dashboard navigation with enable, channel, reaction emoji and threshold controls.",
