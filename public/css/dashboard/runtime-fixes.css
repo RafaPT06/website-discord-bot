@@ -1,0 +1,66 @@
+/* Runtime dashboard fixes for dynamically injected feature tabs. */
+
+/* Starboard and Backups belong only to the Dashboard navigation group. */
+body.dashboard-app-body .dash-side-nav.muted [data-starboard-tab],
+body.dashboard-app-body .dash-side-nav.muted [data-backups-tab] {
+  display: none !important;
+}
+
+body.dashboard-app-body .dash-side-nav:not(.muted) [data-starboard-tab],
+body.dashboard-app-body .dash-side-nav:not(.muted) [data-backups-tab] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+}
+
+body.dashboard-app-body .dash-side-nav:not(.muted) [data-starboard-tab]::before,
+body.dashboard-app-body .dash-side-nav:not(.muted) [data-backups-tab]::before {
+  content: '';
+  width: .34rem;
+  height: .34rem;
+  flex: 0 0 .34rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: .45;
+}
+
+body.dashboard-app-body .dash-side-nav:not(.muted) [data-starboard-tab].is-active::before,
+body.dashboard-app-body .dash-side-nav:not(.muted) [data-backups-tab].is-active::before {
+  opacity: 1;
+}
+
+/* Dynamic feature links in the mobile drawer should only appear in Dashboard. */
+body.dashboard-app-body .dash-mobile-drawer .dash-drawer-group:not(:first-of-type) [data-starboard-tab],
+body.dashboard-app-body .dash-mobile-drawer .dash-drawer-group:not(:first-of-type) [data-backups-tab] {
+  display: none !important;
+}
+
+/* Keep the application footer in document flow so short tabs cannot overlap it. */
+body.dashboard-app-body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+body.dashboard-app-body > .dashboard-app-root {
+  width: 100%;
+  min-height: 0;
+  flex: 1 0 auto;
+}
+
+body.dashboard-app-body > .footer-card {
+  position: relative !important;
+  inset: auto !important;
+  width: 100%;
+  flex: 0 0 auto;
+  margin-top: auto;
+  z-index: 5;
+}
+
+@media (max-width: 980px) {
+  body.dashboard-app-body .dash-side-nav.muted [data-starboard-tab],
+  body.dashboard-app-body .dash-side-nav.muted [data-backups-tab] {
+    display: none !important;
+  }
+}
