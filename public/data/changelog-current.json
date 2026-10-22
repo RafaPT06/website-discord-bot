@@ -1,0 +1,12 @@
+[
+  {
+    "date": "2026-10-22",
+    "title": "Dashboard navigation and retry reliability",
+    "items": [
+      "Kept Starboard and Backups visually scoped to the Dashboard navigation group so feature links no longer appear again under Account or Resources.",
+      "Added a short cooldown for rate-limited dashboard GET requests so repeated render observers reuse the same failure instead of immediately hammering the API again.",
+      "Kept the in-dashboard Meowz/current-server switcher available for changing servers while preserving cached server snapshots, unsaved-change protection and responsive behavior.",
+      "Restored normal dashboard footer flow so short server tabs no longer let the footer cover or cut through dashboard content."
+    ]
+  }
+]
