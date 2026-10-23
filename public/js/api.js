@@ -174,25 +174,59 @@ export function getGuildRoles(guildId) {
   return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/roles`, { cacheKey: `roles:${guildId}`, cacheMs: 15000, timeoutMs: 9000 });
 }
 
-export function getLevelRewards(guildId) {
-  if (isDemoRoute()) return Promise.resolve({ ok: true, rewards: DEMO_SERVER_SETTINGS.levelRewards.map((reward) => ({ ...reward })), demo: true });
-  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards`, { cacheKey: `level-rewards:${guildId}`, cacheMs: 8000, timeoutMs: 9000 });
+export async function getLevelRewards(guildId) {
+  if (isDemoRoute()) return { ok: true, rewards: DEMO_SERVER_SETTINGS.levelRewards.map((reward) => ({ ...reward })), demo: true };
+  const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards`, { cacheKey: `level-rewards:${guildId}`, cacheMs: 8000, timeoutMs: 9000 });
+  if (data?.fallback) {
+    const errors = Array.isArray(data.errors) ? data.errors.filter(Boolean) : [];
+    const error = new Error(errors[0] || 'Level reward API is unavailable.');
+    error.errors = errors;
+    throw error;
+  }
+  return data;
+}
+
+function cachedLevelRewardsReference(guildId) {
+  const rewards = memoryCache.get(`level-rewards:${guildId}`)?.data?.rewards;
+  return Array.isArray(rewards) ? rewards : null;
+}
+
+function syncCachedLevelReward(rewards, level, roleId) {
+  if (!Array.isArray(rewards)) return;
+  const normalizedLevel = Number(level);
+  const index = rewards.findIndex((reward) => Number(reward?.level) === normalizedLevel);
+  const next = { ...(index >= 0 ? rewards[index] : {}), level: normalizedLevel, roleId: String(roleId) };
+  if (index >= 0) rewards.splice(index, 1, next);
+  else rewards.push(next);
+  rewards.sort((a, b) => Number(a?.level || 0) - Number(b?.level || 0));
+}
+
+function removeCachedLevelReward(rewards, level) {
+  if (!Array.isArray(rewards)) return;
+  const normalizedLevel = Number(level);
+  for (let index = rewards.length - 1; index >= 0; index -= 1) {
+    if (Number(rewards[index]?.level) === normalizedLevel) rewards.splice(index, 1);
+  }
 }
 
 export async function saveLevelReward(guildId, level, roleId) {
   if (isDemoRoute()) throw new Error('Demo mode is read-only. Log in to make changes.');
+  const visibleRewards = cachedLevelRewardsReference(guildId);
   const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards`, {
     method: 'POST',
     timeoutMs: 9000,
     body: JSON.stringify({ level, roleId }),
   });
+  syncCachedLevelReward(visibleRewards, level, roleId);
   clearServerCaches(guildId, 'leveling');
   return data;
 }
 
 export async function deleteLevelReward(guildId, level) {
   if (isDemoRoute()) throw new Error('Demo mode is read-only. Log in to make changes.');
+  const visibleRewards = cachedLevelRewardsReference(guildId);
   const data = await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards/${encodeURIComponent(level)}`, { method: 'DELETE', timeoutMs: 9000 });
+  removeCachedLevelReward(visibleRewards, level);
   clearServerCaches(guildId, 'leveling');
   return data;
 }
