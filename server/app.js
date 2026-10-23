@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const { version: packageVersion } = require('../package.json');
 const { router: publicApiRouter } = require('./routes/publicApi');
+const { router: dashboardPreviewRouter } = require('./routes/dashboardPreview');
 const { router: dashboardReliabilityRouter } = require('./routes/dashboardReliability');
 const { router: dashboardRolesRouter } = require('./routes/dashboardRoles');
 const { router: dashboardStarboardRouter } = require('./routes/dashboardStarboard');
@@ -61,6 +62,7 @@ function createApp() {
   app.use(discordBackgroundRouter);
   app.use(express.static(publicPath));
 
+  app.use(dashboardPreviewRouter);
   app.use('/api', ownerAdminRouter);
   app.use('/api', dashboardReliabilityRouter);
   app.use('/api', dashboardRolesRouter);

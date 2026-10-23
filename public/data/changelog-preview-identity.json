@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-23",
+  "title": "Accurate welcome and goodbye preview identity",
+  "items": [
+    "Changed authenticated dashboard card previews to prefer the real signed-in Discord identity instead of a stale UNKNOWN browser placeholder.",
+    "Resolve the current user against the selected Discord server when possible so welcome and goodbye previews use the same member display name and avatar as real simulations.",
+    "Kept demo previews read-only and retained safe session/payload fallbacks when Discord member resolution is unavailable."
+  ]
+}

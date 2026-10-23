@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2026-10-23",
+    "title": "Welcome and goodbye preview identity hotfix",
+    "items": [
+      "Stopped authenticated welcome and goodbye card previews from preferring the browser's temporary UNKNOWN placeholder over the signed-in Discord account.",
+      "Added selected-server member resolution so previews can use the current member display name and avatar, matching Discord simulation output more closely.",
+      "Preserved read-only demo previews and safe fallbacks when member lookup is unavailable."
+    ]
+  }
+]
