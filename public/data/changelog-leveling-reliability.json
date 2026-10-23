@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-24",
+    "title": "Leveling reward cache consistency",
+    "items": [
+      "Kept the persistent Leveling tab reward list synchronized immediately after reward mappings are added, changed or removed, preventing stale rewards from reappearing when the tab rerenders.",
+      "Preserved the persistent hash-tab dashboard and its instant cached navigation instead of forcing a page reload after reward changes.",
+      "Treat the website backend's Leveling reward fallback response as an actual unavailable-API error so bot API failures no longer masquerade as an empty reward configuration."
+    ]
+  },
+  {
+    "date": "2026-10-24",
     "title": "Leveling API error visibility",
     "items": [
       "Stopped failed Leveling reward and role requests from being converted into successful-looking empty lists in the dashboard API client.",
