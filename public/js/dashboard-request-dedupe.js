@@ -15,18 +15,18 @@ function requestMethod(input, init = {}) {
   return String(init.method || input?.method || 'GET').toUpperCase();
 }
 
+function isDashboardReadPath(path) {
+  if (/^\/api\/dashboard\/servers\/[^/]+$/.test(path)) return true;
+  return /^\/api\/dashboard\/servers\/[^/]+\/(?:welcome|leveling|level-rewards|roles|ai-image-access|image-access|logs|moderation|moderation-access|starboard|backups)$/.test(path);
+}
+
 function dedupeKey(input, init = {}) {
   if (requestMethod(input, init) !== 'GET') return null;
   const raw = requestUrl(input);
   if (!raw) return null;
 
   const url = new URL(raw, window.location.origin);
-  if (url.origin !== window.location.origin) return null;
-
-  const path = url.pathname;
-  const isFeatureRequest = /^\/api\/dashboard\/servers\/[^/]+\/(starboard|backups)$/.test(path);
-  const isServerSnapshot = /^\/api\/dashboard\/servers\/[^/]+$/.test(path);
-  if (!isFeatureRequest && !isServerSnapshot) return null;
+  if (url.origin !== window.location.origin || !isDashboardReadPath(url.pathname)) return null;
 
   return `${requestMethod(input, init)}:${url.pathname}${url.search}`;
 }
@@ -41,9 +41,28 @@ function readCachedResponse(cache, key) {
   return cached.response.clone();
 }
 
+function invalidateDashboardReads(input, init = {}) {
+  const method = requestMethod(input, init);
+  if (method === 'GET') return;
+  const raw = requestUrl(input);
+  if (!raw) return;
+  const url = new URL(raw, window.location.origin);
+  if (url.origin !== window.location.origin || !url.pathname.startsWith('/api/dashboard/servers/')) return;
+
+  for (const key of [...shortCache.keys(), ...failureCache.keys()]) {
+    if (key.includes(url.pathname) || key.startsWith(`GET:${url.pathname.split('/').slice(0, 5).join('/')}`)) {
+      shortCache.delete(key);
+      failureCache.delete(key);
+    }
+  }
+}
+
 window.fetch = async function meowzDashboardFetch(input, init = {}) {
   const key = dedupeKey(input, init);
-  if (!key) return originalFetch(input, init);
+  if (!key) {
+    invalidateDashboardReads(input, init);
+    return originalFetch(input, init);
+  }
 
   const cachedSuccess = readCachedResponse(shortCache, key);
   if (cachedSuccess) return cachedSuccess;
