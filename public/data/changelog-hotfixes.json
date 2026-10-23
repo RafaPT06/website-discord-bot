@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-10-23",
+    "title": "Dashboard tab request stabilization",
+    "items": [
+      "Expanded dashboard in-flight request deduplication from Starboard and Backups to the core Welcome, Leveling, Logs, Moderation, access-list, role and reward endpoints so one tab render cannot fan out duplicate GET requests.",
+      "Kept successful reads briefly reusable and applied the existing 429 cooldown to all dashboard tab reads, reducing repeated Leveling and Moderation API failures during fast tab switches and observer rerenders.",
+      "Invalidate cached dashboard reads after writes so saved settings, trusted-user changes and reward changes cannot leave a stale short-lived response on screen."
+    ]
+  },
+  {
     "date": "2026-10-15",
     "title": "Server switcher refresh fix",
     "items": [
