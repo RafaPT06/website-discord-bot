@@ -32,7 +32,11 @@ async function fetchJson(url, options = {}) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.error || `Request failed with ${response.status}`);
+    const error = new Error(data?.error || `Request failed with ${response.status}`);
+    error.statusCode = response.status;
+    error.errors = Array.isArray(data?.errors) ? data.errors : [];
+    error.diagnostics = data?.diagnostics || null;
+    throw error;
   }
 
   if (cacheKey && cacheMs > 0) memoryCache.set(cacheKey, { at: Date.now(), data });
@@ -165,22 +169,14 @@ export async function saveServerSettings(guildId, section, payload) {
   return data;
 }
 
-export async function getGuildRoles(guildId) {
+export function getGuildRoles(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ok: true, roles: DEMO_ROLES.map((role) => ({ ...role })), demo: true });
-  try {
-    return await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/roles`, { cacheKey: `roles:${guildId}`, cacheMs: 15000 });
-  } catch (err) {
-    return { ok: true, roles: [], fallback: true, error: err.message || 'Role API unavailable.' };
-  }
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/roles`, { cacheKey: `roles:${guildId}`, cacheMs: 15000, timeoutMs: 9000 });
 }
 
-export async function getLevelRewards(guildId) {
+export function getLevelRewards(guildId) {
   if (isDemoRoute()) return Promise.resolve({ ok: true, rewards: DEMO_SERVER_SETTINGS.levelRewards.map((reward) => ({ ...reward })), demo: true });
-  try {
-    return await fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards`, { cacheKey: `level-rewards:${guildId}`, cacheMs: 8000, timeoutMs: 9000 });
-  } catch (err) {
-    return { ok: true, rewards: [], fallback: true, error: err.message || 'Level rewards API unavailable.' };
-  }
+  return fetchJson(`/api/dashboard/servers/${encodeURIComponent(guildId)}/level-rewards`, { cacheKey: `level-rewards:${guildId}`, cacheMs: 8000, timeoutMs: 9000 });
 }
 
 export async function saveLevelReward(guildId, level, roleId) {
