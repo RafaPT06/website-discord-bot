@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-10-28",
+    "title": "Server Layout foundation",
+    "items": [
+      "Added authenticated dashboard API routes for reading a server structure and its layout snapshots through the Meowz bot service without exposing the bot API token to the browser.",
+      "Added manual snapshot creation with validated names and reasons plus snapshot detail and live-versus-snapshot diff endpoints, establishing the safe read/preview layer before any restore or template deployment is enabled.",
+      "Kept Manage Server and Meowz owner access checks consistent with the existing Backups architecture so Server Layout can be added to the persistent dashboard without weakening authenticated routes or demo-mode boundaries."
+    ]
+  },
+  {
     "date": "2026-10-23",
     "title": "Dashboard tab request stabilization",
     "items": [
