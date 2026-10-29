@@ -7,6 +7,7 @@ const { router: dashboardReliabilityRouter } = require('./routes/dashboardReliab
 const { router: dashboardRolesRouter } = require('./routes/dashboardRoles');
 const { router: dashboardStarboardRouter } = require('./routes/dashboardStarboard');
 const { router: dashboardBackupsRouter } = require('./routes/dashboardBackups');
+const { router: dashboardServerLayoutRouter } = require('./routes/dashboardServerLayout');
 const { router: ownerAdminRouter } = require('./routes/ownerAdmin');
 const { router: authRouter } = require('./routes/auth');
 const { router: discordBackgroundRouter } = require('./routes/discordBackground');
@@ -68,6 +69,7 @@ function createApp() {
   app.use('/api', dashboardRolesRouter);
   app.use('/api', dashboardStarboardRouter);
   app.use('/api', dashboardBackupsRouter);
+  app.use('/api', dashboardServerLayoutRouter);
   app.use('/api', publicApiRouter);
   app.use('/auth', authRouter);
 
