@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-10-29",
+    "title": "Visual Server Layout dashboard",
+    "items": [
+      "Added a responsive Server Layout dashboard tab that visualizes the live Discord category/channel structure, role hierarchy and structure totals without modifying the server.",
+      "Added manual layout snapshot creation, cached snapshot lists and a visual live-versus-snapshot comparison panel for added, removed and changed server structure.",
+      "Added a read-only demo layout with fake channels, roles and snapshots, plus dashboard request deduplication for the new layout and snapshot API reads."
+    ]
+  },
+  {
     "date": "2026-10-28",
     "title": "Server Layout foundation",
     "items": [
@@ -20,145 +29,21 @@
   {
     "date": "2026-10-15",
     "title": "Server switcher refresh fix",
-    "items": [
-      "Changed the in-dashboard server switcher to use cached server snapshots only for the instant first paint, then refresh the installed server list from the dashboard API instead of treating any partial cache as complete.",
-      "Kept the refreshed server list cached for quick repeat opens while preserving the existing dashboard guild request cache and in-flight deduplication.",
-      "Kept the cached list visible if a refresh fails so switching servers still degrades gracefully instead of replacing a usable menu with an error."
-    ]
+    "items": ["Changed the in-dashboard server switcher to use cached server snapshots only for the instant first paint, then refresh the installed server list from the dashboard API instead of treating any partial cache as complete.","Kept the refreshed server list cached for quick repeat opens while preserving the existing dashboard guild request cache and in-flight deduplication.","Kept the cached list visible if a refresh fails so switching servers still degrades gracefully instead of replacing a usable menu with an error."]
   },
-  {
-    "date": "2026-10-15",
-    "title": "Dashboard server switcher",
-    "items": [
-      "Made the Meowz brand and current-server card open a compact server switcher from inside a server dashboard instead of forcing a trip back through the dashboard home first.",
-      "Reused cached dashboard server snapshots before requesting fresh guild data, so opening the switcher does not add unnecessary server reloads.",
-      "Added responsive desktop and mobile switcher layouts, current-server highlighting, View all servers access, Escape/outside-click closing and an unsaved-changes warning before changing servers."
-    ]
-  },
-  {
-    "date": "2026-10-15",
-    "title": "Dashboard request storm, duplicate navigation and 429 hotfix",
-    "items": [
-      "Stopped Starboard and Backups from appending themselves to Resources and Account; feature links now stay inside the Dashboard navigation group on desktop and mobile.",
-      "Blocked MutationObserver-driven automatic retries while a Starboard or Backups load is already running, and after a failed load until the user retries or navigates back to the tab.",
-      "Kept the existing request dedupe and server-access cache protections so repeated dashboard renders no longer hammer the website API or Discord permission endpoint."
-    ]
-  },
-  {
-    "date": "2026-10-15",
-    "title": "Database backup dashboard",
-    "items": [
-      "Added a Backups server dashboard tab with scheduled backup enablement, real Discord channel selection, last-run status and next-run timing.",
-      "Added a manual Run Backup Now action that can save pending backup settings first, sends the JSON database export through the bot, and resets the weekly schedule from that successful run.",
-      "Added cached tab data, shared unsaved-changes integration, read-only demo data, responsive mobile/tablet styling and authenticated website-to-bot API routes."
-    ]
-  },
-  {
-    "date": "2026-10-15",
-    "title": "Persistent Starboard dashboard tab",
-    "items": [
-      "Added a Starboard tab to server dashboard navigation with enable, channel, reaction emoji and threshold controls.",
-      "Added a live Meowz-style Starboard preview, responsive two-column desktop layout and single-column tablet/mobile flow.",
-      "Kept Starboard drafts across tab switches, connected them to the shared Save Changes/Discard controls and added a read-only demo preview with fake data."
-    ]
-  },
-  {
-    "date": "2026-10-15",
-    "title": "Starboard dashboard foundation",
-    "items": [
-      "Added authenticated website routes for loading and saving Starboard settings from the Meowz bot API.",
-      "Added server-side validation for Starboard channel, reaction threshold and emoji settings while preserving Manage Server and owner access checks.",
-      "Prepared the Starboard feature for the persistent server dashboard without exposing BOT_API_TOKEN to the browser."
-    ]
-  },
-  {
-    "date": "2026-10-10",
-    "title": "Complete Account Manager Discord help",
-    "items": [
-      "Changed Account Manager help reporting to render the live command registry supplied by the Roblox client instead of an outdated hardcoded command list.",
-      "Added command aliases and descriptions across paginated Discord embeds so the complete command set fits within Discord limits.",
-      "Raised the Account Manager report body limit for the full registry while preserving managed-account validation, mention suppression and rate limiting."
-    ]
-  },
-  {
-    "date": "2026-10-04",
-    "title": "Account Manager Discord reporting",
-    "items": [
-      "Added Account Manager status, index and help reports through the website backend.",
-      "Added managed-account validation, mention suppression and request rate limiting.",
-      "Added automatic Roblox whisper fallback when external reporting is unavailable."
-    ]
-  },
-  {
-    "date": "2026-08-18",
-    "title": "Algorithmic puzzle grid detection and editing",
-    "items": [
-      "Changed puzzle imports so dark square borders are detected locally in the browser before OpenAI is called, preventing the model from inventing faint reverse-side bleed-through squares.",
-      "Limited OpenAI to reading the title, word bank and visibly prefilled letters against the fixed detected geometry, with an annotated overlay for coordinate mapping.",
-      "Added an owner grid editor that lets detected squares be added or removed manually without revealing answers, while preserving saved puzzle progress and the final no-hints correctness check."
-    ]
-  },
-  {
-    "date": "2026-08-18",
-    "title": "Dual-image puzzle grid filtering",
-    "items": [
-      "Added browser-side high-contrast preprocessing that suppresses pale reverse-side page bleed-through before grid detection.",
-      "Changed puzzle imports to send both the original page and a cleaned structural copy to OpenAI, using the original for the title, word bank and printed letters while using the cleaned copy as the primary source for genuine grid squares.",
-      "Preserved the owner puzzle library, local progress saving and final no-hints correctness check while making doubtful faded squares default to exclusion."
-    ]
-  },
-  {
-    "date": "2026-08-18",
-    "title": "Owner puzzle library",
-    "items": [
-      "Added a Puzzles tab to the dashboard navigation while Owner view is active and verified, linking directly to the private screenshot puzzle tool.",
-      "Added an automatic saved-puzzle library that keeps separate copies of imported puzzle structures and letter progress instead of letting a new import replace the previous puzzle.",
-      "Added quick reopen and delete controls for saved puzzles while keeping screenshot images out of the saved library."
-    ]
-  },
-  {
-    "date": "2026-08-18",
-    "title": "Private AI screenshot puzzle importer",
-    "items": [
-      "Added an owner-only puzzle tool that turns a screenshot into a playable grid by sending the resized image to the OpenAI Responses API and transcribing only visible cells, printed letters and the available word bank.",
-      "Kept OpenAI credentials on the server, disabled response storage for puzzle imports and kept the generated puzzle page outside the public static directory.",
-      "Added local progress saving plus a final correctness check that remains locked until every square is filled and only reports whether the complete puzzle is correct, never which word is wrong."
-    ]
-  },
-  {
-    "date": "2026-07-17",
-    "title": "Cleaner desktop server dashboard chrome",
-    "items": [
-      "Removed the duplicated desktop breadcrumb, View Bot action and horizontal server tab bar because the global navbar and sidebar already provide that navigation context.",
-      "Simplified the sidebar server switcher to the server identity only and removed the redundant Server Settings subtitle.",
-      "Moved the access badge beside the server name, kept the member count as the only supporting chip and removed the unnecessary Bot Installed badge while preserving mobile and tablet tabs."
-    ]
-  },
-  {
-    "date": "2026-07-17",
-    "title": "Meowz-only reward roles and stable custom selects",
-    "items": [
-      "Filtered the Leveling reward-role picker to roles created through the Meowz dashboard instead of showing every editable role in the Discord server.",
-      "Added persistent bot-side role tracking with an audit-log backfill for recent dashboard-created roles, while keeping unrelated server roles outside the Leveling manager.",
-      "Changed the shared custom select so opening a searchable dropdown never automatically focuses its search field, and mobile keyboard height changes no longer close an open menu."
-    ]
-  },
-  {
-    "date": "2026-07-17",
-    "title": "Polished Leveling role and reward management",
-    "items": [
-      "Replaced the browser confirmation alert for removing reward mappings with a centered Meowz-styled confirmation dialog that explains exactly what will and will not be deleted.",
-      "Added safe Discord role deletion from the Leveling panel with exact-name confirmation and linked reward cleanup.",
-      "Added compact reward rows and clearer create, select, save and delete controls across desktop, tablet and mobile."
-    ]
-  },
-  {
-    "date": "2026-07-17",
-    "title": "Reliable bot-side role creation",
-    "items": [
-      "Completed the bot API support used by the Leveling dashboard to create editable Discord reward roles.",
-      "Removed the website-side direct Discord fallback so role creation stays behind the authenticated Meowz bot API connection.",
-      "Added a clear deployment-version error when the website is connected to an outdated bot service."
-    ]
-  }
+  {"date":"2026-10-15","title":"Dashboard server switcher","items":["Made the Meowz brand and current-server card open a compact server switcher from inside a server dashboard instead of forcing a trip back through the dashboard home first.","Reused cached dashboard server snapshots before requesting fresh guild data, so opening the switcher does not add unnecessary server reloads.","Added responsive desktop and mobile switcher layouts, current-server highlighting, View all servers access, Escape/outside-click closing and an unsaved-changes warning before changing servers."]},
+  {"date":"2026-10-15","title":"Dashboard request storm, duplicate navigation and 429 hotfix","items":["Stopped Starboard and Backups from appending themselves to Resources and Account; feature links now stay inside the Dashboard navigation group on desktop and mobile.","Blocked MutationObserver-driven automatic retries while a Starboard or Backups load is already running, and after a failed load until the user retries or navigates back to the tab.","Kept the existing request dedupe and server-access cache protections so repeated dashboard renders no longer hammer the website API or Discord permission endpoint."]},
+  {"date":"2026-10-15","title":"Database backup dashboard","items":["Added a Backups server dashboard tab with scheduled backup enablement, real Discord channel selection, last-run status and next-run timing.","Added a manual Run Backup Now action that can save pending backup settings first, sends the JSON database export through the bot, and resets the weekly schedule from that successful run.","Added cached tab data, shared unsaved-changes integration, read-only demo data, responsive mobile/tablet styling and authenticated website-to-bot API routes."]},
+  {"date":"2026-10-15","title":"Persistent Starboard dashboard tab","items":["Added a Starboard tab to server dashboard navigation with enable, channel, reaction emoji and threshold controls.","Added a live Meowz-style Starboard preview, responsive two-column desktop layout and single-column tablet/mobile flow.","Kept Starboard drafts across tab switches, connected them to the shared Save Changes/Discard controls and added a read-only demo preview with fake data."]},
+  {"date":"2026-10-15","title":"Starboard dashboard foundation","items":["Added authenticated website routes for loading and saving Starboard settings from the Meowz bot API.","Added server-side validation for Starboard channel, reaction threshold and emoji settings while preserving Manage Server and owner access checks.","Prepared the Starboard feature for the persistent server dashboard without exposing BOT_API_TOKEN to the browser."]},
+  {"date":"2026-10-10","title":"Complete Account Manager Discord help","items":["Changed Account Manager help reporting to render the live command registry supplied by the Roblox client instead of an outdated hardcoded command list.","Added command aliases and descriptions across paginated Discord embeds so the complete command set fits within Discord limits.","Raised the Account Manager report body limit for the full registry while preserving managed-account validation, mention suppression and rate limiting."]},
+  {"date":"2026-10-04","title":"Account Manager Discord reporting","items":["Added Account Manager status, index and help reports through the website backend.","Added managed-account validation, mention suppression and request rate limiting.","Added automatic Roblox whisper fallback when external reporting is unavailable."]},
+  {"date":"2026-08-18","title":"Algorithmic puzzle grid detection and editing","items":["Changed puzzle imports so dark square borders are detected locally in the browser before OpenAI is called, preventing the model from inventing faint reverse-side bleed-through squares.","Limited OpenAI to reading the title, word bank and visibly prefilled letters against the fixed detected geometry, with an annotated overlay for coordinate mapping.","Added an owner grid editor that lets detected squares be added or removed manually without revealing answers, while preserving saved puzzle progress and the final no-hints correctness check."]},
+  {"date":"2026-08-18","title":"Dual-image puzzle grid filtering","items":["Added browser-side high-contrast preprocessing that suppresses pale reverse-side page bleed-through before grid detection.","Changed puzzle imports to send both the original page and a cleaned structural copy to OpenAI, using the original for the title, word bank and printed letters while using the cleaned copy as the primary source for genuine grid squares.","Preserved the owner puzzle library, local progress saving and final no-hints correctness check while making doubtful faded squares default to exclusion."]},
+  {"date":"2026-08-18","title":"Owner puzzle library","items":["Added a Puzzles tab to the dashboard navigation while Owner view is active and verified, linking directly to the private screenshot puzzle tool.","Added an automatic saved-puzzle library that keeps separate copies of imported puzzle structures and letter progress instead of letting a new import replace the previous puzzle.","Added quick reopen and delete controls for saved puzzles while keeping screenshot images out of the saved library."]},
+  {"date":"2026-08-18","title":"Private AI screenshot puzzle importer","items":["Added an owner-only puzzle tool that turns a screenshot into a playable grid by sending the resized image to the OpenAI Responses API and transcribing only visible cells, printed letters and the available word bank.","Kept OpenAI credentials on the server, disabled response storage for puzzle imports and kept the generated puzzle page outside the public static directory.","Added local progress saving plus a final correctness check that remains locked until every square is filled and only reports whether the complete puzzle is correct, never which word is wrong."]},
+  {"date":"2026-07-17","title":"Cleaner desktop server dashboard chrome","items":["Removed the duplicated desktop breadcrumb, View Bot action and horizontal server tab bar because the global navbar and sidebar already provide that navigation context.","Simplified the sidebar server switcher to the server identity only and removed the redundant Server Settings subtitle.","Moved the access badge beside the server name, kept the member count as the only supporting chip and removed the unnecessary Bot Installed badge while preserving mobile and tablet tabs."]},
+  {"date":"2026-07-17","title":"Meowz-only reward roles and stable custom selects","items":["Filtered the Leveling reward-role picker to roles created through the Meowz dashboard instead of showing every editable role in the Discord server.","Added persistent bot-side role tracking with an audit-log backfill for recent dashboard-created roles, while keeping unrelated server roles outside the Leveling manager.","Changed the shared custom select so opening a searchable dropdown never automatically focuses its search field, and mobile keyboard height changes no longer close an open menu."]},
+  {"date":"2026-07-17","title":"Polished Leveling role and reward management","items":["Replaced the browser confirmation alert for removing reward mappings with a centered Meowz-styled confirmation dialog that explains exactly what will and will not be deleted.","Added safe Discord role deletion from the Leveling panel with exact-name confirmation and linked reward cleanup.","Added compact reward rows and clearer create, select, save and delete controls across desktop, tablet and mobile."]},
+  {"date":"2026-07-17","title":"Reliable bot-side role creation","items":["Completed the bot API support used by the Leveling dashboard to create editable Discord reward roles.","Removed the website-side direct Discord fallback so role creation stays behind the authenticated Meowz bot API connection.","Added a clear deployment-version error when the website is connected to an outdated bot service."]}
 ]
