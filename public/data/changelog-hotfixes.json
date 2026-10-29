@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-29",
+    "title": "Server Layout permission inspection",
+    "items": [
+      "Added expandable channel permission-overwrite inspection directly inside the Server Layout structure tree, including resolved role names and captured allow/deny bitfields.",
+      "Added read-only role permission inspection so managers can verify the exact Discord permission value captured in a layout snapshot without exposing editing controls.",
+      "Kept permission inspection responsive and non-destructive in both authenticated and demo dashboards while restore/deploy remains disabled."
+    ]
+  },
+  {
+    "date": "2026-10-29",
     "title": "Visual Server Layout dashboard",
     "items": [
       "Added a responsive Server Layout dashboard tab that visualizes the live Discord category/channel structure, role hierarchy and structure totals without modifying the server.",
@@ -26,11 +35,7 @@
       "Invalidate cached dashboard reads after writes so saved settings, trusted-user changes and reward changes cannot leave a stale short-lived response on screen."
     ]
   },
-  {
-    "date": "2026-10-15",
-    "title": "Server switcher refresh fix",
-    "items": ["Changed the in-dashboard server switcher to use cached server snapshots only for the instant first paint, then refresh the installed server list from the dashboard API instead of treating any partial cache as complete.","Kept the refreshed server list cached for quick repeat opens while preserving the existing dashboard guild request cache and in-flight deduplication.","Kept the cached list visible if a refresh fails so switching servers still degrades gracefully instead of replacing a usable menu with an error."]
-  },
+  {"date":"2026-10-15","title":"Server switcher refresh fix","items":["Changed the in-dashboard server switcher to use cached server snapshots only for the instant first paint, then refresh the installed server list from the dashboard API instead of treating any partial cache as complete.","Kept the refreshed server list cached for quick repeat opens while preserving the existing dashboard guild request cache and in-flight deduplication.","Kept the cached list visible if a refresh fails so switching servers still degrades gracefully instead of replacing a usable menu with an error."]},
   {"date":"2026-10-15","title":"Dashboard server switcher","items":["Made the Meowz brand and current-server card open a compact server switcher from inside a server dashboard instead of forcing a trip back through the dashboard home first.","Reused cached dashboard server snapshots before requesting fresh guild data, so opening the switcher does not add unnecessary server reloads.","Added responsive desktop and mobile switcher layouts, current-server highlighting, View all servers access, Escape/outside-click closing and an unsaved-changes warning before changing servers."]},
   {"date":"2026-10-15","title":"Dashboard request storm, duplicate navigation and 429 hotfix","items":["Stopped Starboard and Backups from appending themselves to Resources and Account; feature links now stay inside the Dashboard navigation group on desktop and mobile.","Blocked MutationObserver-driven automatic retries while a Starboard or Backups load is already running, and after a failed load until the user retries or navigates back to the tab.","Kept the existing request dedupe and server-access cache protections so repeated dashboard renders no longer hammer the website API or Discord permission endpoint."]},
   {"date":"2026-10-15","title":"Database backup dashboard","items":["Added a Backups server dashboard tab with scheduled backup enablement, real Discord channel selection, last-run status and next-run timing.","Added a manual Run Backup Now action that can save pending backup settings first, sends the JSON database export through the bot, and resets the weekly schedule from that successful run.","Added cached tab data, shared unsaved-changes integration, read-only demo data, responsive mobile/tablet styling and authenticated website-to-bot API routes."]},
