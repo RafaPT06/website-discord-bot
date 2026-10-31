@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-29",
+    "title": "Server Layout restore preview planning",
+    "items": [
+      "Added a preview-only restore-plan endpoint that compares the live server against a selected layout snapshot without changing Discord.",
+      "Added Merge and Replace planning semantics, including create/update/remove/preserve counts, Discord-managed role exclusions and explicit destructive-change warnings.",
+      "Prepared restore safety requirements for automatic pre-restore snapshots and Discord ID remapping before any real restore execution is enabled."
+    ]
+  },
+  {
+    "date": "2026-10-29",
     "title": "Server Layout permission inspection",
     "items": [
       "Added expandable channel permission-overwrite inspection directly inside the Server Layout structure tree, including resolved role names and captured allow/deny bitfields.",
