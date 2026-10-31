@@ -17,7 +17,7 @@ function requestMethod(input, init = {}) {
 
 function isDashboardReadPath(path) {
   if (/^\/api\/dashboard\/servers\/[^/]+$/.test(path)) return true;
-  if (/^\/api\/dashboard\/servers\/[^/]+\/layout(?:\/snapshots(?:\/[^/]+(?:\/diff)?)?)?$/.test(path)) return true;
+  if (/^\/api\/dashboard\/servers\/[^/]+\/layout(?:\/snapshots(?:\/[^/]+(?:\/(?:diff|restore-plan))?)?)?$/.test(path)) return true;
   return /^\/api\/dashboard\/servers\/[^/]+\/(?:welcome|leveling|level-rewards|roles|ai-image-access|image-access|logs|moderation|moderation-access|starboard|backups)$/.test(path);
 }
 
