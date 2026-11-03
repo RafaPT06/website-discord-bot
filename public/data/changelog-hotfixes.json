@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-03",
+    "title": "Music & Voice dashboard foundation",
+    "items": [
+      "Added a responsive Music & Voice dashboard tab with a voice-channel dropdown and remote Join, Disconnect and Refresh controls.",
+      "Added session-protected Manage Server API routes that proxy voice operations to Meowz without exposing bot credentials to the browser.",
+      "Added a fake read-only demo voice selector and a Spotify integration placeholder; Spotify OAuth and music playback will be implemented separately."
+    ]
+  },
+{
     "date": "2026-10-29",
     "title": "Server Layout restore preview planning",
     "items": [
