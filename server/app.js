@@ -9,6 +9,7 @@ const { router: dashboardStarboardRouter } = require('./routes/dashboardStarboar
 const { router: dashboardBackupsRouter } = require('./routes/dashboardBackups');
 const { router: dashboardServerLayoutRouter } = require('./routes/dashboardServerLayout');
 const { router: dashboardMusicVoiceRouter } = require('./routes/dashboardMusicVoice');
+const { router: dashboardSpotifyRouter } = require('./routes/dashboardSpotify');
 const { router: ownerAdminRouter } = require('./routes/ownerAdmin');
 const { router: authRouter } = require('./routes/auth');
 const { router: discordBackgroundRouter } = require('./routes/discordBackground');
@@ -72,6 +73,7 @@ function createApp() {
   app.use('/api', dashboardBackupsRouter);
   app.use('/api', dashboardServerLayoutRouter);
   app.use('/api', dashboardMusicVoiceRouter);
+  app.use('/api', dashboardSpotifyRouter);
   app.use('/api', publicApiRouter);
   app.use('/auth', authRouter);
 
