@@ -62,4 +62,23 @@ router.post('/dashboard/servers/:guildId/music/voice/leave', requireAuth, requir
   catch (err) { fail(res, err); }
 });
 
+
+function playerPath(req) { return '/api/guilds/' + encodeURIComponent(req.params.guildId) + '/music/player'; }
+
+router.get('/dashboard/servers/:guildId/music/player', requireAuth, requireGuildManager, async (req, res) => {
+  try { res.json(await requestBotApi(playerPath(req), { timeoutMs: 12000 })); } catch (err) { fail(res, err); }
+});
+router.post('/dashboard/servers/:guildId/music/player/queue', requireAuth, requireGuildManager, async (req, res) => {
+  const trackId = String(req.body?.trackId || '');
+  if (!trackId || trackId.length > 100 || !/^[a-zA-Z0-9 _.-]+$/.test(trackId)) return res.status(400).json({ ok: false, error: 'Invalid track selection.' });
+  try { res.json(await requestBotApi(playerPath(req) + '/queue', { method: 'POST', timeoutMs: 12000, body: JSON.stringify({ trackId }) })); }
+  catch (err) { fail(res, err); }
+});
+router.post('/dashboard/servers/:guildId/music/player/control', requireAuth, requireGuildManager, async (req, res) => {
+  const action = String(req.body?.action || '');
+  if (!['pause', 'resume', 'skip', 'stop'].includes(action)) return res.status(400).json({ ok: false, error: 'Invalid player action.' });
+  try { res.json(await requestBotApi(playerPath(req) + '/control', { method: 'POST', timeoutMs: 12000, body: JSON.stringify({ action }) })); }
+  catch (err) { fail(res, err); }
+});
+
 module.exports = { router };
