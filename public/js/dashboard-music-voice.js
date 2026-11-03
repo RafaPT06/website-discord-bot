@@ -45,7 +45,13 @@ function page(data) {
     '>' + escapeHtml(c.name) + (c.full ? ' (Full)' : !c.joinable ? ' (Unavailable)' : '') + '</option>').join('');
   return '<section class="music-voice-page" data-music-voice-page>' +
     '<header class="music-voice-header"><span>SERVER UTILITIES</span><h1>Music & Voice</h1><p>Connect Meowz to a voice channel without joining it yourself.</p></header>' +
-    '<div class="music-voice-grid"><div class="dash-card music-voice-card"><div class="music-voice-heading"><h2>Voice connection</h2><span class="music-voice-status">' +
+    '<div class="music-voice-grid"><div class="dash-card music-voice-card music-player-card" data-music-player><div class="music-voice-heading"><h2>Music player</h2><span class="music-voice-status" data-player-status>Idle</span></div>' +
+    '<div class="music-player-now"><span class="music-player-cover">♫</span><div><small>NOW PLAYING</small><strong data-player-current>Nothing playing</strong></div></div>' +
+    '<label for="music-player-track">Available tracks</label><select id="music-player-track" data-player-track><option value="">Loading music catalog…</option></select>' +
+    '<div class="music-voice-actions"><button type="button" class="dash-primary-btn" data-player-queue' + (demo() ? ' disabled' : '') + '>Add to queue</button><button type="button" class="dash-secondary-btn" data-player-refresh>Refresh</button></div>' +
+    '<div class="music-voice-actions"><button type="button" class="dash-secondary-btn" data-player-action="pause"' + (demo() ? ' disabled' : '') + '>Pause</button><button type="button" class="dash-secondary-btn" data-player-action="resume"' + (demo() ? ' disabled' : '') + '>Resume</button><button type="button" class="dash-secondary-btn" data-player-action="skip"' + (demo() ? ' disabled' : '') + '>Skip</button><button type="button" class="dash-secondary-btn" data-player-action="stop"' + (demo() ? ' disabled' : '') + '>Stop</button></div>' +
+    '<div class="music-player-queue"><h3>Up next</h3><ol data-player-queue-list></ol></div><p class="music-voice-message" data-player-message role="status">' + (demo() ? 'Demo player is read-only.' : 'Only tracks configured on the bot are playable.') + '</p></div>' +
+    '<div class="dash-card music-voice-card"><div class="music-voice-heading"><h2>Voice connection</h2><span class="music-voice-status">' +
     (data.voice?.connected ? 'Connected' : 'Disconnected') + '</span></div>' +
     '<label for="music-voice-channel">Voice channel</label><select id="music-voice-channel" data-music-voice-select><option value="">Select a voice channel</option>' + options + '</select>' +
     '<div class="music-voice-actions"><button type="button" class="dash-primary-btn" data-music-voice-join' + (demo() ? ' disabled' : '') + '>Join channel</button>' +
@@ -82,7 +88,60 @@ async function render(force = false) {
     host.querySelector('[data-music-voice-retry]')?.addEventListener('click', () => render(true));
   } finally { loading = false; }
 }
+
+const playerCache = new Map();
+async function loadPlayer(id, host, force = false) {
+  const root = host.querySelector('[data-music-player]');
+  if (!root) return;
+  const message = root.querySelector('[data-player-message]');
+  try {
+    const data = demo() ? { current: { title: 'Demo track' }, status: 'idle', queue: [{ title: 'Example song' }], tracks: [{ id: 'demo-song', title: 'Example song' }] } :
+      (!force && playerCache.has(id) ? playerCache.get(id) : (await request('/api/dashboard/servers/' + encodeURIComponent(id) + '/music/player')).music);
+    if (!root.isConnected) return;
+    playerCache.set(id, data);
+    root.querySelector('[data-player-status]').textContent = data.status || 'idle';
+    root.querySelector('[data-player-current]').textContent = data.current?.title || 'Nothing playing';
+    const selector = root.querySelector('[data-player-track]');
+    const previous = selector.value;
+    selector.innerHTML = '<option value="">Select a track</option>' + (data.tracks || []).map(track =>
+      '<option value="' + escapeHtml(track.id) + '">' + escapeHtml(track.title) + '</option>').join('');
+    if ([...selector.options].some(option => option.value === previous)) selector.value = previous;
+    root.querySelector('[data-player-queue-list]').innerHTML = (data.queue || []).map(track => '<li>' + escapeHtml(track.title) + '</li>').join('') || '<li>Queue is empty</li>';
+    if (!demo() && !data.tracks?.length) message.textContent = 'No tracks configured. Set MEOWZ_MUSIC_DIR on the bot Railway service and provide permitted audio files.';
+  } catch (error) {
+    if (root.isConnected) message.textContent = error.message;
+  }
+}
+function bindPlayer(id, host) {
+  const root = host.querySelector('[data-music-player]');
+  if (!root) return;
+  const path = '/api/dashboard/servers/' + encodeURIComponent(id) + '/music/player';
+  const message = root.querySelector('[data-player-message]');
+  root.querySelector('[data-player-refresh]')?.addEventListener('click', () => { playerCache.delete(id); loadPlayer(id, host, true); });
+  async function mutate(url, body) {
+    if (demo()) return;
+    const buttons = [...root.querySelectorAll('button')];
+    buttons.forEach(button => button.disabled = true);
+    message.textContent = 'Updating player…';
+    try {
+      await request(url, { method: 'POST', body: JSON.stringify(body) });
+      playerCache.delete(id);
+      message.textContent = 'Player updated.';
+      await loadPlayer(id, host, true);
+    } catch (error) { message.textContent = error.message; }
+    finally { buttons.forEach(button => button.disabled = demo()); }
+  }
+  root.querySelector('[data-player-queue]')?.addEventListener('click', () => {
+    const trackId = root.querySelector('[data-player-track]').value;
+    if (!trackId) { message.textContent = 'Choose a track first.'; return; }
+    mutate(path + '/queue', { trackId });
+  });
+  root.querySelectorAll('[data-player-action]').forEach(button =>
+    button.addEventListener('click', () => mutate(path + '/control', { action: button.dataset.playerAction })));
+  void loadPlayer(id, host);
+}
 function bind(id, host) {
+  bindPlayer(id, host);
   const select = host.querySelector('[data-music-voice-select]');
   const message = host.querySelector('[data-music-voice-message]');
   host.querySelector('[data-music-voice-refresh]')?.addEventListener('click', () => { cache.delete(id); render(true); });
