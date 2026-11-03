@@ -90,4 +90,45 @@ router.get('/music/spotify/search', authenticated, throttle, async (req, res) =>
   }
 });
 
+
+function safePlaylist(playlist) {
+  return {
+    id: String(playlist?.id || ''),
+    name: String(playlist?.name || ''),
+    description: String(playlist?.description || '').replace(/<[^>]*>/g, '').slice(0, 300),
+    owner: String(playlist?.owner?.display_name || ''),
+    totalTracks: Number(playlist?.tracks?.total ?? playlist?.items?.total ?? 0),
+    image: playlist?.images?.find(image => /^https:\/\//.test(image.url || ''))?.url || null,
+    url: /^https:\/\/open\.spotify\.com\/playlist\//.test(playlist?.external_urls?.spotify || '') ? playlist.external_urls.spotify : null,
+  };
+}
+
+router.get('/music/spotify/playlists/search', authenticated, throttle, async (req, res) => {
+  const query = String(req.query.q || '').trim();
+  if (query.length < 2 || query.length > 100) return res.status(400).json({ ok: false, error: 'Enter a playlist search between 2 and 100 characters.' });
+  try {
+    const params = new URLSearchParams({ q: query, type: 'playlist', limit: '12', market: 'PT' });
+    const data = await spotifyGet('/search?' + params);
+    res.set('Cache-Control', 'private, no-store');
+    res.json({ ok: true, playlists: (data.playlists?.items || []).filter(Boolean).map(safePlaylist) });
+  } catch (error) {
+    res.status(error.statusCode || 502).json({ ok: false, error: error.message || 'Playlist search failed.' });
+  }
+});
+
+router.get('/music/spotify/playlists/:playlistId/tracks', authenticated, throttle, async (req, res) => {
+  const playlistId = String(req.params.playlistId || '');
+  if (!/^[a-zA-Z0-9]{22}$/.test(playlistId)) return res.status(400).json({ ok: false, error: 'Invalid Spotify playlist ID.' });
+  const offset = Number(req.query.offset || 0);
+  if (!Number.isSafeInteger(offset) || offset < 0 || offset > 10000) return res.status(400).json({ ok: false, error: 'Invalid playlist offset.' });
+  try {
+    const params = new URLSearchParams({ limit: '30', offset: String(offset), market: 'PT' });
+    const data = await spotifyGet('/playlists/' + encodeURIComponent(playlistId) + '/tracks?' + params);
+    res.set('Cache-Control', 'private, no-store');
+    res.json({ ok: true, tracks: (data.items || []).map(item => item?.track).filter(track => track?.type === 'track').map(safeTrack), total: Number(data.total || 0), offset });
+  } catch (error) {
+    res.status(error.statusCode || 502).json({ ok: false, error: error.message || 'Could not load playlist tracks.' });
+  }
+});
+
 module.exports = { router };
