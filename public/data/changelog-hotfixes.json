@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-03",
+    "title": "Music player and queue controls",
+    "items": [
+      "Added a Now Playing card, track selector, upcoming queue, and Pause, Resume, Skip and Stop controls to the Music & Voice dashboard.",
+      "Added session-authenticated, Manage Server-verified website API proxies for the bot's per-server audio player and queue.",
+      "Kept demo controls read-only and limited playback selection to authorized audio files configured on the bot service."
+    ]
+  },
+{
+    "date": "2026-11-03",
     "title": "Spotify catalog search in Music & Voice",
     "items": [
       "Added server-side Spotify client-credentials authentication with cached short-lived access tokens and authenticated track search.",
