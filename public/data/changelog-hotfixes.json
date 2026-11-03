@@ -5,6 +5,7 @@
     "items": [
       "Added server-side Spotify client-credentials authentication with cached short-lived access tokens and authenticated track search.",
       "Added responsive Spotify track search cards with artist, album, artwork and links to open tracks in Spotify.",
+      "Added public Spotify playlist search with artwork, owner and track counts, plus a read-only preview of accessible playlist tracks.",
       "Kept demo mode read-only and clarified that personal Spotify account linking and playlist browsing are separate future features; Spotify audio is not streamed into Discord."
     ]
   },
