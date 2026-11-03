@@ -53,9 +53,10 @@ function page(data) {
     '<button type="button" class="dash-secondary-btn" data-music-voice-refresh>Refresh</button></div>' +
     '<p class="music-voice-message" data-music-voice-message role="status">' +
     (demo() ? 'Demo mode is read-only. These are sample voice channels.' : 'Meowz needs View Channel and Connect permissions.') + '</p></div>' +
-    '<div class="dash-card music-voice-card"><h2>Spotify</h2><p>Spotify playlist and track browsing is coming next. Account connection will use Spotify OAuth.</p>' +
-    '<div class="music-voice-spotify-note">Spotify audio cannot be rebroadcast through the Spotify API. Music playback will use separately supported audio sources.</div>' +
-    '<button type="button" class="dash-secondary-btn" disabled>Connect Spotify — coming soon</button></div></div></section>';
+    '<div class="dash-card music-voice-card"><h2>Spotify catalog</h2><p>Find tracks and open them in Spotify. Personal playlists and account linking are planned next.</p>' +
+    '<form data-spotify-search-form class="music-spotify-search"><label for="music-spotify-query">Search tracks</label><div class="music-spotify-search-row"><input id="music-spotify-query" data-spotify-query type="search" minlength="2" maxlength="100" placeholder="Artist or track name" required' + (demo() ? ' disabled' : '') + '><button type="submit" class="dash-secondary-btn"' + (demo() ? ' disabled' : '') + '>Search</button></div></form>' +
+    '<div class="music-spotify-results" data-spotify-results role="status">' + (demo() ? 'Demo mode is read-only.' : 'Search Spotify tracks to see titles, artists and albums.') + '</div>' +
+    '<div class="music-voice-spotify-note">Spotify tracks open in Spotify. Meowz cannot stream Spotify audio into Discord voice.</div></div></div></section>';
 }
 async function render(force = false) {
   if (!active() || loading) return;
@@ -82,6 +83,26 @@ function bind(id, host) {
   const select = host.querySelector('[data-music-voice-select]');
   const message = host.querySelector('[data-music-voice-message]');
   host.querySelector('[data-music-voice-refresh]')?.addEventListener('click', () => { cache.delete(id); render(true); });
+  host.querySelector('[data-spotify-search-form]')?.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (demo()) return;
+    const query = host.querySelector('[data-spotify-query]')?.value.trim() || '';
+    if (query.length < 2) return;
+    const results = host.querySelector('[data-spotify-results]');
+    const button = event.currentTarget.querySelector('button');
+    button.disabled = true;
+    results.textContent = 'Searching Spotify…';
+    try {
+      const data = await request('/api/music/spotify/search?q=' + encodeURIComponent(query));
+      if (!data.tracks?.length) { results.textContent = 'No tracks found.'; return; }
+      results.innerHTML = data.tracks.map(track => '<article class="music-spotify-track">' +
+        (track.image ? '<img loading="lazy" alt="" src="' + escapeHtml(track.image) + '">' : '') +
+        '<div><strong>' + escapeHtml(track.title) + '</strong><small>' + escapeHtml(track.artists.join(', ')) + ' · ' + escapeHtml(track.album) + '</small></div>' +
+        (track.url ? '<a href="' + escapeHtml(track.url) + '" target="_blank" rel="noopener noreferrer">Open Spotify</a>' : '') + '</article>').join('');
+    } catch (error) { results.textContent = error.message; }
+    finally { button.disabled = false; }
+  });
+
   async function action(kind) {
     if (demo()) return;
     const channelId = select.value;
