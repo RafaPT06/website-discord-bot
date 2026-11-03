@@ -1,6 +1,7 @@
 const SECTION = 'music-voice';
 const cache = new Map();
 let loading = false;
+let errorVisible = false;
 let generation = 0;
 const demo = () => location.pathname.startsWith('/demo');
 const guildId = () => location.pathname.match(/\/(?:dashboard\/server|demo\/server)\/([^/]+)/)?.[1] || null;
@@ -63,6 +64,7 @@ async function render(force = false) {
   if (!force && host.dataset.activeSection === SECTION && host.querySelector('[data-music-voice-page]')) return;
   const token = ++generation;
   loading = true;
+  errorVisible = false;
   host.dataset.activeSection = SECTION;
   host.innerHTML = '<div class="music-voice-loading">Loading voice channels…</div>';
   try {
@@ -72,7 +74,7 @@ async function render(force = false) {
     host.innerHTML = page(data);
     bind(id, host);
   } catch (err) {
-    if (token === generation) host.innerHTML = '<div class="dash-card music-voice-card"><h2>Could not load voice channels</h2><p>' + escapeHtml(err.message) + '</p><button class="dash-secondary-btn" data-music-voice-retry>Retry</button></div>';
+    if (token === generation) { errorVisible = true; host.innerHTML = '<div class="dash-card music-voice-card"><h2>Could not load voice channels</h2><p>' + escapeHtml(err.message) + '</p><button class="dash-secondary-btn" data-music-voice-retry>Retry</button></div>'; }
     host.querySelector('[data-music-voice-retry]')?.addEventListener('click', () => render(true));
   } finally { loading = false; }
 }
@@ -119,6 +121,6 @@ window.addEventListener('hashchange', navigate);
 window.addEventListener('popstate', navigate);
 new MutationObserver(() => {
   ensureNav();
-  if (active() && !loading && !document.querySelector('[data-music-voice-page]') && !document.querySelector('.music-voice-loading')) render();
+  if (active() && !loading && !errorVisible && !document.querySelector('[data-music-voice-page]') && !document.querySelector('.music-voice-loading')) render();
 }).observe(document.documentElement, { childList:true, subtree:true });
 navigate();
