@@ -117,3 +117,88 @@ body::before {
   .commands-section .category-tabs { margin-inline: -.25rem; }
   .commands-section .search-box { border-radius: .8rem; }
 }
+
+/* Compact homepage: center the message and keep real live stats visible. */
+body:has(.hero) .hero {
+  width: min(70rem, calc(100% - 2rem));
+  min-height: clamp(32rem, 73vh, 46rem);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2rem, 4vw, 3rem);
+  text-align: center;
+  padding: clamp(3rem, 8vh, 6rem) 0;
+}
+body:has(.hero) .hero-content { max-width: 46rem; margin-inline: auto; }
+body:has(.hero) .hero h1 { font-size: clamp(2.6rem, 5vw, 4.35rem); letter-spacing: -.055em; line-height: 1.1; }
+body:has(.hero) .hero-text { max-width: 38rem; margin: 1.2rem auto; font-size: clamp(.92rem, 1.1vw, 1rem); line-height: 1.65; }
+body:has(.hero) .status-pill { width: fit-content; margin-inline: auto; }
+body:has(.hero) .actions { justify-content: center; }
+body:has(.hero) .bot-card {
+  width: min(56rem, 100%);
+  padding: clamp(.8rem, 2vw, 1.2rem);
+  border-radius: 1.2rem;
+  background: linear-gradient(135deg, rgba(17,20,37,.76), rgba(9,11,21,.8));
+}
+body:has(.hero) .bot-top { justify-content: center; gap: .65rem; margin-bottom: 1rem; }
+body:has(.hero) .bot-top h2 { font-size: 1rem; }
+body:has(.hero) .bot-avatar { width: 2.6rem; height: 2.6rem; }
+body:has(.hero) .stats-grid { grid-template-columns: repeat(6, minmax(0,1fr)); gap: .55rem; }
+body:has(.hero) .stat-card { min-width: 0; padding: .7rem .5rem; text-align: center; }
+body:has(.hero) .stat-card span { font-size: .72rem; }
+body:has(.hero) .stat-card strong { font-size: clamp(.85rem, 1.25vw, 1.1rem); overflow-wrap: anywhere; }
+body:has(.hero) .updated { text-align: center; font-size: .72rem; margin-top: .65rem; }
+
+/* Commands: responsive cards, details only when selected. */
+.commands-section { max-width: 72rem; }
+.commands-section .commands-header { align-items: end; }
+.commands-section .page-heading h2 { font-size: clamp(1.9rem, 3vw, 2.6rem); letter-spacing: -.055em; }
+.commands-section .commands-header > .muted { font-size: .86rem; max-width: 25rem; }
+.commands-section .command-toolbar { display: flex; flex-direction: column; align-items: stretch; gap: .9rem; }
+.commands-section .search-box { width: 100%; }
+.commands-section .commands-doc-layout { display: block; position: relative; }
+.commands-section .commands-table-panel { width: 100%; background: none; border: 0; box-shadow: none; padding: 0; }
+.meowz-command-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .8rem; }
+.meowz-command-card {
+  appearance: none; display: flex; flex-direction: column; align-items: flex-start;
+  min-width: 0; min-height: 12rem; gap: .65rem; padding: 1.15rem;
+  border: 1px solid rgba(119,142,206,.13); border-radius: 1.15rem;
+  background: linear-gradient(145deg, rgba(15,18,30,.88), rgba(7,9,17,.94));
+  color: inherit; text-align: left; cursor: pointer;
+  transition: border-color .18s ease, background-color .18s ease, transform .18s ease;
+}
+.meowz-command-card:hover, .meowz-command-card.is-selected { border-color: rgba(34,211,238,.42); }
+.meowz-command-title { font-size: .94rem; font-weight: 700; color: #f6f7fb; overflow-wrap: anywhere; }
+.meowz-command-description { font-size: .82rem; line-height: 1.5; color: #a6aabc; }
+.meowz-command-meta { font-size: .7rem; color: #858ba4; }
+.meowz-command-arguments { display: flex; flex-wrap: wrap; gap: .35rem; }
+.meowz-argument-chip { font-size: .7rem; border: 1px solid rgba(161,168,191,.18); padding: .18rem .48rem; border-radius: .45rem; }
+.meowz-argument-empty { font-size: .7rem; color: #777e91; }
+.meowz-command-usage { display: flex; flex-direction: column; gap: .25rem; margin-top: auto; font-size: .7rem; color: #858ba4; width: 100%; }
+.meowz-command-usage code { color: #bfc5d6; font-size: .75rem; white-space: normal; overflow-wrap: anywhere; }
+.meowz-command-empty { grid-column: 1/-1; padding: 4rem 1rem; text-align: center; color: #a4a9bd; }
+.commands-section .command-detail-panel {
+  position: fixed; z-index: 120; inset: auto 0 0 auto;
+  width: min(28rem, calc(100vw - 1.5rem)); max-height: min(85vh, 50rem);
+  margin: .75rem; overflow-y: auto; border-radius: 1.2rem;
+  box-shadow: 0 25px 80px rgba(0,0,0,.6);
+}
+.commands-section .command-detail-panel.command-detail-empty { display: none; }
+@media (min-width: 70rem) {
+  .commands-section .command-detail-panel.is-open { right: clamp(1rem, 3vw, 3rem); bottom: 1rem; }
+}
+@media (max-width: 65rem) {
+  .meowz-command-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 48rem) {
+  body:has(.hero) .hero { width: calc(100% - 1.5rem); min-height: auto; padding: 4rem 0 2.5rem; }
+  body:has(.hero) .stats-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  body:has(.hero) .bot-card { padding: .85rem; }
+  .commands-section .commands-header { display: block; }
+  .commands-section .commands-header > .muted { max-width: none; }
+  .meowz-command-grid { grid-template-columns: minmax(0,1fr); }
+  .commands-section .command-detail-panel.is-open { width: 100%; max-height: 90dvh; margin: 0; border-radius: 1.2rem 1.2rem 0 0; }
+}
+@media (prefers-reduced-motion: reduce) { .meowz-command-card { transition: none; } }
