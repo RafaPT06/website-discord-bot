@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-08",
+    "title": "Command directory layout fixes",
+    "items": [
+      "Fixed desktop command details overlapping and obscuring the command cards by placing the details panel in the page layout.",
+      "Restyled command category filters as compact horizontal text tabs with an active underline, matching the new command directory design.",
+      "Kept the existing mobile command details sheet, command selection and search behavior."
+    ]
+  },
+  {
+    "date": "2026-11-08",
     "title": "Compact homepage and command card directory",
     "items": [
       "Centered and reduced homepage hero typography; reorganized existing live bot statistics into a compact responsive six-stat strip.",

@@ -202,6 +202,12 @@ function selectCommandByName(name, updateHash = true) {
   appState.selectedCommand = name;
   renderCommands();
   renderCommandDetail(command);
+  if (!isMobileScreen() && els.detail) {
+    els.detail.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+      block: 'nearest',
+    });
+  }
   if (updateHash) history.replaceState(null, '', `#command-${encodeURIComponent(name)}`);
 }
 
