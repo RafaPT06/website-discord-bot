@@ -164,7 +164,7 @@ function renderCommands() {
   );
 
   if (!visible.length) {
-    els.body.innerHTML = '<tr><td colspan="4"><div class="empty-card">No commands found.</div></td></tr>';
+    els.body.innerHTML = '<div class="meowz-command-empty" role="status">No commands found. Try another search or category.</div>';
     renderPagination(0);
     return;
   }
@@ -172,13 +172,20 @@ function renderCommands() {
   els.body.innerHTML = visible.map((command) => {
     const visibility = command.visibility || 'public';
     const isSelected = appState.selectedCommand === command.name;
+    const options = Array.isArray(command.options) ? command.options : [];
+    const chips = options.slice(0, 4).map((option) =>
+      `<span class="meowz-argument-chip">${escapeHtml(option.name)}</span>`
+    ).join('');
     return `
-      <tr class="command-row ${isSelected ? 'is-selected' : ''}" data-command-name="${escapeHtml(command.name)}">
-        <td><span class="command-name">/${escapeHtml(command.name)}</span></td>
-        <td class="command-description">${escapeHtml(command.description || 'No description provided.')}</td>
-        <td><span class="command-chip">${escapeHtml(command.category || 'Other')}</span></td>
-        <td><span class="visibility-badge ${escapeHtml(visibility)}">${visibilityLabel(visibility)}</span></td>
-      </tr>
+      <button type="button" class="meowz-command-card ${isSelected ? 'is-selected' : ''}"
+        data-command-name="${escapeHtml(command.name)}"
+        aria-pressed="${isSelected}" aria-label="View details for /${escapeHtml(command.name)}">
+        <span class="meowz-command-title">/${escapeHtml(command.name)}</span>
+        <span class="meowz-command-description">${escapeHtml(command.description || 'No description provided.')}</span>
+        <span class="meowz-command-meta">${escapeHtml(command.category || 'Other')} · ${visibilityLabel(visibility)}</span>
+        <span class="meowz-command-arguments">${chips || '<span class="meowz-argument-empty">No arguments</span>'}</span>
+        <span class="meowz-command-usage">Usage <code>${escapeHtml(commandUsage(command))}</code></span>
+      </button>
     `;
   }).join('');
 
@@ -217,7 +224,7 @@ export async function loadCommands() {
     if (hashMatch) selectCommandByName(hashMatch[1], false);
   } catch {
     setText(els.summary, 'Could not load slash commands from the bot API.');
-    if (els.body) els.body.innerHTML = '<tr><td colspan="4"><div class="empty-card">Commands API offline.</div></td></tr>';
+    if (els.body) els.body.innerHTML = '<div class="meowz-command-empty" role="status">Commands API offline.</div>';
   }
 }
 
