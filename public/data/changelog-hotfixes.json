@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-08",
+    "title": "Commands page visual and motion polish",
+    "items": [
+      "Applied Meowz premium styling to the slash command documentation page, inspired by the provided Heist command directory screenshots.",
+      "Refined command search focus, horizontally scrollable category tabs, active underline, table hover feedback and subtle entrance animations.",
+      "Preserved existing command search, category filtering, pagination and command details; reduced-motion preferences remain respected."
+    ]
+  },
+  {
+    "date": "2026-11-08",
     "title": "Site-wide premium visual refinement",
     "items": [
       "Refined the homepage, dashboard, demo dashboard and changelog with a consistent Meowz dark-glass visual layer inspired by modern Discord bot landing pages.",

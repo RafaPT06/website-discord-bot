@@ -79,3 +79,41 @@ body::before {
   .feature-card, .btn, .nav-links a { transition: none; }
   .feature-card:hover { transform: none; }
 }
+
+/* Commands: reference-inspired search, horizontally scrollable categories and calm motion. */
+.commands-section { max-width: 76rem; margin-inline: auto; }
+.commands-section .commands-header { gap: 1rem; }
+.commands-section .search-box {
+  display: flex; align-items: center; width: 100%; min-width: 0;
+  border: 1px solid rgba(103, 129, 224, .27);
+  border-radius: .85rem;
+  background: rgba(17, 21, 43, .86);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.commands-section .search-box:focus-within { border-color: rgba(34,211,238,.62); box-shadow: 0 0 0 3px rgba(34,211,238,.08); }
+.commands-section .search-box input { width: 100%; min-width: 0; background: transparent; }
+.commands-section .category-tabs {
+  display: flex; flex-wrap: nowrap; gap: clamp(.5rem, 1.3vw, 1.2rem);
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin;
+  scroll-snap-type: x proximity; border-bottom: 1px solid var(--meowz-line);
+}
+.commands-section .category-tabs button {
+  flex: 0 0 auto; scroll-snap-align: nearest; white-space: nowrap;
+  border-radius: 0; border-bottom: 2px solid transparent;
+  transition: color .18s ease, border-color .2s ease, background-color .18s ease;
+}
+.commands-section .category-tabs button.active { border-bottom-color: #22d3ee; color: #fff; }
+.commands-section .commands-table-panel,
+.commands-section .command-detail-panel { border-color: var(--meowz-line); }
+.commands-section .commands-table tbody tr { transition: background-color .16s ease; }
+.commands-section .commands-table tbody tr:hover { background: rgba(34,211,238,.045); }
+.commands-section .command-summary { color: var(--muted); }
+@media (prefers-reduced-motion:no-preference) {
+  @keyframes meowz-enter { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+  .hero-content, .section-heading, .commands-section .command-toolbar { animation: meowz-enter .42s ease-out both; }
+  .commands-section .commands-table-panel, .commands-section .command-detail-panel { animation: meowz-enter .36s ease-out both; }
+}
+@media (max-width:48rem) {
+  .commands-section .category-tabs { margin-inline: -.25rem; }
+  .commands-section .search-box { border-radius: .8rem; }
+}
