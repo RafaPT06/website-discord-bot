@@ -202,3 +202,93 @@ body:has(.hero) .updated { text-align: center; font-size: .72rem; margin-top: .6
   .commands-section .command-detail-panel.is-open { width: 100%; max-height: 90dvh; margin: 0; border-radius: 1.2rem 1.2rem 0 0; }
 }
 @media (prefers-reduced-motion: reduce) { .meowz-command-card { transition: none; } }
+
+/* Commands layout correction: details participate in normal document flow. */
+.commands-section .commands-doc-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+.commands-section .commands-table-panel { order: 2; min-width: 0; }
+.commands-section .command-detail-panel,
+.commands-section .command-detail-panel.is-open {
+  position: static;
+  inset: auto;
+  order: 1;
+  width: 100%;
+  max-width: 100%;
+  max-height: none;
+  margin: 0;
+  overflow: visible;
+  border-radius: 1.1rem;
+  box-shadow: 0 12px 32px rgba(0,0,0,.16);
+}
+.commands-section .command-detail-panel.command-detail-empty { display: none; }
+.commands-section .command-detail-panel.is-open .command-detail-top { padding: 1.1rem 1.25rem; }
+.commands-section .command-detail-panel.is-open .command-detail-top h3 { font-size: clamp(1.2rem, 2vw, 1.65rem); }
+.commands-section .command-detail-panel.is-open .detail-section { padding: 1rem 1.25rem; }
+.commands-section .category-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: clamp(.7rem, 1.6vw, 1.4rem);
+  overflow-x: auto;
+  padding: 0;
+  border-bottom: 1px solid rgba(126,141,182,.16);
+  scrollbar-width: thin;
+}
+.commands-section .category-tabs button,
+.commands-section .category-tabs button.active {
+  appearance: none;
+  flex: 0 0 auto;
+  min-height: 2.5rem;
+  padding: .5rem .1rem;
+  margin: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: #9095a8;
+  font-size: .79rem;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.commands-section .category-tabs button:hover { color: #e4e9f8; background: transparent; }
+.commands-section .category-tabs button.active {
+  color: #f5f8ff;
+  border-bottom-color: #67b8ff;
+  background: transparent;
+}
+.commands-section .category-tabs button:focus-visible { outline-offset: -3px; }
+.meowz-command-card { overflow: hidden; }
+.meowz-command-description, .meowz-command-meta { overflow-wrap: anywhere; }
+@media (min-width: 48.001rem) {
+  .commands-section .command-detail-panel.is-open {
+    display: grid;
+    grid-template-columns: minmax(0,1.1fr) repeat(3,minmax(0,1fr));
+    align-items: stretch;
+  }
+  .commands-section .command-detail-panel.is-open .command-detail-top { grid-row: 1 / span 2; }
+  .commands-section .command-detail-panel.is-open .detail-section { min-width: 0; }
+  .commands-section .command-detail-panel.is-open .detail-section:last-child { grid-column: 2 / -1; }
+}
+@media (max-width: 48rem) {
+  /* Keep the existing JS-driven mobile bottom sheet and backdrop. */
+  .commands-section .command-detail-panel.is-open {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 120;
+    width: 100%;
+    max-width: 100%;
+    max-height: 90dvh;
+    margin: 0;
+    overflow-y: auto;
+    border-radius: 1.2rem 1.2rem 0 0;
+    display: block;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .commands-section .category-tabs button { transition: none; }
+}
