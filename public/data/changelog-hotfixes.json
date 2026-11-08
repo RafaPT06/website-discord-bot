@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-08",
+    "title": "Compact homepage and command card directory",
+    "items": [
+      "Centered and reduced homepage hero typography; reorganized existing live bot statistics into a compact responsive six-stat strip.",
+      "Replaced command table with a responsive three-column card directory showing description, arguments, access and usage, retaining search, categories, pagination and command detail interactions.",
+      "Reduced oversized typography and visual density while retaining Meowz branding and responsive behavior."
+    ]
+  },
+  {
+    "date": "2026-11-08",
     "title": "Commands page visual and motion polish",
     "items": [
       "Applied Meowz premium styling to the slash command documentation page, inspired by the provided Heist command directory screenshots.",
