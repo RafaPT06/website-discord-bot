@@ -6,6 +6,7 @@ const { router: dashboardPreviewRouter } = require('./routes/dashboardPreview');
 const { router: dashboardReliabilityRouter } = require('./routes/dashboardReliability');
 const { router: dashboardRolesRouter } = require('./routes/dashboardRoles');
 const { router: dashboardStarboardRouter } = require('./routes/dashboardStarboard');
+const { router: avatarTrackerRouter } = require('./routes/dashboardAvatarTracker');
 const { router: dashboardBackupsRouter } = require('./routes/dashboardBackups');
 const { router: dashboardServerLayoutRouter } = require('./routes/dashboardServerLayout');
 const { router: dashboardMusicVoiceRouter } = require('./routes/dashboardMusicVoice');
@@ -54,6 +55,7 @@ function createApp() {
   app.get('/demo/settings', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
   app.get('/demo/server/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
   app.get('/demo/server/:guildId/:section', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
+  app.get('/dashboard/avatar-tracker/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'avatar-tracker.html')));
   app.get('/dashboard/settings', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
   app.get('/dashboard/server/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
   app.get('/dashboard/server/:guildId/:section', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
@@ -70,6 +72,7 @@ function createApp() {
   app.use('/api', dashboardReliabilityRouter);
   app.use('/api', dashboardRolesRouter);
   app.use('/api', dashboardStarboardRouter);
+  app.use('/api', avatarTrackerRouter);
   app.use('/api', dashboardBackupsRouter);
   app.use('/api', dashboardServerLayoutRouter);
   app.use('/api', dashboardMusicVoiceRouter);
