@@ -48,21 +48,30 @@ async function render() {
       const type = String(c.typeName ?? c.type ?? '').toLowerCase();
       return !type || type === '0' || type.includes('text') || type.includes('announcement');
     });
-    const rows = (trackers.trackers || []).map(t => `<div class="dash-card" data-avatar-user="${esc(t.userId)}" style="margin-top:12px">
-      <h3>${esc(t.username)}</h3><p>Roblox ID: ${esc(t.userId)}</p>
-      <label>Notification channel <select data-avatar-channel style="width:100%;padding:12px;margin:8px 0">${options(t.channelId)}</select></label>
-      <label style="display:block;margin:12px 0"><input data-avatar-enabled type="checkbox" ${t.enabled ? 'checked' : ''}> Enabled</label>
-      <button type="button" class="btn btn-primary" data-avatar-save>Save</button>
-      <button type="button" class="btn btn-secondary" data-avatar-remove>Remove</button>
-    </div>`).join('');
-    host.innerHTML = `<section class="dash-designer" data-avatar-page>
-      <article class="dash-card"><span>Roblox Avatar Tracker</span><h2>Track Roblox avatar changes</h2><p>Meowz checks every five minutes and notifies your selected Discord channel.</p></article>
-      <form class="dash-card" data-avatar-add style="margin-top:16px"><h2>Add Roblox user</h2>
-      <input name="user" required maxlength="150" placeholder="Username, user ID or profile link" style="width:100%;padding:12px;margin:10px 0">
-      <select name="channelId" required style="width:100%;padding:12px;margin:10px 0">${options('')}</select>
-      <button class="btn btn-primary">Add tracker</button></form>
-      <article class="dash-card" style="margin-top:16px"><h2>Tracked users</h2>${rows || '<p>No users tracked yet.</p>'}</article>
-      <p data-avatar-message role="status"></p>
+    const users = trackers.trackers || [];
+    const rows = users.map(t => `<article class="avatar-user" data-avatar-user="${esc(t.userId)}">
+      <div class="avatar-user-top">
+        <img class="avatar-user-image" src="https://www.roblox.com/headshot-thumbnail/image?userId=${encodeURIComponent(t.userId)}&width=150&height=150&format=png" alt="" loading="lazy" onerror="this.style.display='none'">
+        <div class="avatar-user-info"><strong>${esc(t.username)}</strong><a href="https://www.roblox.com/users/${encodeURIComponent(t.userId)}/profile" target="_blank" rel="noopener noreferrer">View Roblox profile</a><span>ID: ${esc(t.userId)}</span></div>
+        <span class="avatar-status ${t.enabled ? 'on' : 'off'}">${t.enabled ? 'Active' : 'Paused'}</span>
+      </div>
+      <div class="avatar-user-controls">
+        <label class="avatar-field">Notification channel<select data-avatar-channel>${options(t.channelId)}</select></label>
+        <label class="avatar-switch"><input data-avatar-enabled type="checkbox" ${t.enabled ? 'checked' : ''}><span>Tracking enabled</span></label>
+        <div class="avatar-actions"><button type="button" class="btn btn-primary" data-avatar-save>Save changes</button><button type="button" class="btn btn-secondary" data-avatar-remove>Remove</button></div>
+      </div>
+    </article>`).join('');
+    host.innerHTML = `<section class="avatar-dashboard" data-avatar-page>
+      <header class="avatar-hero"><div><span class="avatar-eyebrow">ROBLOX • AVATAR MONITORING</span><h2>Avatar Tracker</h2><p>Stay updated when someone's Roblox outfit changes. Meowz checks every 5 minutes.</p></div>
+      <div class="avatar-counter"><strong>${users.length}</strong><span>Tracked ${users.length === 1 ? 'user' : 'users'}</span></div></header>
+      <div class="avatar-layout">
+      <form class="avatar-panel avatar-add" data-avatar-add><div class="avatar-panel-head"><div><span class="avatar-eyebrow">NEW TRACKER</span><h3>Add a Roblox user</h3></div><span class="avatar-step">01</span></div>
+      <label class="avatar-field">Roblox username or profile<input name="user" required maxlength="150" autocomplete="off" placeholder="Username, user ID or profile URL"></label>
+      <label class="avatar-field">Send notifications to<select name="channelId" required>${options('')}</select></label>
+      <button class="btn btn-primary avatar-add-button">+ Add tracker</button></form>
+      <section class="avatar-panel avatar-list"><div class="avatar-panel-head"><div><span class="avatar-eyebrow">MANAGE TRACKERS</span><h3>Tracked users</h3></div><span class="avatar-count">${users.length} total</span></div>
+      ${rows || '<div class="avatar-empty"><strong>No users yet</strong><p>Add a Roblox account to start receiving avatar change alerts.</p></div>'}</section></div>
+      <p class="avatar-feedback" data-avatar-message role="status" aria-live="polite"></p>
     </section>`;
     document.title = 'Avatar Tracker — Meowz';
   } catch(err) {
@@ -71,7 +80,7 @@ async function render() {
 }
 async function refresh() {
   const host = document.querySelector('[data-server-tab-content]');
-  if (host) host.dataset.activeSection = '';
+  if (host) { host.dataset.activeSection = ''; host.querySelector('[data-avatar-page]')?.remove(); }
   await render();
 }
 document.addEventListener('click', async event => {

@@ -1,0 +1,38 @@
+/* Avatar Tracker — native dashboard styling */
+.avatar-dashboard{display:grid;gap:20px;width:100%;min-width:0}
+.avatar-dashboard *{box-sizing:border-box}
+.avatar-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:26px 28px;border:1px solid rgba(151,160,204,.18);border-radius:22px;background:linear-gradient(115deg,rgba(87,65,153,.27),rgba(18,24,45,.92) 68%);box-shadow:0 12px 34px rgba(0,0,0,.12)}
+.avatar-eyebrow{display:block;color:#68d9ed;font-size:.73rem;font-weight:800;letter-spacing:.12em;margin-bottom:10px}
+.avatar-hero h2{font-size:clamp(1.55rem,3vw,2.2rem);line-height:1.15;margin:0 0 10px;color:#fff}
+.avatar-hero p{margin:0;color:#b7bed1;line-height:1.55;max-width:520px}
+.avatar-counter{min-width:105px;text-align:center;padding:14px 18px;background:rgba(10,13,27,.48);border:1px solid rgba(151,160,204,.18);border-radius:16px}
+.avatar-counter strong{display:block;color:#fff;font-size:2rem;line-height:1.1}
+.avatar-counter span{color:#b7bed1;font-size:.77rem}
+.avatar-layout{display:grid;grid-template-columns:minmax(240px,.9fr) minmax(0,1.4fr);gap:18px;align-items:start}
+.avatar-panel{min-width:0;padding:24px;border-radius:20px;background:linear-gradient(160deg,rgba(33,37,62,.94),rgba(18,21,37,.96));border:1px solid rgba(151,160,204,.19)}
+.avatar-panel-head{display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:22px}
+.avatar-panel-head h3{font-size:1.22rem;line-height:1.3;margin:0;color:#fff}
+.avatar-step,.avatar-count{color:#aab4ce;font-size:.8rem;white-space:nowrap}
+.avatar-field{display:grid;gap:8px;color:#cbd2e2;font-size:.83rem;font-weight:600;margin-bottom:17px}
+.avatar-field input,.avatar-field select{display:block;width:100%;min-width:0;min-height:45px;border:1px solid rgba(149,159,200,.27);border-radius:11px;background:#171c30;color:#f8faff;padding:11px 13px;font:inherit;font-size:.91rem}
+.avatar-field input:focus,.avatar-field select:focus{outline:2px solid rgba(98,156,255,.5);outline-offset:1px}
+.avatar-add-button{width:100%;min-height:44px}
+.avatar-user{padding:17px;border:1px solid rgba(151,160,204,.18);border-radius:15px;background:rgba(13,18,32,.5);margin-top:12px}
+.avatar-user-top{display:flex;align-items:center;gap:12px;margin-bottom:17px;min-width:0}
+.avatar-user-image{width:56px;height:56px;flex:none;border-radius:12px;object-fit:cover;background:#22283b}
+.avatar-user-info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.avatar-user-info strong{color:white;font-size:1rem;overflow-wrap:anywhere}
+.avatar-user-info a{color:#92b7ff;font-size:.79rem}
+.avatar-user-info span{color:#939eb8;font-size:.75rem}
+.avatar-status{border-radius:30px;padding:5px 9px;font-size:.72rem;font-weight:700;white-space:nowrap;background:rgba(159,167,185,.12);color:#b9bfd0}
+.avatar-status.on{background:rgba(64,202,151,.12);color:#69e3b5}
+.avatar-user-controls{display:grid;gap:4px}
+.avatar-switch{display:flex;align-items:center;gap:10px;color:#d6dced;font-size:.85rem;margin:0 0 12px;cursor:pointer}
+.avatar-switch input{accent-color:#6975f6;width:17px;height:17px}
+.avatar-actions{display:flex;gap:9px;flex-wrap:wrap}
+.avatar-actions button{min-height:39px}
+.avatar-empty{text-align:center;padding:34px 14px;color:#b8c1d4}
+.avatar-empty strong{color:#fff}
+.avatar-feedback{color:#a7d9ff;min-height:20px}
+@media(max-width:800px){.avatar-layout{grid-template-columns:1fr}.avatar-panel{padding:20px}}
+@media(max-width:480px){.avatar-hero{padding:20px;align-items:flex-start}.avatar-counter{min-width:72px;padding:10px}.avatar-counter strong{font-size:1.45rem}.avatar-hero p{font-size:.87rem}.avatar-panel{padding:17px}.avatar-user{padding:13px}.avatar-user-image{width:46px;height:46px}.avatar-status{font-size:.67rem}}
