@@ -55,6 +55,7 @@ function createApp() {
   app.get('/demo/settings', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
   app.get('/demo/server/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
   app.get('/demo/server/:guildId/:section', (req, res) => res.sendFile(path.join(publicPath, 'demo.html')));
+  app.get('/dashboard/avatar-tracker/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'avatar-tracker.html')));
   app.get('/dashboard/settings', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
   app.get('/dashboard/server/:guildId', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
   app.get('/dashboard/server/:guildId/:section', (req, res) => res.sendFile(path.join(publicPath, 'dashboard.html')));
