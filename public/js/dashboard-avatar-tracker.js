@@ -17,8 +17,14 @@ function channelOptions(value) {
 async function load() {
   try {
     const [data,server] = await Promise.all([api(base),api('/api/dashboard/servers/'+guildId)]);
-    channelList = (server?.server?.channels || []).filter(c=>c.type===0 || c.typeName==='text' || c.type==='text');
+    channelList = (Array.isArray(server?.server?.channels) ? server.server.channels : []).filter(c => {
+      const type = String(c.typeName ?? c.type ?? '').toLowerCase();
+      return !type || type.includes('text') || type === '0' || type.includes('announcement');
+    });
     channels.innerHTML = channelOptions('');
+    if (!channelList.length) {
+      message.textContent = 'No text channels were returned for this server. Check that Meowz can access the channels.';
+    }
     const users = data.trackers || [];
     root.innerHTML = users.length ? users.map(t=>'<div class="entry" data-id="'+esc(t.userId)+'"><strong>'+esc(t.username)+'</strong><small>'+esc(t.userId)+'</small><select aria-label="Notification channel">'+channelOptions(t.channelId)+'</select><label><input type="checkbox" '+(t.enabled?'checked':'')+'> Enabled</label><button data-action="save">Save</button><button data-action="delete">Remove</button></div>').join('') : '<p>No Roblox users tracked yet.</p>';
   } catch(err) { message.textContent = err.message; root.textContent = 'Could not load trackers.'; }
