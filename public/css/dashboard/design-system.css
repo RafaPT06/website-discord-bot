@@ -1,0 +1,101 @@
+/*
+ * Meowz dashboard design foundations.
+ * Scoped to the dashboard route: public pages retain their current branding.
+ * This is the single source of truth for the new dashboard palette. Existing
+ * feature-specific layout rules remain in their own stylesheets.
+ */
+body.dashboard-app-body {
+  --mz-bg: #101113;
+  --mz-rail: #141517;
+  --mz-surface: #1b1c1f;
+  --mz-raised: #232428;
+  --mz-field: #17181b;
+  --mz-border: #33353a;
+  --mz-text: #f2f2f3;
+  --mz-muted: #a4a5ac;
+  --mz-accent: #78b4a8;
+  --mz-accent-hover: #91c6bb;
+  --mz-focus: rgba(120, 180, 168, .45);
+  --mz-radius: .75rem;
+  --mz-card-gap: 1.25rem;
+  --bg: var(--mz-bg);
+  --panel: var(--mz-surface);
+  --panel-strong: var(--mz-raised);
+  --text: var(--mz-text);
+  --muted: var(--mz-muted);
+  --border: var(--mz-border);
+  --primary: var(--mz-accent);
+  --primary-2: var(--mz-accent-hover);
+  --dash-card-grid-gap: var(--mz-card-gap);
+  --dashboard-floating-bg: rgba(27, 28, 31, .98);
+  --dashboard-floating-border: var(--mz-border);
+  color: var(--mz-text);
+  background: var(--mz-bg);
+}
+body.dashboard-app-body::before { opacity: 0; }
+body.dashboard-app-body .bg-glow { display: none; }
+
+body.dashboard-app-body .nav[data-global-navbar] {
+  background: var(--mz-rail);
+  border-color: var(--mz-border);
+  box-shadow: none;
+}
+body.dashboard-app-body .dash-shell::before {
+  background: var(--mz-rail) !important;
+  border-right-color: var(--mz-border) !important;
+  box-shadow: none;
+}
+body.dashboard-app-body .dash-sidebar {
+  scrollbar-color: #494c50 transparent;
+}
+body.dashboard-app-body .dash-sidebar::-webkit-scrollbar-thumb,
+body.dashboard-app-body .dash-sidebar:hover::-webkit-scrollbar-thumb {
+  background: #494c50;
+}
+body.dashboard-app-body .dash-main,
+body.dashboard-app-body .dash-content {
+  background-color: var(--mz-bg);
+}
+body.dashboard-app-body :is(.dash-card, .dash-current-server, .dash-help-card, .dashboard-login-card) {
+  background: var(--mz-surface);
+  background-image: none;
+  border-color: var(--mz-border);
+  box-shadow: none;
+}
+body.dashboard-app-body :is(.dash-side-nav a, .dash-current-server, .dash-switcher-server) {
+  border-radius: var(--mz-radius);
+}
+body.dashboard-app-body .dash-side-nav a.is-active {
+  background: var(--mz-raised);
+  border-color: var(--mz-border);
+  color: var(--mz-text);
+}
+body.dashboard-app-body .dash-side-nav a:hover,
+body.dashboard-app-body .dash-switcher-server:hover {
+  background: var(--mz-raised);
+  color: var(--mz-text);
+}
+body.dashboard-app-body .dash-server-switcher-menu {
+  background: var(--mz-raised);
+  border-color: var(--mz-border);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .3);
+}
+body.dashboard-app-body .dash-switcher-server.is-current {
+  background: rgba(120, 180, 168, .12);
+  border-color: var(--mz-focus);
+}
+body.dashboard-app-body .dash-switcher-head small,
+body.dashboard-app-body .dash-current-server em {
+  color: var(--mz-accent) !important;
+}
+body.dashboard-app-body :is(input, textarea, select):focus-visible,
+body.dashboard-app-body :is(button, a):focus-visible {
+  outline: 2px solid var(--mz-accent);
+  outline-offset: 2px;
+}
+body.dashboard-app-body .dash-tab-content {
+  --dash-card-grid-gap: var(--mz-card-gap);
+}
+@media (max-width: 980px) {
+  body.dashboard-app-body .dash-shell::before { display: none; }
+}
