@@ -1,0 +1,95 @@
+/* Dashboard controls: reusable styling shared by all settings tabs. */
+body.dashboard-app-body :is(.dash-field input, .dash-field textarea, .dash-field select, .meowz-select-trigger, .meowz-select-search input) {
+  background: var(--mz-field);
+  background-image: none;
+  border: 1px solid var(--mz-border);
+  border-radius: var(--mz-radius);
+  color: var(--mz-text);
+  box-shadow: none;
+  font: inherit;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+body.dashboard-app-body :is(.dash-field input, .dash-field textarea, .dash-field select, .meowz-select-trigger):hover:not(:disabled) {
+  border-color: #505359;
+  filter: none;
+  transform: none;
+}
+body.dashboard-app-body :is(.dash-field input, .dash-field textarea, .dash-field select, .meowz-select-trigger):focus-visible,
+body.dashboard-app-body .meowz-select.is-open .meowz-select-trigger {
+  outline: 2px solid var(--mz-accent);
+  outline-offset: 1px;
+  border-color: var(--mz-accent);
+  box-shadow: none;
+}
+body.dashboard-app-body :is(.dash-field input, .dash-field textarea, .dash-field select)::placeholder {
+  color: var(--mz-muted);
+  opacity: .75;
+}
+body.dashboard-app-body :is(.dash-field input, .dash-field textarea, .dash-field select):disabled,
+body.dashboard-app-body .meowz-select-trigger:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+body.dashboard-app-body .meowz-select-leading {
+  border-color: var(--mz-border);
+  background: var(--mz-raised);
+  color: var(--mz-accent);
+}
+body.dashboard-app-body .meowz-select-chevron {
+  color: var(--mz-muted) !important;
+}
+body.dashboard-app-body .meowz-select-menu {
+  background: var(--mz-raised);
+  background-image: none;
+  border-color: var(--mz-border);
+  box-shadow: 0 14px 36px rgba(0,0,0,.35);
+}
+body.dashboard-app-body .meowz-select-menu-head strong {
+  color: var(--mz-accent);
+}
+body.dashboard-app-body .meowz-select-option {
+  color: var(--mz-muted);
+}
+body.dashboard-app-body .meowz-select-option:is(:hover, :focus-visible) {
+  background: #303237;
+  border-color: var(--mz-border);
+  color: var(--mz-text);
+}
+body.dashboard-app-body .meowz-select-option.is-selected {
+  background: rgba(120,180,168,.13);
+  border-color: var(--mz-focus);
+  color: var(--mz-text);
+}
+body.dashboard-app-body .meowz-select-option.is-selected .meowz-select-check {
+  background: rgba(120,180,168,.18);
+  border-color: var(--mz-focus);
+  color: var(--mz-accent);
+}
+body.dashboard-app-body :is(.dash-save-btn, .dash-primary-small, .btn-primary) {
+  background: var(--mz-accent);
+  background-image: none;
+  border-color: var(--mz-accent);
+  color: #101715;
+  box-shadow: none;
+}
+body.dashboard-app-body :is(.dash-save-btn, .dash-primary-small, .btn-primary):hover:not(:disabled) {
+  background: var(--mz-accent-hover);
+  border-color: var(--mz-accent-hover);
+  box-shadow: none;
+}
+body.dashboard-app-body :is(.dash-secondary-btn, .dash-variable-row button) {
+  background: var(--mz-raised);
+  background-image: none;
+  border: 1px solid var(--mz-border);
+  color: var(--mz-text);
+  box-shadow: none;
+}
+body.dashboard-app-body :is(.dash-secondary-btn, .dash-variable-row button):hover:not(:disabled) {
+  background: #303237;
+  border-color: #505359;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.dashboard-app-body :is(.meowz-select-trigger, .meowz-select-option, .dash-save-btn) {
+    transition: none;
+  }
+}
