@@ -1,18 +1,5 @@
-/* Dashboard-only stability and desktop layout overrides. */
-body.dashboard-app-body {
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-}
-
-body.dashboard-app-body .dashboard-app-root {
-  flex: 1 0 auto;
-  min-height: calc(100svh - 10rem) !important;
-}
-
-body.dashboard-app-body .footer-card {
-  flex: 0 0 auto;
-}
+/* Dashboard-only stability and desktop layout overrides.
+ * Footer flow and page flex sizing are centralized in runtime-fixes.css. */
 
 @media (min-width: 1180px) {
   body.dashboard-app-body .nav,
