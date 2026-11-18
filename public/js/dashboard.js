@@ -1,3 +1,4 @@
+import { renderDashboardTopbar, renderDashboardBreadcrumb } from './components/dashboardHeader.js';
 import { renderDashboardCard, renderCurrentServerCard, renderDashboardSidebarNav } from './components/dashboardSidebar.js';
 import { renderDashboardShell } from './layouts/dashboardShell.js';
 import {
@@ -482,15 +483,17 @@ function sidebarNav(server, active) {
   });
 }
 function topbar(server, active, showOwnerToggle, isOwner) {
-  return `
-    <header class="dash-topbar">
-      <div class="dash-breadcrumb"><a href="${dashboardBase()}">Servers</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a><span data-dashboard-active-separator ${active === 'Overview' ? 'hidden' : ''}>›</span><strong data-dashboard-active-crumb ${active === 'Overview' ? 'hidden' : ''}>${escapeHtml(active)}</strong>` : ''}</div>
-      <div class="dash-top-actions">
-        ${showOwnerToggle && isOwner ? ownerToggle() : ''}
-        ${server ? `<a class="dash-primary-small" href="/">View Bot</a>` : ''}
-        <a class="dash-user-pill" href="${settingsPath()}">${avatarHtml()}<span><strong>${escapeHtml(activeName())}</strong><small>${escapeHtml(activeUsername())}</small></span><em>OWNER</em></a>
-      </div>
-    </header>`;
+  return renderDashboardTopbar({
+    dashboardHref: dashboardBase(),
+    serverHref: server ? sectionPath(server) : null,
+    serverName: server?.name,
+    active,
+    ownerToggleMarkup: showOwnerToggle && isOwner ? ownerToggle() : '',
+    settingsHref: settingsPath(),
+    avatarMarkup: avatarHtml(),
+    displayName: activeName(),
+    username: activeUsername(),
+  });
 }
 function ownerToggle() {
   return `<div class="dash-owner-toggle" role="group" aria-label="Dashboard view mode"><button type="button" data-owner-mode="user" class="${viewMode === 'user' ? 'is-active' : ''}">User View</button><button type="button" data-owner-mode="owner" class="${viewMode === 'owner' ? 'is-active' : ''}">Owner View</button></div>`;
@@ -511,7 +514,12 @@ function mobileBar(server, active = 'Dashboard', showOwnerToggle = false, isOwne
   return `<header class="dash-mobile-bar"><a class="dash-brand" href="${dashboardBase()}"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a><button type="button" class="dash-menu-btn" data-dash-menu aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button><div class="dash-mobile-backdrop" data-dash-backdrop hidden></div><aside class="dash-mobile-drawer" data-dash-drawer hidden><div class="dash-drawer-head"><span>${server ? serverIcon(server, 'dash-current-icon') : '<span class="dash-current-icon">M</span>'}</span><div><strong>${escapeHtml(activeLabel)}</strong><small>${escapeHtml(active)}</small></div></div>${showOwnerToggle && isOwner ? `<div class="dash-drawer-toggle">${ownerToggle()}</div>` : ''}<nav>${renderGroup('Dashboard', dashboardLinks)}${renderGroup('Resources', resourceLinks)}${renderGroup('Account', accountLinks)}${isDemoMode() ? '<div class="dash-drawer-group"><a href="/">Exit Demo</a></div>' : '<div class="dash-drawer-group"><a href="/auth/logout" class="danger">Logout</a></div>'}</nav></aside></header>`;
 }
 function mobileBreadcrumb(server, active = 'Dashboard') {
-  return `<div class="dash-mobile-breadcrumb"><a href="${dashboardBase()}">Dashboard</a>${server ? `<span>›</span><a href="${escapeHtml(sectionPath(server))}">${escapeHtml(server.name)}</a><span data-dashboard-active-separator ${active === 'Overview' ? 'hidden' : ''}>›</span><strong data-dashboard-active-crumb ${active === 'Overview' ? 'hidden' : ''}>${escapeHtml(active)}</strong>` : ''}</div>`;
+  return renderDashboardBreadcrumb({
+    dashboardHref: dashboardBase(),
+    serverHref: server ? sectionPath(server) : null,
+    serverName: server?.name,
+    active,
+  });
 }
 function closeDashDrawer(bar = document) {
   const scope = bar?.querySelector ? bar : document;
