@@ -1,3 +1,4 @@
+import { renderDashboardShell } from './layouts/dashboardShell.js';
 import {
   getDashboardGuilds,
   getDashboardServer,
@@ -444,28 +445,17 @@ function writeSettings(guildId, section, values) {
 }
 
 function shell({ server = null, active = 'Dashboard', section = 'dashboard', content = '', showOwnerToggle = false, isOwner = false }) {
-  return `
-    <div class="dash-shell" ${server ? `data-dashboard-server-shell="${escapeHtml(server.id)}"` : ''}>${demoBadge()}
-      <aside class="dash-sidebar" aria-label="Dashboard navigation">
-        <div class="dash-brand-row">
-          <a class="dash-brand" href="${dashboardBase()}"><span class="dash-brand-mark">M</span><strong>Meowz</strong></a>
-          <a class="dash-round-action" href="/">+</a>
-        </div>
-        ${server ? currentServerCard(server) : dashboardCard()}
-        ${sidebarNav(server, section)}
-        <div class="dash-help-card"><strong>Need help?</strong><span>Open the documentation while the support server is being prepared.</span><a href="/docs">View docs</a></div>
-      </aside>
-      <div class="dash-main">
-        ${topbar(server, active, showOwnerToggle, isOwner)}
-        ${mobileBreadcrumb(server, active)}
-        <div class="dash-content">
-          ${content}
-        </div>
-      </div>
-    </div>
-  `;
+  return renderDashboardShell({
+    serverId: server?.id,
+    demoBanner: demoBadge(),
+    dashboardHref: dashboardBase(),
+    serverCard: server ? currentServerCard(server) : dashboardCard(),
+    navigation: sidebarNav(server, section),
+    topbar: topbar(server, active, showOwnerToggle, isOwner),
+    breadcrumb: mobileBreadcrumb(server, active),
+    content,
+  });
 }
-
 function dashboardCard() {
   return `<a class="dash-current-server" href="${dashboardBase()}"><span class="dash-current-icon">M</span><span><strong>Meowz Dashboard</strong><small>Server manager</small></span></a>`;
 }
