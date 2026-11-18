@@ -1,0 +1,88 @@
+/* Meowz shared dashboard design system.
+   One token layer for every dashboard feature; new components should consume these
+   variables instead of introducing per-feature gradients and arbitrary colors. */
+body.dashboard-app-body {
+  --mz-bg: #0e0e10;
+  --mz-sidebar: #111113;
+  --mz-surface: #171719;
+  --mz-surface-raised: #202023;
+  --mz-field: #1d1d20;
+  --mz-border: #303034;
+  --mz-text: #f0f0f2;
+  --mz-muted: #a1a1a8;
+  --mz-accent: #6eaea4;
+  --mz-accent-hover: #83c3b8;
+  --mz-radius: 12px;
+  --mz-space: 20px;
+  background: var(--mz-bg) !important;
+  color: var(--mz-text);
+}
+/* Shared shell: neutralize the competing purple and cyan background effects. */
+body.dashboard-app-body .dashboard-app,
+body.dashboard-app-body .dash-shell,
+body.dashboard-app-body .dash-main,
+body.dashboard-app-body .dash-content {
+  background-color: var(--mz-bg) !important;
+  background-image: none !important;
+}
+body.dashboard-app-body .dash-shell::before {
+  background: var(--mz-sidebar) !important;
+  box-shadow: none !important;
+  border-right: 1px solid var(--mz-border) !important;
+}
+body.dashboard-app-body .dash-sidebar {
+  background: var(--mz-sidebar) !important;
+  background-image: none !important;
+  border-color: var(--mz-border) !important;
+}
+body.dashboard-app-body .dash-card,
+body.dashboard-app-body .avatar-panel,
+body.dashboard-app-body .avatar-hero,
+body.dashboard-app-body .avatar-user {
+  background: var(--mz-surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--mz-border) !important;
+  box-shadow: none !important;
+  border-radius: var(--mz-radius) !important;
+}
+body.dashboard-app-body .dash-card h2,
+body.dashboard-app-body .dash-card h3,
+body.dashboard-app-body .avatar-dashboard h2,
+body.dashboard-app-body .avatar-dashboard h3 {
+  color: var(--mz-text);
+}
+body.dashboard-app-body .avatar-dashboard p,
+body.dashboard-app-body .avatar-user-info span {
+  color: var(--mz-muted);
+}
+body.dashboard-app-body .avatar-dashboard input:not([type=checkbox]),
+body.dashboard-app-body .avatar-dashboard select {
+  background: var(--mz-field) !important;
+  color: var(--mz-text) !important;
+  border: 1px solid var(--mz-border) !important;
+  border-radius: 8px !important;
+}
+body.dashboard-app-body .avatar-dashboard .btn-primary,
+body.dashboard-app-body .avatar-dashboard button.btn-primary {
+  background: var(--mz-accent) !important;
+  background-image: none !important;
+  border: 1px solid var(--mz-accent) !important;
+  color: #101817 !important;
+  box-shadow: none !important;
+}
+body.dashboard-app-body .avatar-dashboard .btn-primary:hover {
+  background: var(--mz-accent-hover) !important;
+}
+body.dashboard-app-body .avatar-eyebrow,
+body.dashboard-app-body .avatar-status.on {
+  color: var(--mz-accent) !important;
+}
+body.dashboard-app-body .dash-side-nav a.is-active,
+body.dashboard-app-body .dash-side-nav a[aria-current=page] {
+  background: var(--mz-surface-raised) !important;
+  color: var(--mz-text) !important;
+  box-shadow: inset 3px 0 0 var(--mz-accent) !important;
+}
+@media (max-width: 800px) {
+  body.dashboard-app-body .avatar-layout { grid-template-columns: minmax(0, 1fr) !important; }
+}
