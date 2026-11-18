@@ -1,3 +1,4 @@
+import { renderOverviewPage } from './pages/dashboard/Overview.js';
 import { renderDashboardTopbar, renderDashboardBreadcrumb } from './components/dashboardHeader.js';
 import { renderDashboardCard, renderCurrentServerCard, renderDashboardSidebarNav } from './components/dashboardSidebar.js';
 import { renderDashboardShell } from './layouts/dashboardShell.js';
@@ -657,7 +658,7 @@ function simulationPanel(title, description, events = []) {
 }
 
 function overviewPage(server) {
-  return `<section class="dash-grid two"><article class="dash-card"><span>Information</span><h2>Server information</h2><div class="dash-info-list">${infoRow('Name',server.name)}${infoRow('Server ID',server.id)}${infoRow('Members',typeof server.memberCount === 'number' ? formatNumber(server.memberCount) : 'Unavailable')}${infoRow('Status','Meowz installed')}</div></article><article class="dash-card"><span>Permissions</span><h2>Dashboard access</h2><div class="dash-info-list">${infoRow('Your access',server.accessLabel || 'Manage Server')}${infoRow('Dashboard access','Allowed')}${infoRow('View mode',server.ownerView ? 'Owner View' : 'User View')}</div></article></section><section class="dash-card"><span>Server tools</span><h2>Configure Meowz</h2><div class="dash-feature-grid">${[['welcome','Welcome / Goodbye','Member join and leave messages.'],['leveling','Leveling System','XP, cooldowns and level rewards.'],['ai-image-access','AI Image Access','Control who can use image editing.'],['logs','Logs','Server activity and audit events.'],['moderation','Moderation','Warnings and automod settings.']].map(([key,title,desc]) => `<a href="${escapeHtml(sectionPath(server,key))}" class="dash-feature-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(desc)}</span></a>`).join('')}</div></section>${simulationPanel('Test bot connection', 'Verify that the website can reach Meowz and that the bot can see this server.', [{ event: 'connection', label: 'Test Connection', primary: true }])}`;
+  return renderOverviewPage(server, { sectionPath, simulationPanel });
 }
 
 function welcomePage(server) {
