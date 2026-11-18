@@ -1,3 +1,4 @@
+import { renderDashboardCard, renderCurrentServerCard, renderDashboardSidebarNav } from './components/dashboardSidebar.js';
 import { renderDashboardShell } from './layouts/dashboardShell.js';
 import {
   getDashboardGuilds,
@@ -457,26 +458,28 @@ function shell({ server = null, active = 'Dashboard', section = 'dashboard', con
   });
 }
 function dashboardCard() {
-  return `<a class="dash-current-server" href="${dashboardBase()}"><span class="dash-current-icon">M</span><span><strong>Meowz Dashboard</strong><small>Server manager</small></span></a>`;
+  return renderDashboardCard({ dashboardHref: dashboardBase() });
 }
 function currentServerCard(server) {
-  return `<a class="dash-current-server" href="${escapeHtml(sectionPath(server))}">${serverIcon(server, 'dash-current-icon')}<span><strong>${escapeHtml(server.name)}</strong><small>Server Settings</small></span><em>⌄</em></a>`;
-}
-function navLink(href, key, active, label) {
-  return `<a class="${key === active ? 'is-active' : ''}" href="${escapeHtml(href)}"><span></span>${escapeHtml(label)}</a>`;
+  return renderCurrentServerCard({
+    serverHref: sectionPath(server),
+    serverIconMarkup: serverIcon(server, 'dash-current-icon'),
+    serverName: server.name,
+  });
 }
 function sidebarNav(server, active) {
-  if (server) {
-    const settings = [
-      ['overview', 'Overview'], ['welcome', 'Welcome / Goodbye'], ['leveling', 'Leveling System'], ['ai-image-access', 'AI Image Access'], ['logs', 'Logs'], ['moderation', 'Moderation'],
-    ].map(([key, label]) => navLink(sectionPath(server, key), key, active, label)).join('');
-    const resources = `${navLink('/docs', 'docs', active, 'Documentation')}${navLink('/changelog', 'changelog', active, 'Changelog')}`;
-    const account = navLink(settingsPath(), 'settings', active, 'Settings');
-    return `<nav class="dash-side-nav"><small>Dashboard</small>${settings}</nav><nav class="dash-side-nav muted"><small>Resources</small>${resources}</nav><nav class="dash-side-nav muted"><small>Account</small>${account}</nav>`;
-  }
-  const dashboard = `${navLink(dashboardBase(), 'dashboard', active, 'Overview')}${navLink(settingsPath(), 'settings', active, 'Settings')}`;
-  const resources = `${navLink('/docs', 'docs', active, 'Documentation')}${navLink('/changelog', 'changelog', active, 'Changelog')}`;
-  return `<nav class="dash-side-nav"><small>Dashboard</small>${dashboard}</nav><nav class="dash-side-nav muted"><small>Resources</small>${resources}</nav>`;
+  return renderDashboardSidebarNav({
+    serverSections: server
+      ? [
+          ['overview', 'Overview'], ['welcome', 'Welcome / Goodbye'],
+          ['leveling', 'Leveling System'], ['ai-image-access', 'AI Image Access'],
+          ['logs', 'Logs'], ['moderation', 'Moderation'],
+        ].map(([key, label]) => ({ key, label, href: sectionPath(server, key) }))
+      : null,
+    active,
+    dashboardHref: dashboardBase(),
+    settingsHref: settingsPath(),
+  });
 }
 function topbar(server, active, showOwnerToggle, isOwner) {
   return `
