@@ -195,3 +195,110 @@ body.dashboard-app-body :is(.dash-secondary-btn, .dash-variable-row button):hove
     transition: none;
   }
 }
+
+/* Shared cards, page headings and mobile layout rhythm. */
+body.dashboard-app-body {
+  --mz-heading-space: 1.5rem;
+  --mz-card-padding: clamp(1rem, 1.8vw, 1.5rem);
+}
+body.dashboard-app-body :is(
+  .dash-card, .dash-form-card, .dash-feature-card, .dash-simulation-card,
+  .dash-preview, .dash-server-card, .dash-settings-card
+) {
+  border: 1px solid var(--mz-border);
+  border-radius: var(--mz-radius);
+  background: var(--mz-surface);
+  background-image: none;
+  box-shadow: none;
+}
+body.dashboard-app-body :is(.dash-card, .dash-form-card, .dash-simulation-card) {
+  min-width: 0;
+}
+body.dashboard-app-body :is(.dash-card-head, .dash-page-title, .dash-server-title) {
+  min-width: 0;
+}
+body.dashboard-app-body :is(.dash-page-title, .dash-server-title) {
+  margin-bottom: var(--mz-heading-space);
+}
+body.dashboard-app-body :is(.dash-page-title h1, .dash-server-title h1) {
+  color: var(--mz-text);
+  letter-spacing: -.035em;
+  line-height: 1.15;
+}
+body.dashboard-app-body :is(
+  .dash-card-head h2, .dash-card-head h3, .dash-card h2, .dash-card h3
+) {
+  color: var(--mz-text);
+  letter-spacing: -.02em;
+  line-height: 1.3;
+}
+body.dashboard-app-body :is(
+  .dash-page-title p, .dash-server-title p, .dash-card-head p,
+  .dash-card > p, .dash-field > small, .dash-help-card span
+) {
+  color: var(--mz-muted);
+}
+body.dashboard-app-body :is(
+  .dash-pills > span, .dash-card-head .status, .dash-card-head b.status
+) {
+  border-radius: .5rem;
+  box-shadow: none;
+}
+body.dashboard-app-body .dash-shell[data-dashboard-server-shell] .dash-pills > span:nth-child(2) {
+  border-color: var(--mz-focus) !important;
+  background: rgba(120,180,168,.12) !important;
+  color: var(--mz-accent-hover) !important;
+}
+body.dashboard-app-body .dash-mobile-drawer {
+  background: var(--mz-rail);
+  border-color: var(--mz-border);
+  box-shadow: -1rem 0 3rem rgba(0,0,0,.35);
+}
+body.dashboard-app-body .dash-mobile-drawer a.is-active {
+  background: var(--mz-raised);
+  color: var(--mz-text);
+}
+body.dashboard-app-body .dash-tabs {
+  scrollbar-color: #494c50 transparent;
+}
+body.dashboard-app-body .dash-tabs a.is-active {
+  color: var(--mz-text);
+  border-color: var(--mz-accent);
+}
+@media (max-width: 980px) {
+  body.dashboard-app-body .dash-content {
+    min-width: 0;
+    padding-inline: clamp(.75rem, 3vw, 1.25rem);
+  }
+  body.dashboard-app-body :is(.dash-page-title, .dash-server-title) {
+    margin-bottom: 1.25rem;
+  }
+}
+@media (max-width: 720px) {
+  body.dashboard-app-body {
+    --mz-card-gap: .875rem;
+    --mz-heading-space: 1rem;
+    --mz-card-padding: 1rem;
+  }
+  body.dashboard-app-body .dash-content {
+    padding-inline: .75rem;
+  }
+  body.dashboard-app-body :is(.dash-page-title h1, .dash-server-title h1) {
+    overflow-wrap: anywhere;
+    line-height: 1.2;
+  }
+  body.dashboard-app-body :is(.dash-card, .dash-form-card, .dash-simulation-card) {
+    max-width: 100%;
+  }
+  body.dashboard-app-body .dash-tab-content {
+    min-width: 0;
+    gap: var(--mz-card-gap) !important;
+  }
+  body.dashboard-app-body .dash-tab-content :is(
+    .dash-grid, .dash-designer, .dash-welcome-layout,
+    .dash-welcome-settings-stack, .dash-welcome-preview-column,
+    .dash-section-stack, .dash-settings-page
+  ) {
+    gap: var(--mz-card-gap) !important;
+  }
+}
