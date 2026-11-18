@@ -24,5 +24,4 @@ export function renderModerationPage(server, s, { simulationPanel }) {
       <div data-moderation-access-list aria-live="polite">${emptyState('Loading bypass list...', 'Please wait.')}</div>
     </article>
     <div class="dash-section-stack"><article class="dash-card dash-automation-card"><span>Rules</span><h2>Automation</h2><div class="dash-feature-grid compact">${['Warnings','Anti-spam','Link filter','Invite filter','Mod logs'].map(x => `<div class="dash-feature-card"><strong>${x}</strong><span>Connected to bot API.</span></div>`).join('')}</div></article>${simulationPanel('Simulate automod', 'Send a safe automod test embed. It does not delete a message or punish a member.', [{ event: 'moderation', label: 'Simulate Automod', primary: true }])}</div>
-  </section>`;
-
+  </section>`;}
