@@ -1,3 +1,5 @@
+import { renderAiPage } from './pages/dashboard/AiImageAccess.js';
+import { renderSettingsView } from './pages/dashboard/Settings.js';
 import { renderLogsPage } from './pages/dashboard/Logs.js';
 import { renderModerationPage } from './pages/dashboard/Moderation.js';
 import { renderLevelingPage } from './pages/dashboard/Leveling.js';
@@ -738,7 +740,7 @@ function moderationPage(server) {
   return renderModerationPage(server, s, { simulationPanel });
 }
 function aiPage(server) {
-  return `<section class="dash-designer" data-ai-page><article class="dash-card dash-form-card"><span>AI Image Access</span><h2>Allowed users</h2><p>Control who can use the image editing command in ${escapeHtml(server.name)}.</p>${userAccessForm('ai', 'Search user or paste ID')}<small class="preview-note">Bot owner and users with Manage Server permission have access by default. Manual users can be added by username search or Discord ID.</small></article><div class="dash-section-stack"><article class="dash-card"><span>Current Access</span><h2>People allowed</h2><div data-ai-access-list>${emptyState('Loading access list...', 'Please wait.')}</div></article>${simulationPanel('Test your access', 'Ask the bot whether your current Discord account can use AI image editing in this server.', [{ event: 'image-access', label: 'Test AI Access', primary: true }])}</div></section>`;
+  return renderAiPage(server, { simulationPanel });
 }
 async function loadAiAccess(guildId) {
   const holder = document.querySelector('[data-ai-access-list]');
@@ -1030,16 +1032,7 @@ function attachGlobalSaveBar(server) {
 }
 function settingsPage(data = {}) {
   const prefs = readDashboardPrefs();
-  const isOwner = Boolean(data.isOwner);
-  const authenticated = Boolean(data.authenticated || activeUser());
-  const demo = isDemoMode();
-  const languageOptions = [
-    ['en', 'English'], ['pt', 'Português'], ['es', 'Español'], ['de', 'Deutsch'], ['fr', 'Français'],
-  ].map(([value, label]) => `<option value="${value}" ${prefs.language === value ? 'selected' : ''}>${label}</option>`).join('');
-
-  const viewModeCard = authenticated ? `<article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Dashboard Preferences</span><h2>View mode</h2><p>Choose how the dashboard lists servers.</p></div></div>${isOwner ? `<div class="dash-setting-block"><strong>Owner/User view</strong><p>Owner View shows every server Meowz is installed in. User View shows the same list a normal manager sees.</p>${ownerToggle()}</div>` : `<div class="dash-note"><strong>User View</strong><span>Owner View is only available to the bot owner.</span></div>`}</article>` : '';
-
-  return `<section class="dash-page-title"><span>Account</span><h1>Settings</h1><p>Control dashboard preferences. Theme and language preferences are saved locally on this browser, even when you are not logged in.</p></section>${demo ? '<div class="dash-note demo-note"><strong>Demo Mode</strong><span>This page is a read-only preview. Visual preferences can be changed locally, but server/account changes are disabled.</span></div>' : ''}<form class="dash-settings-page" data-dashboard-settings>${viewModeCard}<article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Appearance</span><h2>Theme</h2><p>Choose the dashboard theme for this browser.</p></div></div><div class="dash-segmented" data-theme-toggle><button type="button" data-theme-choice="dark" class="${prefs.theme === 'dark' ? 'is-active' : ''}">Dark</button><button type="button" data-theme-choice="light" class="${prefs.theme === 'light' ? 'is-active' : ''}">Light</button></div></article><article class="dash-card dash-form-card"><div class="dash-card-head"><div><span>Language</span><h2>Language</h2><p>The selector is ready for future translations. English remains the active dashboard copy for now.</p></div></div><label class="dash-field"><span>Dashboard language</span><select name="language">${languageOptions}</select></label></article><article class="dash-card"><span>Coming soon</span><h2>Future settings</h2><div class="dash-feature-grid compact"><div class="dash-feature-card"><strong>Notifications</strong><span>Control dashboard alerts and reminders.</span></div><div class="dash-feature-card"><strong>Privacy</strong><span>Manage account visibility and saved preferences.</span></div><div class="dash-feature-card"><strong>Experiments</strong><span>Try new dashboard features early.</span></div></div></article></form>`;
+  return renderSettingsView(prefs, { isOwner: Boolean(data.isOwner), authenticated: Boolean(data.authenticated || activeUser()), demo: isDemoMode(), ownerToggle });
 }
 
 function attachDashboardSettings() {
